@@ -2,6 +2,7 @@ import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { Wifi, Lock, Snowflake, Droplet, CheckCircle2, Users, ChevronRight, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import Navigation from '../components/Navigation';
 
 export default function RoomsPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -42,31 +43,8 @@ export default function RoomsPage() {
 
   return (
     <div className="bg-[#230f14] min-h-screen">
-      {/* Navigation Bar */}
-      <nav className="bg-[#0f172a] border-b-2 border-[#1e293b] sticky top-0 z-50">
-        <div className="max-w-screen-xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#ff2e62] uppercase tracking-[2px]">
-              Vibe House
-            </Link>
-            <div className="flex gap-6">
-              <Link to="/" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
-                Home
-              </Link>
-              <Link to="/rooms" className="font-['Space_Grotesk'] text-[14px] text-[#ff2e62]">
-                Rooms
-              </Link>
-              <Link to="/events" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
-                Events
-              </Link>
-              <Link to="/about" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
-                About
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+      <Navigation />
+      
       {/* Hero Section */}
       <section className="relative min-h-[50vh] md:min-h-[60vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[rgba(35,15,20,0.8)] to-[#230f14] z-10" />
