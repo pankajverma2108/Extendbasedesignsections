@@ -1,0 +1,100 @@
+@import "tailwindcss";
+@source "../app/**/*.{ts,tsx}";
+@source "../components/**/*.{ts,tsx}";
+@source "../content/**/*.{ts,tsx}";
+@source "../lib/**/*.{ts,tsx}";
+@source "../src/**/*.{ts,tsx}";
+@import "../src/styles/theme.css";
+
+:root {
+  --vh-bg: #230f14;
+  --vh-surface: #1e293b;
+  --vh-surface-2: #0f172a;
+  --vh-border: #334155;
+  --vh-pink: #ff2e62;
+  --vh-pink-soft: #ff6b98;
+  --vh-blue: #00d1ff;
+  --vh-green: #39ff14;
+  --vh-yellow: #facc15;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--vh-bg);
+  color: white;
+}
+
+a,
+button,
+input,
+select {
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease;
+}
+
+@layer components {
+  .vh-shell {
+    @apply min-h-screen bg-[var(--vh-bg)] text-white;
+  }
+
+  .vh-container {
+    @apply mx-auto w-full max-w-screen-xl px-4 md:px-6;
+  }
+
+  .vh-section {
+    @apply py-10 md:py-12;
+  }
+
+  .vh-section-alt {
+    @apply bg-white/[0.03];
+  }
+
+  .vh-kicker {
+    @apply font-bold uppercase tracking-[1.4px] text-[12px];
+  }
+
+  .vh-title {
+    @apply font-bold uppercase tracking-[-1.8px] leading-tight text-3xl md:text-4xl;
+  }
+
+  .vh-subtitle {
+    @apply text-sm md:text-base italic text-white/75;
+  }
+
+  .vh-card {
+    @apply rounded-[12px] border-2 border-[var(--vh-border)] bg-[var(--vh-surface)] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.18)];
+  }
+
+  .vh-outline-button {
+    @apply inline-flex items-center justify-center rounded-[4px] border-2 border-white/30 bg-white/10 px-4 py-2 text-sm font-bold uppercase text-white;
+  }
+
+  .vh-primary-button {
+    @apply inline-flex items-center justify-center rounded-[4px] bg-[var(--vh-pink)] px-6 py-3 text-sm font-bold uppercase text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,0.18)];
+  }
+
+  .vh-input {
+    @apply w-full rounded-[4px] border-2 border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[var(--vh-pink)];
+  }
+
+  .vh-rot-1 {
+    transform: rotate(-1deg);
+  }
+
+  .vh-rot-2 {
+    transform: rotate(1deg);
+  }
+
+  .vh-rot-3 {
+    transform: rotate(-2deg);
+  }
+}
