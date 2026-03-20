@@ -13,15 +13,34 @@ const variantClasses: Record<NonNullable<BookingWidgetProps["variant"]>, string>
   inline: "border-2 border-white/20 bg-white/95 p-4",
 };
 
+const chipClasses: Record<NonNullable<BookingWidgetProps["variant"]>, string> = {
+  hero: "bg-[#393630] text-[#f8f2e8]",
+  cta: "bg-[#393630] text-[#f8f2e8]",
+  inline: "bg-slate-800 text-white",
+};
+
+function getLocalDateOffset(days: number): string {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + days);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 export function BookingWidget({
   destinationHref = "/rooms",
   initialCheckIn = "",
   initialCheckOut = "",
   submitLabel = "Check Dates",
   variant = "inline",
+  urgencyChips,
 }: BookingWidgetProps) {
-  const [checkIn, setCheckIn] = useState(initialCheckIn);
-  const [checkOut, setCheckOut] = useState(initialCheckOut);
+  const [checkIn, setCheckIn] = useState(initialCheckIn || getLocalDateOffset(0));
+  const [checkOut, setCheckOut] = useState(initialCheckOut || getLocalDateOffset(1));
 
   const validationMessage = useMemo(() => {
     if (!checkIn || !checkOut) {
@@ -37,29 +56,61 @@ export function BookingWidget({
 
   const isValid = validationMessage.length === 0;
 
+  const destinationWithDates = useMemo(() => {
+    const params = new URLSearchParams();
+
+    if (checkIn) {
+      params.set("checkin", checkIn);
+    }
+
+    if (checkOut) {
+      params.set("checkout", checkOut);
+    }
+
+    const query = params.toString();
+
+    return query ? `${destinationHref}?${query}` : destinationHref;
+  }, [checkIn, checkOut, destinationHref]);
+
   return (
     <div className={cn("rounded-[8px] text-slate-900 shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.14)]", variantClasses[variant])}>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="block text-center">
-          <span className="mb-2 block text-[10px] font-bold uppercase tracking-[1px] text-slate-900">
+      {urgencyChips && urgencyChips.length > 0 ? (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          {urgencyChips.map((chip) => (
+            <span
+              key={chip}
+              className={cn(
+                "rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em]",
+                chipClasses[variant],
+              )}
+            >
+              {chip}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="grid grid-cols-2 gap-3">
+        <label className="block text-left">
+          <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-[1px] text-slate-900">
             Check-In
           </span>
           <input
             className="vh-input"
-            min={new Date().toISOString().slice(0, 10)}
+            min={getLocalDateOffset(0)}
             onChange={(event) => setCheckIn(event.target.value)}
             type="date"
             value={checkIn}
           />
         </label>
 
-        <label className="block text-center">
-          <span className="mb-2 block text-[10px] font-bold uppercase tracking-[1px] text-slate-900">
+        <label className="block text-left">
+          <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-[1px] text-slate-900">
             Check-Out
           </span>
           <input
             className="vh-input"
-            min={checkIn || new Date().toISOString().slice(0, 10)}
+            min={checkIn || getLocalDateOffset(1)}
             onChange={(event) => setCheckOut(event.target.value)}
             type="date"
             value={checkOut}
@@ -67,16 +118,15 @@ export function BookingWidget({
         </label>
       </div>
 
-      <p className={cn("mt-3 min-h-5 text-center text-xs", isValid ? "text-emerald-600" : "text-rose-600")}>
-        {isValid ? "Dates look good. Continue to room selection." : validationMessage}
-      </p>
-
       <Button
         aria-disabled={!isValid}
         asChild
-        className={cn("mt-3 flex w-full", !isValid && "pointer-events-none bg-slate-400 shadow-none hover:translate-y-0")}
+        className={cn(
+          "mt-3 flex w-full",
+          !isValid && "pointer-events-none bg-slate-400 shadow-none hover:translate-y-0",
+        )}
       >
-        <Link href={destinationHref}>{submitLabel}</Link>
+        <Link href={destinationWithDates}>{submitLabel}</Link>
       </Button>
     </div>
   );

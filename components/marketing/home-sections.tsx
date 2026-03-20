@@ -9,6 +9,7 @@ import {
   homeSectionOrder,
   type HomeSectionId,
   testimonials,
+  upsellBentoItems,
 } from "@/content/home";
 import { BookingWidget } from "@/components/marketing/booking-widget";
 import { EventCard } from "@/components/marketing/event-card";
@@ -16,6 +17,7 @@ import { RoomCard } from "@/components/marketing/room-card";
 import { SectionHeading } from "@/components/marketing/section-heading";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { FadeIn, FloatCard, Stagger, StaggerItem } from "@/components/shared/motion";
+import { StickerTag } from "@/components/shared/sticker-tag";
 import { StarBorder } from "@/components/shared/star-border";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,17 +36,20 @@ function TrustSection() {
     <SectionFrame>
       <div className="vh-container">
         <SectionHeading subtitle={homePageContent.trustSubtitle} title={homePageContent.trustTitle} />
-        <Stagger className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <Stagger className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
           {assurances.map((item, index) => (
             <StaggerItem key={item.label}>
-              <StarBorder
-                className="w-full"
-                color={item.color}
-                innerClassName="p-4 text-center"
-                style={{ transform: index % 2 === 0 ? "rotate(-1deg)" : "rotate(1deg)" }}
-              >
-                <p className="text-sm font-bold uppercase text-white">{item.label}</p>
-              </StarBorder>
+              <FloatCard whileHover={{ y: -4, rotate: 0, scale: 1.02 }}>
+                <StarBorder
+                  className="w-full"
+                  color={item.color}
+                  innerClassName="p-4 text-center"
+                  speed="7s"
+                  style={{ transform: index % 2 === 0 ? "rotate(-1deg)" : "rotate(1deg)" }}
+                >
+                  <p className="text-sm font-bold uppercase text-white">{item.label}</p>
+                </StarBorder>
+              </FloatCard>
             </StaggerItem>
           ))}
         </Stagger>
@@ -103,6 +108,54 @@ function EventsSection() {
               <EventCard {...event} />
             </StaggerItem>
           ))}
+        </Stagger>
+      </div>
+    </SectionFrame>
+  );
+}
+
+function UpsellSection() {
+  const toneStyles = {
+    pink: { border: "#ff2e62", accent: "#ff2e62", sticker: "#FEF08A", text: "#0f172a" },
+    blue: { border: "#00d1ff", accent: "#00d1ff", sticker: "#00d1ff", text: "#0f172a" },
+    green: { border: "#39ff14", accent: "#39ff14", sticker: "#39ff14", text: "#0f172a" },
+  } as const;
+
+  return (
+    <SectionFrame alt>
+      <div className="vh-container">
+        <SectionHeading subtitle={homePageContent.upsellSubtitle} title={homePageContent.upsellTitle} />
+        <Stagger className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {upsellBentoItems.map((item, index) => {
+            const tone = toneStyles[item.tone];
+
+            return (
+              <StaggerItem key={item.id}>
+                <div
+                  className="group relative rounded-[12px] border-2 bg-[#1e293b] p-8 text-left transition-all hover:border-white"
+                  style={{ borderColor: "#334155", transform: `rotate(${index % 2 === 0 ? -1 : 1}deg)` }}
+                >
+                  <StickerTag
+                    bg={tone.sticker}
+                    className="absolute left-4 top-4 rounded-[3px] border-2 border-[var(--vh-surface-2)] px-3 py-1 text-[10px] font-bold not-italic uppercase"
+                    label={item.kicker}
+                    rotate={index % 2 === 0 ? "rotate-[2deg]" : "rotate-[-2deg]"}
+                    text={tone.text}
+                  />
+
+                  <div
+                    className="mb-6 mt-8 inline-flex rounded-full p-4 transition-transform group-hover:scale-110"
+                    style={{ backgroundColor: `${tone.accent}22`, color: tone.accent }}
+                  >
+                    <span className="h-5 w-5 rounded-full" style={{ backgroundColor: tone.accent }} />
+                  </div>
+
+                  <h3 className="mb-3 text-[24px] font-bold uppercase text-white">{item.title}</h3>
+                  <p className="text-sm leading-6 text-white/80">{item.body}</p>
+                </div>
+              </StaggerItem>
+            );
+          })}
         </Stagger>
       </div>
     </SectionFrame>
@@ -201,7 +254,12 @@ function CtaSection() {
       <div className="vh-container">
         <FadeIn className="mx-auto max-w-[520px] rounded-[12px] border-4 border-white bg-gradient-to-br from-[var(--vh-pink)] via-[var(--vh-pink-soft)] to-[var(--vh-pink)] p-6 shadow-[12px_12px_0px_0px_rgba(255,255,255,0.25)]">
           <SectionHeading subtitle={homePageContent.ctaBody} title={homePageContent.ctaTitle} />
-          <BookingWidget destinationHref="/rooms" submitLabel="Book Now" variant="cta" />
+          <BookingWidget
+            destinationHref="/rooms"
+            submitLabel="Book Now"
+            urgencyChips={homePageContent.ctaUrgencyChips}
+            variant="cta"
+          />
           <p className="mt-4 text-center text-xs font-bold uppercase tracking-[1px] text-white">
             Free Cancellation | No Booking Fees
           </p>
@@ -215,6 +273,7 @@ const homeSectionComponents: Record<HomeSectionId, () => ReactNode> = {
   trust: TrustSection,
   amenities: AmenitiesSection,
   rooms: RoomsSection,
+  upsell: UpsellSection,
   events: EventsSection,
   experience: ExperienceSection,
   energy: EnergySection,

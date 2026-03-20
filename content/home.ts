@@ -5,6 +5,7 @@ export type HomeSectionId =
   | "trust"
   | "amenities"
   | "rooms"
+  | "upsell"
   | "events"
   | "experience"
   | "energy"
@@ -90,6 +91,8 @@ export const homePageContent = {
   amenitiesSubtitle: "everything you need",
   roomsTitle: "Our Rooms",
   roomsSubtitle: "find your corner",
+  upsellTitle: "Build Your Stay",
+  upsellSubtitle: "Smart add-ons for tonight and beyond",
   eventsTitle: "Tonight at Vibe House",
   eventsSubtitle: "next 48 hours",
   experienceTitle: "The Vibe House Experience",
@@ -100,14 +103,64 @@ export const homePageContent = {
   reviewsSubtitle: "what travelers say",
   ctaTitle: "Your Adventure Starts Here",
   ctaBody: "Join the community. Book your stay.",
+  heroUrgencyChips: [
+    "Starting at 599 tonight",
+    "Only 07 beds left",
+    "Book now for 12% off",
+  ],
+  ctaUrgencyChips: [
+    "No booking fees",
+    "Limited weekend inventory",
+    "Flexible cancellation",
+  ],
   homeRooms: rooms,
   homeEvents: upcomingEvents,
 };
+
+export const upsellBentoItems = [
+  {
+    id: "late-checkout",
+    title: "Late Checkout Shield",
+    body: "Hold your bunk until 4 PM with one tap during peak weekends.",
+    kicker: "Room Control",
+    tone: "blue" as const,
+  },
+  {
+    id: "laundry-drop",
+    title: "Laundry Drop",
+    body: "Same-day wash-and-fold pickup and return from reception.",
+    kicker: "Utility",
+    tone: "green" as const,
+  },
+  {
+    id: "city-crawl",
+    title: "City Crawl Pass",
+    body: "Skip queue access for tonight's partner venues and hosted route.",
+    kicker: "Social",
+    tone: "pink" as const,
+    colSpan: "col-span-2 md:col-span-2",
+  },
+  {
+    id: "locker-plus",
+    title: "Locker Plus",
+    body: "Oversize secure storage with priority support from front desk.",
+    kicker: "Security",
+    tone: "blue" as const,
+  },
+  {
+    id: "breakfast",
+    title: "Breakfast Combo",
+    body: "Healthy breakfast pack with coffee added to your folio.",
+    kicker: "Food",
+    tone: "green" as const,
+  },
+];
 
 export const homeSectionOrder: HomeSectionId[] = [
   "trust",
   "amenities",
   "rooms",
+  "upsell",
   "events",
   "experience",
   "energy",

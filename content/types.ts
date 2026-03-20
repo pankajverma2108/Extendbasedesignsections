@@ -49,4 +49,5 @@ export type BookingWidgetProps = {
   initialCheckOut?: string;
   destinationHref?: string;
   submitLabel?: string;
+  urgencyChips?: string[];
 };
