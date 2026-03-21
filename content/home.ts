@@ -2,7 +2,6 @@ import { rooms } from "@/content/rooms";
 import { upcomingEvents } from "@/content/events";
 
 export type HomeSectionId =
-  | "trust"
   | "amenities"
   | "rooms"
   | "upsell"
@@ -29,14 +28,20 @@ export const assurances = [
 ];
 
 export const amenities = [
-  { label: "Fast Wi-Fi", color: "#00d1ff" },
-  { label: "Hot Showers", color: "#ff2e62" },
-  { label: "Co-working", color: "#facc15" },
-  { label: "Laundry", color: "#39ff14" },
-  { label: "AC", color: "#00d1ff" },
-  { label: "Kitchen", color: "#ff2e62" },
-  { label: "Central Location", color: "#facc15" },
-  { label: "Lockers", color: "#39ff14" },
+  { label: "Fast Wi-Fi", color: "#00d1ff", icon: "wifi", tilt: "-rotate-2" },
+  { label: "Hot Showers", color: "#ff2e62", icon: "droplets", tilt: "rotate-0" },
+  { label: "Cafe", color: "#facc15", icon: "coffee", tilt: "rotate-2" },
+  { label: "Laundry", color: "#39ff14", icon: "shirt", tilt: "-rotate-2" },
+  { label: "AC", color: "#00d1ff", icon: "snowflake", tilt: "rotate-0" },
+  { label: "Kitchen", color: "#ff2e62", icon: "utensils", tilt: "rotate-2" },
+  { label: "Central Location", color: "#facc15", icon: "map-pin", tilt: "-rotate-2" },
+  { label: "Lockers", color: "#39ff14", icon: "lock", tilt: "rotate-0" },
+  { label: "Clean Rooms", color: "#00d1ff", icon: "sparkles", tilt: "rotate-2" },
+  { label: "Safe & Secure", color: "#ff2e62", icon: "shield-check", tilt: "-rotate-2" },
+  { label: "AC Dorms", color: "#39ff14", icon: "bed-double", tilt: "rotate-2" },
+  { label: "24/7 Reception", color: "#facc15", icon: "clock-3", tilt: "rotate-0" },
+  { label: "Secure Lockers", color: "#ff2e62", icon: "lock-keyhole", tilt: "-rotate-2" },
+  { label: "7-Day Cancel", color: "#39ff14", icon: "calendar-check", tilt: "rotate-2" },
 ];
 
 export const experienceCards = [
@@ -89,8 +94,10 @@ export const homePageContent = {
   trustSubtitle: "your safety is our priority",
   amenitiesTitle: "Amenities",
   amenitiesSubtitle: "everything you need",
+  amenitiesTagline: "Good vibes, hot showers, solid Wi-Fi, and zero nonsense.",
   roomsTitle: "Our Rooms",
   roomsSubtitle: "find your corner",
+  roomsTagline: "Pick your perch, drop your bag, and settle into the chaos nicely.",
   upsellTitle: "Build Your Stay",
   upsellSubtitle: "Smart add-ons for tonight and beyond",
   eventsTitle: "Tonight at Vibe House",
@@ -101,6 +108,7 @@ export const homePageContent = {
   energySubtitle: "see what is happening",
   reviewsTitle: "Guest Stories",
   reviewsSubtitle: "what travelers say",
+  reviewsTagline: "Receipts from travelers who fully got the assignment.",
   ctaTitle: "Your Adventure Starts Here",
   ctaBody: "Join the community. Book your stay.",
   heroUrgencyChips: [
@@ -157,7 +165,6 @@ export const upsellBentoItems = [
 ];
 
 export const homeSectionOrder: HomeSectionId[] = [
-  "trust",
   "amenities",
   "rooms",
   "upsell",

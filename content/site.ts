@@ -2,7 +2,7 @@ import type { NavItem } from "@/content/types";
 
 export const navItems: NavItem[] = [
   { label: "Home", href: "/" },
-  { label: "Rooms", href: "/rooms" },
+  { label: "Property", href: "/property" },
   { label: "Events", href: "/events" },
   { label: "About", href: "/about" },
 ];
@@ -27,8 +27,12 @@ export const siteMeta = {
     phoneHref: "tel:+919876543210",
     email: "hello@vibehouse.com",
     emailHref: "mailto:hello@vibehouse.com",
-    addressLines: ["123 Backpacker Street", "Mumbai 400001"],
+    addressLines: [
+      "Vibe House Koramangala",
+      "13/14, Bank Officer Housing Co-operative Society",
+      "Bengaluru Urban, Karnataka, India",
+    ],
     instagramHref: "https://instagram.com/vibehouse",
-    mapsHref: "https://maps.google.com",
+    mapsHref: "https://maps.app.goo.gl/jJKJUUKzdmFJGbCG6?g_st=aw",
   },
 };

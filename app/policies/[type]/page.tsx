@@ -2,9 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PolicyToc } from "@/components/marketing/policy-toc";
+import { SectionHeading } from "@/components/marketing/section-heading";
 import { FadeIn } from "@/components/shared/motion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { policies, policySlugs } from "@/content/policies";
 import { footerLinks, siteMeta } from "@/content/site";
 
@@ -26,62 +27,67 @@ export default async function PolicyPage({ params }: PolicyPageProps) {
 
   return (
     <>
-      <section className="border-b-2 border-[var(--vh-border)] bg-gradient-to-br from-[var(--vh-surface)] to-[var(--vh-surface-2)] px-6 py-12">
+      <section className="vh-section pt-28 md:pt-32">
         <div className="vh-container text-center">
-          <h1 className="text-5xl font-bold uppercase tracking-[-2.4px] text-white">
-            {currentPolicy.title}
-          </h1>
-          <p className="mt-4 text-sm text-white/60">Last Updated: {currentPolicy.lastUpdated}</p>
-        </div>
-      </section>
-
-      <section className="vh-section">
-        <div className="vh-container grid grid-cols-1 gap-8 lg:grid-cols-4">
-          <PolicyToc sections={currentPolicy.sections} />
-
-          <div className="lg:col-span-3">
-            <Card className="p-8 md:p-12">
-              <div className="max-w-[750px] space-y-12">
-                {currentPolicy.sections.map((section) => (
-                  <FadeIn key={section.id} className="scroll-mt-24" id={section.id}>
-                    <h2 className="text-3xl font-bold uppercase text-white">{section.title}</h2>
-                    <div className="mt-6 space-y-4">
-                      {section.content.map((paragraph) => (
-                        <p key={paragraph} className="text-base leading-7 text-white/90">
-                          {paragraph}
-                        </p>
-                      ))}
-                    </div>
-                  </FadeIn>
-                ))}
-              </div>
-            </Card>
-          </div>
+          <FadeIn>
+            <p className="vh-kicker inline-flex rounded-full border border-white/15 bg-white/6 px-4 py-1.5 text-white">
+              Policies
+            </p>
+            <h1 className="mt-5 text-5xl font-bold uppercase tracking-[-0.04em] text-white md:text-7xl">
+              {currentPolicy.title}
+            </h1>
+            <p className="mt-4 text-sm text-white/60">Last Updated: {currentPolicy.lastUpdated}</p>
+          </FadeIn>
         </div>
       </section>
 
       <section className="vh-section vh-section-alt">
+        <div className="vh-container grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <div>
+            <SectionHeading align="left" title="Policies" />
+            <Accordion className="mt-6 space-y-4" defaultValue={[currentPolicy.sections[0]?.id]} type="multiple">
+              {currentPolicy.sections.map((section) => (
+                <AccordionItem
+                  key={section.id}
+                  className="rounded-lg border border-white/10 bg-white/5 px-4"
+                  id={section.id}
+                  value={section.id}
+                >
+                  <AccordionTrigger className="text-base">{section.title}</AccordionTrigger>
+                  <AccordionContent className="space-y-3 text-sm leading-7">
+                    {section.content.map((paragraph) => (
+                      <p key={paragraph}>- {paragraph}</p>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <PolicyToc sections={currentPolicy.sections} />
+          </div>
+        </div>
+      </section>
+
+      <section className="vh-section">
         <div className="vh-container max-w-screen-md">
-          <div className="rounded-[12px] border-4 border-white bg-gradient-to-br from-[var(--vh-pink)] to-[var(--vh-pink-soft)] p-8 text-center shadow-[8px_8px_0px_0px_rgba(255,255,255,0.18)]">
-            <h3 className="text-2xl font-bold uppercase text-white">Have Questions About Our Policies?</h3>
-            <p className="mt-3 text-base italic text-white">The Vibe Crew is here to help.</p>
+          <div className="text-center">
+            <SectionHeading subtitle="Need help understanding a booking condition?" title="Have Questions?" />
             <div className="mt-6 flex flex-col justify-center gap-4 sm:flex-row">
               <Button asChild size="lg" variant="secondary">
                 <a href={siteMeta.contact.emailHref}>Email Us</a>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <a href={`https://wa.me/919876543210`}>WhatsApp</a>
+                <a href="https://wa.me/919876543210">WhatsApp</a>
               </Button>
             </div>
-            <div className="mt-8 border-t-2 border-white/25 pt-6">
-              <p className="mb-3 text-xs font-bold uppercase tracking-[1px] text-white/80">Other Policies</p>
-              <div className="flex flex-wrap justify-center gap-3">
-                {footerLinks.legal.map((item) => (
-                  <Button asChild key={item.href} size="sm" variant="outline">
-                    <Link href={item.href}>{item.label}</Link>
-                  </Button>
-                ))}
-              </div>
+            <div className="mt-10 flex flex-wrap justify-center gap-3">
+              {footerLinks.legal.map((item) => (
+                <Button asChild key={item.href} size="sm" variant="outline">
+                  <Link href={item.href}>{item.label}</Link>
+                </Button>
+              ))}
             </div>
           </div>
         </div>

@@ -32,7 +32,7 @@ function getLocalDateOffset(days: number): string {
 }
 
 export function BookingWidget({
-  destinationHref = "/rooms",
+  destinationHref = "/property",
   initialCheckIn = "",
   initialCheckOut = "",
   submitLabel = "Check Dates",

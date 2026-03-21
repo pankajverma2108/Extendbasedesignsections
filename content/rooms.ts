@@ -14,7 +14,7 @@ export const rooms: RoomCardProps[] = [
       "USB charging ports",
       "Individual lockers",
     ],
-    href: "/rooms",
+    href: "/property",
   },
   {
     title: "4-Bed Female Dorm",
@@ -29,7 +29,7 @@ export const rooms: RoomCardProps[] = [
       "Reading lights",
       "Privacy curtains",
     ],
-    href: "/rooms",
+    href: "/property",
   },
   {
     title: "Private Room",
@@ -44,9 +44,21 @@ export const rooms: RoomCardProps[] = [
       "Work desk",
       "Mini-fridge",
     ],
-    href: "/rooms",
+    href: "/property",
   },
 ];
+
+export const propertyHero = {
+  eyebrow: "Property",
+  title: "Vibe House",
+  location: "Koramangala",
+  blurb:
+    "A social stay with clean rooms, practical shared spaces, and an easy Koramangala location for short trips, work stays, and longer city living.",
+  addressName: "Vibe House Koramangala",
+  address:
+    "13/14, Bank Officer Housing Co-operative Society, Bengaluru Urban, Karnataka, India",
+  mapsHref: "https://maps.app.goo.gl/jJKJUUKzdmFJGbCG6?g_st=aw",
+};
 
 export const propertyGallery = [
   {
@@ -55,75 +67,53 @@ export const propertyGallery = [
   },
   {
     src: "https://images.unsplash.com/photo-1681747971522-2d7a04c78321?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1600",
-    alt: "Guests in social common area",
+    alt: "Shared social seating area",
   },
   {
     src: "https://images.unsplash.com/photo-1641352848574-9dbb6a244a32?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1600",
-    alt: "Rooftop lounge with city view",
+    alt: "Rooftop city-facing lounge",
   },
   {
     src: "https://images.unsplash.com/photo-1721522281545-fad32dd5107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1600",
-    alt: "Private room at Vibe House",
+    alt: "Private room interior",
   },
 ];
 
 export const propertyOverview = [
-  "Vibe House is a social co-living hostel for modern travelers who want connection, safety, and comfort in one place.",
-  "Our properties combine clean hotel-grade standards with a high-energy social culture, designed so solo travelers can arrive alone and still feel at home.",
-  "You get curated evenings, mixed-gender community spaces, clear house rules, and privacy-focused dorm design without losing the fun hostel vibe.",
+  "Vibe House Koramangala brings together straightforward comfort and a social, city-friendly atmosphere for guests who want more than a plain overnight stop.",
+  "The property is set up to feel calm when you need rest and connected when you want common spaces, with room categories that work for solo guests, friends, and flexible stays.",
+  "Its location makes it easy to step out for coffee, work meetings, food runs, and evenings in the neighborhood while still returning to a stay that feels organized and welcoming.",
 ];
 
 export const propertyAmenities = [
-  { icon: "wifi", label: "Fast Wi-Fi" },
-  { icon: "snowflake", label: "AC Rooms" },
-  { icon: "shield", label: "Secure Lockers" },
-  { icon: "bed", label: "Fresh Linen" },
-  { icon: "sparkles", label: "Daily Housekeeping" },
-  { icon: "utensils", label: "Cafe & Kitchen" },
-  { icon: "music", label: "Social Evenings" },
-  { icon: "briefcase", label: "Work Nooks" },
-  { icon: "camera", label: "CCTV Common Areas" },
-  { icon: "clock", label: "24/7 Reception" },
-  { icon: "map-pin", label: "Central Location" },
-  { icon: "users", label: "Community Events" },
-];
-
-export const socialSpaces = [
-  {
-    title: "Lounge Arena",
-    blurb: "Games, playlists, and easy introductions every evening.",
-    image:
-      "https://images.unsplash.com/photo-1710144994421-a41e387e71c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
-  },
-  {
-    title: "Rooftop Sessions",
-    blurb: "Open-air hangouts, city views, and weekend mixers.",
-    image:
-      "https://images.unsplash.com/photo-1647649644192-af6183269fa4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
-  },
-  {
-    title: "Cafe Corner",
-    blurb: "Coffee, quick bites, and remote-work-friendly seating.",
-    image:
-      "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
-  },
-];
-
-export const nearbyAttractions = [
-  { name: "Marine Drive", travel: "14 min drive", type: "Sunset Spot" },
-  { name: "Colaba Causeway", travel: "18 min drive", type: "Shopping" },
-  { name: "Gateway of India", travel: "20 min drive", type: "Landmark" },
-  { name: "Kala Ghoda District", travel: "16 min drive", type: "Art & Cafes" },
-  { name: "Bandra Fort", travel: "24 min drive", type: "Viewpoint" },
-  { name: "Airport Metro Link", travel: "12 min drive", type: "Transit" },
+  { icon: "snowflake", label: "Air conditioner" },
+  { icon: "camera", label: "CCTV" },
+  { icon: "building", label: "Elevator" },
+  { icon: "sparkles", label: "Housekeeping" },
+  { icon: "car", label: "Parking" },
+  { icon: "paw-print", label: "Pet friendly" },
+  { icon: "waves", label: "Pool" },
+  { icon: "battery-charging", label: "Power backup" },
+  { icon: "smartphone", label: "Smart room" },
+  { icon: "glass-water", label: "Water dispenser" },
+  { icon: "wifi", label: "Wi-Fi" },
+  { icon: "briefcase", label: "Workation" },
 ];
 
 export const locationMap = {
-  title: "Vibe House Mumbai Central",
-  address: "123 Backpacker Street, Mumbai 400001",
+  title: "Vibe House Koramangala",
+  address:
+    "13/14, Bank Officer Housing Co-operative Society, Bengaluru Urban, Karnataka, India",
   embedUrl:
-    "https://www.google.com/maps?q=Mumbai+Central&output=embed",
+    "https://www.google.com/maps?q=13%2F14%2C+Bank+Officer+Housing+Co-operative+Society%2C+Bengaluru+Urban%2C+Karnataka%2C+India&output=embed",
 };
+
+export const nearbyAttractions = [
+  { name: "Forum South Bengaluru", travel: "8 min drive", type: "Shopping" },
+  { name: "Sony World Signal", travel: "7 min drive", type: "Transit" },
+  { name: "St. John's Cafes", travel: "6 min drive", type: "Food & Coffee" },
+  { name: "Lalbagh Botanical Garden", travel: "18 min drive", type: "City Escape" },
+];
 
 export const roomCategories = [
   {
@@ -164,57 +154,95 @@ export const roomCategories = [
   },
 ];
 
-export const roomListingLegend = [
-  "AC",
-  "Locker",
-  "Fresh linen",
-  "Daily housekeeping",
-  "CCTV in common areas",
-  "24/7 support",
-];
+export const bookingSummary = {
+  title: "Summary",
+  note: "Select dates to review category availability and continue with your preferred stay option.",
+  highlights: [
+    "Check-in at 1:00 PM",
+    "Check-out at 10:00 AM",
+    "Direct support from the property team",
+  ],
+  policiesNote:
+    "By continuing, you confirm that all guests meet the property's stay requirements and agree to the booking and guideline policies.",
+};
 
-export const importantInfo = [
-  "Check-in: 2:00 PM onwards | Check-out: 11:00 AM",
-  "Valid government photo ID is mandatory for all guests",
-  "Outside alcohol and illegal substances are not allowed",
-  "Bed-level selection is not available on PLP; final allocation is handled after category selection",
-  "For group stays, contact support before booking to align inventory",
-];
-
-export const includedAssurances = [
-  { label: "Free Fast Wi-Fi", color: "#00d1ff" },
-  { label: "AC in All Rooms", color: "#39ff14" },
-  { label: "Secure Lockers", color: "#ff2e62" },
-  { label: "Fresh Linen Daily", color: "#facc15" },
-];
+export const propertyGuidelines = {
+  checkIn: "1:00 PM",
+  checkOut: "10:00 AM",
+  summary: [
+    "All guests must carry a government-issued photo ID during check-in.",
+    "Local ID acceptance is subject to property policy and management discretion.",
+    "Outside visitors are not allowed beyond designated guest areas without approval.",
+    "Cancellation and modification windows depend on the selected booking type.",
+    "No-shows and early departures may be treated as fully chargeable stays.",
+  ],
+  sections: [
+    {
+      title: "Check In And Check Out",
+      content: [
+        "Check-in begins at 1:00 PM and check-out is by 10:00 AM.",
+        "Early check-in is subject to same-day availability.",
+        "Valid identification is required at arrival.",
+      ],
+    },
+    {
+      title: "Reservation Policy",
+      content: [
+        "Rates and category availability may change until the reservation is confirmed.",
+        "Room allocation is based on booked category rather than exact room number selection.",
+        "Advance payment requirements may vary by booking type.",
+      ],
+    },
+    {
+      title: "Stay Policy",
+      content: [
+        "Please respect noise, smoking, and visitor rules across the property.",
+        "Guests may be charged for serious policy violations or property damage.",
+        "Operational rules may be updated for guest comfort and safety.",
+      ],
+    },
+  ],
+};
 
 export const roomFaqs = [
   {
-    question: "What time is check-in?",
+    question: "Can I get an early check-in?",
     answer:
-      "Check-in is from 2:00 PM onwards. Early check-in may be available upon request subject to availability.",
+      "Standard check-in begins at 1:00 PM. Early check-in may be possible on the day of arrival if the room category is ready sooner.",
   },
   {
-    question: "Do I need to bring a padlock?",
+    question: "Is there food available in the property?",
     answer:
-      "No. We provide secure lockers with built-in locks, and reception can help with any extras you need.",
+      "Koramangala has plenty of nearby cafes, breakfast spots, and delivery options, and the team can recommend easy nearby choices.",
   },
   {
-    question: "Are towels and linens provided?",
+    question: "Are guests or outsiders allowed?",
     answer:
-      "Yes. Fresh linen and towels are provided for all guests, with daily housekeeping support.",
+      "Visitor access is controlled for guest safety and depends on the property's operational rules. Please confirm directly with the front desk.",
   },
   {
-    question: "Is breakfast included?",
+    question: "Are there discounts for long stays?",
     answer:
-      "Breakfast is not included in the room rate, but the cafe offers affordable breakfast options on site.",
+      "Extended-stay pricing can often be discussed directly with the team before booking, especially for multi-week stays.",
   },
-];
-
-export const houseRules = [
-  "Quiet hours are 11 PM to 7 AM in dorms.",
-  "Locker usage is required for valuables.",
-  "Respect the vibe with a zero-tolerance anti-harassment policy.",
-  "Outside guests are not permitted in dorms without staff approval.",
-  "Keep common areas tidy for everyone.",
+  {
+    question: "Is Wi-Fi available?",
+    answer:
+      "Yes. Wi-Fi is available across guest areas and common spaces.",
+  },
+  {
+    question: "Do you have lockers for valuables?",
+    answer:
+      "Selected room categories include secure storage options, and the team can help clarify what comes with each category.",
+  },
+  {
+    question: "Can I leave my luggage after checkout until evening?",
+    answer:
+      "Short-term luggage assistance may be possible depending on same-day operations. It is best to confirm this with the property team.",
+  },
+  {
+    question: "Who do I contact if I have a query?",
+    answer:
+      "You can contact Vibe House directly using the listed phone number or email before arrival.",
+  },
 ];

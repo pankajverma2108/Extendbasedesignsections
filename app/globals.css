@@ -65,6 +65,12 @@
   --vh-ice: #f3eee6;
   --vh-lime: #79f72c;
   --vh-amber: #ffcc66;
+  --vh-panel: rgba(255, 255, 255, 0.05);
+  --vh-panel-soft: rgba(255, 255, 255, 0.03);
+  --vh-panel-strong: rgba(15, 16, 26, 0.92);
+  --vh-chip: rgba(255, 255, 255, 0.06);
+  --vh-shadow: 0px 20px 25px -5px rgba(0, 0, 0, 0.18);
+  --vh-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.28);
 }
 
 html {
@@ -130,6 +136,27 @@ select {
     @apply rounded-[12px] border-2 border-[var(--vh-border)] bg-[var(--vh-surface)] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.18)];
   }
 
+  .vh-panel {
+    @apply rounded-[24px] border border-white/12;
+    background: var(--vh-panel);
+    box-shadow: var(--vh-shadow);
+  }
+
+  .vh-panel-soft {
+    @apply rounded-[20px] border border-white/10;
+    background: var(--vh-panel-soft);
+  }
+
+  .vh-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-white/72;
+    background: var(--vh-chip);
+  }
+
+  .vh-icon-pill {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/78;
+    background: var(--vh-chip);
+  }
+
   .vh-outline-button {
     @apply inline-flex items-center justify-center rounded-[4px] border-2 border-white/30 bg-white/10 px-4 py-2 text-sm font-bold uppercase text-white;
   }
@@ -170,5 +197,81 @@ select {
     font-family: var(--font-encode);
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1, "cv11" 1;
+  }
+
+  .animate-accordion-down {
+    animation: vh-accordion-down 280ms ease-out;
+  }
+
+  .animate-accordion-up {
+    animation: vh-accordion-up 220ms ease-out;
+  }
+
+  .animate-vh-fade-in {
+    animation: vh-fade-in 180ms ease-out;
+  }
+
+  .animate-vh-fade-out {
+    animation: vh-fade-out 160ms ease-in;
+  }
+
+  .animate-vh-scale-in {
+    animation: vh-scale-in 180ms ease-out;
+  }
+}
+
+@keyframes vh-accordion-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+
+  to {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes vh-accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+  }
+
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes vh-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes vh-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vh-scale-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

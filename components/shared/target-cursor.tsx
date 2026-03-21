@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 
 export function TargetCursor() {
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches,
+  );
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const media = window.matchMedia("(pointer: fine)");
-    setEnabled(media.matches);
 
     const onMouseMove = (event: MouseEvent) => {
       setPosition({ x: event.clientX, y: event.clientY });

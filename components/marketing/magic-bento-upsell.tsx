@@ -81,7 +81,7 @@ export function MagicBentoUpsell({ title, subtitle, items }: MagicBentoUpsellPro
                 </p>
               </div>
               <Button asChild className="w-full">
-                <Link href="/rooms">Add to Booking</Link>
+                <Link href="/property">Add to Booking</Link>
               </Button>
             </div>
           </ElectricBorder>

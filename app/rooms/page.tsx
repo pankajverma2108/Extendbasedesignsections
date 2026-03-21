@@ -1,4 +1,4 @@
-import { RoomsPlp } from "@/components/marketing/rooms-plp";
+import { redirect } from "next/navigation";
 
 type RoomsPageProps = {
   searchParams?: Promise<{
@@ -9,11 +9,15 @@ type RoomsPageProps = {
 
 export default async function RoomsPage({ searchParams }: RoomsPageProps) {
   const params = await searchParams;
+  const query = new URLSearchParams();
 
-  return (
-    <RoomsPlp
-      initialCheckIn={params?.checkin}
-      initialCheckOut={params?.checkout}
-    />
-  );
+  if (params?.checkin) {
+    query.set("checkin", params.checkin);
+  }
+
+  if (params?.checkout) {
+    query.set("checkout", params.checkout);
+  }
+
+  redirect(query.toString() ? `/property?${query.toString()}` : "/property");
 }

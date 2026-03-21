@@ -1,8 +1,23 @@
 import type { ReactNode } from "react";
+import {
+  BedDouble,
+  CalendarCheck,
+  Clock3,
+  Coffee,
+  Droplets,
+  Lock,
+  LockKeyhole,
+  MapPin,
+  ShieldCheck,
+  Shirt,
+  Snowflake,
+  Sparkles,
+  UtensilsCrossed,
+  Wifi,
+} from "lucide-react";
 
 import {
   amenities,
-  assurances,
   experienceCards,
   guestEnergyImages,
   homePageContent,
@@ -18,7 +33,6 @@ import { SectionHeading } from "@/components/marketing/section-heading";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { FadeIn, FloatCard, Stagger, StaggerItem } from "@/components/shared/motion";
 import { StickerTag } from "@/components/shared/sticker-tag";
-import { StarBorder } from "@/components/shared/star-border";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -31,49 +45,49 @@ function SectionFrame({ alt = false, children }: SectionFrameProps) {
   return <section className={alt ? "vh-section vh-section-alt" : "vh-section"}>{children}</section>;
 }
 
-function TrustSection() {
-  return (
-    <SectionFrame>
-      <div className="vh-container">
-        <SectionHeading subtitle={homePageContent.trustSubtitle} title={homePageContent.trustTitle} />
-        <Stagger className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-          {assurances.map((item, index) => (
-            <StaggerItem key={item.label}>
-              <FloatCard whileHover={{ y: -4, rotate: 0, scale: 1.02 }}>
-                <StarBorder
-                  className="w-full"
-                  color={item.color}
-                  innerClassName="p-4 text-center"
-                  speed="7s"
-                  style={{ transform: index % 2 === 0 ? "rotate(-1deg)" : "rotate(1deg)" }}
-                >
-                  <p className="text-sm font-bold uppercase text-white">{item.label}</p>
-                </StarBorder>
-              </FloatCard>
-            </StaggerItem>
-          ))}
-        </Stagger>
-      </div>
-    </SectionFrame>
-  );
-}
+const amenityIconMap = {
+  wifi: Wifi,
+  droplets: Droplets,
+  coffee: Coffee,
+  shirt: Shirt,
+  snowflake: Snowflake,
+  utensils: UtensilsCrossed,
+  "map-pin": MapPin,
+  lock: Lock,
+  sparkles: Sparkles,
+  "shield-check": ShieldCheck,
+  "bed-double": BedDouble,
+  "clock-3": Clock3,
+  "lock-keyhole": LockKeyhole,
+  "calendar-check": CalendarCheck,
+} as const;
 
 function AmenitiesSection() {
   return (
     <SectionFrame alt>
       <div className="vh-container">
-        <SectionHeading subtitle={homePageContent.amenitiesSubtitle} title={homePageContent.amenitiesTitle} />
-        <Stagger className="flex flex-wrap justify-center gap-3">
-          {amenities.map((item, index) => (
+        <SectionHeading
+          subtitle={homePageContent.amenitiesSubtitle}
+          tagline={homePageContent.amenitiesTagline}
+          title={homePageContent.amenitiesTitle}
+        />
+        <Stagger className="mx-auto flex max-w-[980px] flex-wrap justify-center gap-3">
+          {amenities.map((item) => {
+            const Icon = amenityIconMap[item.icon as keyof typeof amenityIconMap] ?? Sparkles;
+
+            return (
             <StaggerItem key={item.label}>
               <FloatCard
-                className="rounded-[12px] border-2 border-white/30 bg-white/10 px-4 py-3 text-sm font-bold uppercase text-white hover:border-white"
-                style={{ color: item.color, rotate: `${(index % 3) - 1}deg` }}
+                className={`inline-flex items-center gap-3 rounded-[12px] border border-white/30 bg-white/10 px-5 py-3 text-sm font-bold uppercase text-white shadow-[0px_10px_20px_rgba(0,0,0,0.16)] backdrop-blur-sm hover:border-white ${item.tilt ?? ""}`}
               >
+                <span className="flex h-7 w-7 items-center justify-center" style={{ color: item.color }}>
+                  <Icon className="h-5 w-5" />
+                </span>
                 <span className="text-white">{item.label}</span>
               </FloatCard>
             </StaggerItem>
-          ))}
+            );
+          })}
         </Stagger>
       </div>
     </SectionFrame>
@@ -84,7 +98,7 @@ function RoomsSection() {
   return (
     <SectionFrame>
       <div className="vh-container">
-        <SectionHeading subtitle={homePageContent.roomsSubtitle} title={homePageContent.roomsTitle} />
+        <SectionHeading subtitle={homePageContent.roomsSubtitle} tagline={homePageContent.roomsTagline} title={homePageContent.roomsTitle} />
         <Stagger className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {homePageContent.homeRooms.map((room) => (
             <StaggerItem key={room.title}>
@@ -227,7 +241,7 @@ function ReviewsSection() {
   return (
     <SectionFrame>
       <div className="vh-container">
-        <SectionHeading subtitle={homePageContent.reviewsSubtitle} title={homePageContent.reviewsTitle} />
+        <SectionHeading subtitle={homePageContent.reviewsSubtitle} tagline={homePageContent.reviewsTagline} title={homePageContent.reviewsTitle} />
         <Stagger className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {testimonials.map((review, index) => (
             <StaggerItem key={review.name}>
@@ -236,7 +250,9 @@ function ReviewsSection() {
                   <CardContent className="p-5">
                     <p className="text-lg font-bold text-white">{review.name}</p>
                     <p className="text-xs text-white/60">{review.country}</p>
-                    <p className="mt-4 text-sm italic leading-6 text-white/85">"{review.review}"</p>
+                    <p className="mt-4 text-sm italic leading-6 text-white/85">
+                      &ldquo;{review.review}&rdquo;
+                    </p>
                   </CardContent>
                 </Card>
               </FloatCard>
@@ -255,7 +271,7 @@ function CtaSection() {
         <FadeIn className="mx-auto max-w-[520px] rounded-[12px] border-4 border-white bg-gradient-to-br from-[var(--vh-pink)] via-[var(--vh-pink-soft)] to-[var(--vh-pink)] p-6 shadow-[12px_12px_0px_0px_rgba(255,255,255,0.25)]">
           <SectionHeading subtitle={homePageContent.ctaBody} title={homePageContent.ctaTitle} />
           <BookingWidget
-            destinationHref="/rooms"
+            destinationHref="/property"
             submitLabel="Book Now"
             urgencyChips={homePageContent.ctaUrgencyChips}
             variant="cta"
@@ -270,7 +286,6 @@ function CtaSection() {
 }
 
 const homeSectionComponents: Record<HomeSectionId, () => ReactNode> = {
-  trust: TrustSection,
   amenities: AmenitiesSection,
   rooms: RoomsSection,
   upsell: UpsellSection,

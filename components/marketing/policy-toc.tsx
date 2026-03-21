@@ -10,7 +10,7 @@ export function PolicyToc({ sections }: PolicyTocProps) {
   return (
     <>
       <div className="hidden lg:block">
-        <div className="sticky top-24 rounded-[8px] border-2 border-[var(--vh-border)] bg-[var(--vh-surface)] p-6">
+        <div className="border-l border-white/12 pl-5">
           <h3 className="mb-4 text-sm font-bold uppercase tracking-[1px] text-white">
             Table of Contents
           </h3>
@@ -18,7 +18,7 @@ export function PolicyToc({ sections }: PolicyTocProps) {
             {sections.map((section) => (
               <a
                 key={section.id}
-                className="block rounded-[4px] px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white"
+                className="block py-1 text-sm text-white/70 hover:text-white"
                 href={`#${section.id}`}
               >
                 {section.title}
