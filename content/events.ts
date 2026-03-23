@@ -39,6 +39,12 @@ export const upcomingEvents: EventCardProps[] = [
   },
 ];
 
+export const eventPageContent = {
+  upcomingSubtitle: "Packed with possibilities",
+  weeklySubtitle: "Your weekly highlight reel",
+  pastSubtitle: "Moments to remember",
+};
+
 export const weeklyLineup = [
   { day: "Monday", event: "Movie Night", time: "8:00 PM", color: "#ff2e62" },
   { day: "Tuesday", event: "Beer Pong Tournament", time: "9:00 PM", color: "#facc15" },

@@ -1,10 +1,18 @@
 @import "tailwindcss";
+@import "../src/styles/theme.css";
 @source "../app/**/*.{ts,tsx}";
 @source "../components/**/*.{ts,tsx}";
 @source "../content/**/*.{ts,tsx}";
 @source "../lib/**/*.{ts,tsx}";
 @source "../src/**/*.{ts,tsx}";
-@import "../src/styles/theme.css";
+
+@font-face {
+  font-family: "Bebas Neue";
+  src: url("/fonts/Bebas_Neue/BebasNeue-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 @font-face {
   font-family: "Acme";
@@ -51,6 +59,7 @@
   --font-sora: "Nunito", "Segoe UI", sans-serif;
   --font-encode: "Varela Round", "Segoe UI", sans-serif;
   --font-suez: "Suez One", "Trebuchet MS", sans-serif;
+  --font-bebas: "Bebas Neue", "Trebuchet MS", sans-serif;
   --vh-bg: #160a0f;
   --vh-bg-soft: #2a1220;
   --vh-surface: #211122;

@@ -4,7 +4,7 @@ import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { FadeIn, Stagger, StaggerItem } from "@/components/shared/motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { pastEventImages, upcomingEvents, weeklyLineup } from "@/content/events";
+import { eventPageContent, pastEventImages, upcomingEvents, weeklyLineup } from "@/content/events";
 
 export default function EventsPage() {
   return (
@@ -35,7 +35,7 @@ export default function EventsPage() {
 
       <section className="vh-section">
         <div className="vh-container">
-          <SectionHeading align="left" subtitle="happening next 7 days" title="This Week" />
+          <SectionHeading align="left" subtitle={eventPageContent.upcomingSubtitle} title="This Week" />
           <Stagger className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {upcomingEvents.map((event) => (
               <StaggerItem key={event.title}>
@@ -48,11 +48,18 @@ export default function EventsPage() {
 
       <section className="vh-section vh-section-alt">
         <div className="vh-container">
-          <SectionHeading subtitle="your weekly dose of good vibes" title="Standard Weekly Lineup" />
-          <Stagger className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {weeklyLineup.map((item) => (
-              <StaggerItem key={item.day}>
-                <Card className="p-6">
+          <SectionHeading subtitle={eventPageContent.weeklySubtitle} title="Standard Weekly Lineup" />
+          <Stagger className="grid grid-cols-2 gap-6 md:grid-cols-2 lg:grid-cols-6">
+            {weeklyLineup.map((item, index) => (
+              <StaggerItem
+                key={item.day}
+                className={
+                  index === weeklyLineup.length - 1
+                    ? "col-span-2 flex lg:col-span-2 lg:col-start-3"
+                    : "lg:col-span-2"
+                }
+              >
+                <Card className={index === weeklyLineup.length - 1 ? "w-full p-6 md:w-auto md:mx-auto" : "w-full p-6"}>
                   <CardContent className="p-0">
                     <p className="text-sm font-bold uppercase tracking-[1px]" style={{ color: item.color }}>
                       {item.day}
@@ -69,7 +76,7 @@ export default function EventsPage() {
 
       <section className="vh-section">
         <div className="vh-container">
-          <SectionHeading subtitle="last month's highlights" title="The Memories" />
+          <SectionHeading subtitle={eventPageContent.pastSubtitle} title="The Memories" />
           <Stagger className="grid grid-cols-2 gap-4 md:grid-cols-3">
             {pastEventImages.map((image, index) => (
               <StaggerItem key={image}>

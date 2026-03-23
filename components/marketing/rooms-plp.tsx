@@ -292,9 +292,8 @@ function DesktopBookingSummary({
   const grandTotal = roomTotal + taxes;
 
   return (
-    <aside className="hidden self-start lg:block">
-      <div className="sticky top-28">
-        <div className="rounded-[26px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 shadow-[var(--vh-shadow-lg)]">
+    <aside className="hidden self-start lg:sticky lg:top-28 lg:block">
+      <div className="rounded-[26px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 shadow-[var(--vh-shadow-lg)] lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
         <h2 className="text-3xl font-semibold uppercase text-white">{bookingSummary.title}</h2>
 
         <div className="mt-5 rounded-[18px] border border-white/10 bg-white/5 px-4 py-4 text-white">
@@ -351,7 +350,6 @@ function DesktopBookingSummary({
         <Button asChild className="mt-5 w-full">
           <Link href={`${propertyHref}#availability`}>Book Now</Link>
         </Button>
-      </div>
       </div>
     </aside>
   );
@@ -754,19 +752,21 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
                   The good stuff that keeps the stay easy, social, and very hard to complain about.
                 </p>
               </div>
-              <Stagger className="mt-6 grid grid-cols-4 gap-x-4 gap-y-6 md:grid-cols-6 lg:grid-cols-6">
+              <Stagger className="mt-6 grid grid-cols-6 gap-3 md:grid-cols-8 lg:grid-cols-10">
                 {propertyAmenities.map((amenity) => {
                   const Icon = amenityIcons[amenity.icon as keyof typeof amenityIcons] ?? Sparkles;
+                  const colorIndex = propertyAmenities.indexOf(amenity) % 4;
+                  const colors = ["#00d1ff", "#ff2e62", "#39ff14", "#facc15"];
 
                   return (
                     <StaggerItem key={amenity.label}>
                       <div className="text-center">
                         <div className="flex justify-center">
-                          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/8 text-[var(--vh-cyan)]">
+                          <span className="flex h-10 w-10 items-center justify-center" style={{ color: colors[colorIndex] }}>
                             <Icon className="h-5 w-5" />
                           </span>
                         </div>
-                        <p className="mt-2 text-xs font-medium text-white/82 md:text-sm">{amenity.label}</p>
+                        <p className="mt-1 text-xs font-medium text-white/82">{amenity.label}</p>
                       </div>
                     </StaggerItem>
                   );
@@ -775,21 +775,20 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
             </section>
 
             <section id="availability" className="scroll-mt-28">
-              <div className="vh-panel flex flex-col gap-6 text-white">
-                <div className="p-6 md:p-7">
-                  <div className="mb-8 text-left">
-                    <SectionTitle title="Availability" />
-                    <p className="mt-2 max-w-[640px] text-sm leading-6 text-slate-300">
-                      Pick your perch for tonight. We&apos;ll keep the vibe ready.
-                    </p>
-                  </div>
-                  <div className="space-y-5">
+              <div className="space-y-6">
+                <div className="text-left">
+                  <SectionTitle title="Availability" />
+                  <p className="mt-2 max-w-[640px] text-sm leading-6 text-slate-300">
+                    Pick your perch for tonight. We&apos;ll keep the vibe ready.
+                  </p>
+                </div>
+                <div className="space-y-5">
                 {roomCategories.map((room) => {
                   const count = selectedCounts[room.slug] ?? 0;
                   const featureLabels = [...room.features, ...room.amenitiesLegend];
 
                   return (
-                    <article key={room.slug} className="overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)]">
+                    <article key={room.slug} className="overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)]" style={{ backgroundColor: "#211122" }}>
                       <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_188px]">
                         <button className="group block text-left" onClick={() => openRoomPopup(room.slug)} type="button">
                           <ImageWithFallback
@@ -811,17 +810,21 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
                             Designed for practical, easy stays with the essentials that matter most for sleep, work, and daily comfort.
                           </p>
 
-                          <div className="flex flex-wrap gap-2">
-                            {featureLabels.map((label) => {
+                          <div className="flex flex-wrap gap-1">
+                            {featureLabels.map((label, index) => {
                               const Icon = iconForLabel(label);
+                              const colorIndex = index % 4;
+                              const colors = ["#00d1ff", "#ff2e62", "#39ff14", "#facc15"];
 
                               return (
                                 <span
                                   key={label}
-                                  className="vh-icon-pill"
+                                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs"
                                   title={label}
+                                  style={{ color: colors[colorIndex] }}
                                 >
-                                  <Icon className="h-4 w-4" />
+                                  <Icon className="h-3 w-3" />
+                                  <span className="text-white/70">{label}</span>
                                 </span>
                               );
                             })}
@@ -842,7 +845,7 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
                         <div className="flex flex-col justify-between border-t border-white/10 p-5 lg:border-l lg:border-t-0">
                           <div>
                             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">Price / night</p>
-                            <p className="mt-2 text-3xl font-bold text-white">Rs. {room.basePrice}</p>
+                            <p className="mt-2 text-3xl font-bold text-[#ff2e62]">Rs. {room.basePrice}</p>
                           </div>
 
                           <div className="mt-5 flex items-center justify-end gap-2">
@@ -877,7 +880,6 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
                     </article>
                   );
                 })}
-                  </div>
                 </div>
               </div>
             </section>

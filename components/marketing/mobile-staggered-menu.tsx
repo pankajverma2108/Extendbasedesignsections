@@ -228,7 +228,7 @@ export function MobileStaggeredMenu({ items }: MobileStaggeredMenuProps) {
                         >
                           <div className="flex h-[171px] flex-col justify-between rounded-[2px] border-2 border-white/30 bg-[#230F14]/10 p-4">
                             <div className="relative flex items-start justify-between">
-                              <Image alt={`${card.title} icon`} className="h-9 w-9" src={card.icon} />
+                              <Image alt={`${card.title} icon`} className="h-12 w-12" src={card.icon} style={{ filter: "brightness(1.1)" }} />
 
                               {card.badge ? (
                                 <StickerTag
@@ -240,7 +240,7 @@ export function MobileStaggeredMenu({ items }: MobileStaggeredMenuProps) {
                                 />
                               ) : (
                                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: card.iconBg ?? "transparent" }}>
-                                  <Image alt="open" className="h-[10px] w-[10px]" src={iconArrow} />
+                                  <Image alt="open" className="h-[10px] w-[10px]" src={iconArrow} style={{ filter: "brightness(1.2)" }} />
                                 </span>
                               )}
                             </div>
@@ -262,26 +262,26 @@ export function MobileStaggeredMenu({ items }: MobileStaggeredMenuProps) {
                       </motion.div>
                     ))}
 
-                    <div className="absolute left-[22px] top-[600px] inline-flex h-[136px] w-[361px] items-center gap-3">
+                    <div className="absolute left-1/2 top-[550px] inline-flex w-[361px] -translate-x-1/2 flex-col gap-4">
                       <Link
-                        className="flex h-[136px] w-[163px] rotate-[1deg] flex-col rounded-[4px] bg-[#1E293B] p-1"
+                        className="flex h-[100px] w-full rotate-[1deg] flex-col rounded-[4px] bg-[#1E293B] p-1"
                         href="/property"
                         onClick={() => setOpen(false)}
                       >
                         <div className="flex h-full flex-col justify-between rounded-[2px] border border-[#64748B] bg-[#334155]/50 p-4">
-                          <div className="h-[15px] w-full bg-[#FF2E62]" />
-                          <p className="font-biorhyme text-xl font-bold uppercase leading-7 text-white">My Stay</p>
+                          <div className="h-[24px] w-[24px] rounded-lg bg-[#FF2E62]" />
+                          <p className="font-biorhyme text-lg font-bold uppercase leading-6 text-white">My Stay</p>
                         </div>
                       </Link>
 
                       <Link
-                        className="flex h-[136px] w-[163px] rotate-[-2deg] flex-col rounded-[4px] bg-white p-1"
+                        className="flex h-[100px] w-full rotate-[-2deg] flex-col rounded-[4px] bg-white p-1"
                         href="/about"
                         onClick={() => setOpen(false)}
                       >
                         <div className="flex h-full flex-col justify-between rounded-[2px] border border-[#CBD5E1] bg-[#F1F5F9] p-4">
-                          <div className="h-[24px] w-full bg-[#1E293B]" />
-                          <p className="font-biorhyme text-xl font-bold uppercase leading-7 text-[#1E293B]">Profile</p>
+                          <div className="h-[24px] w-[24px] rounded-lg bg-[#1E293B]" />
+                          <p className="font-biorhyme text-lg font-bold uppercase leading-6 text-[#1E293B]">Profile</p>
                         </div>
                       </Link>
                     </div>
