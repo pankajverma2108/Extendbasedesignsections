@@ -1,4 +1,4 @@
-import { RoomsPlp } from "@/components/marketing/rooms-plp";
+import { Property } from "@/components/marketing/property";
 
 type PropertyPageProps = {
   searchParams?: Promise<{
@@ -11,7 +11,7 @@ export default async function PropertyPage({ searchParams }: PropertyPageProps) 
   const params = await searchParams;
 
   return (
-    <RoomsPlp
+    <Property
       initialCheckIn={params?.checkin}
       initialCheckOut={params?.checkout}
     />

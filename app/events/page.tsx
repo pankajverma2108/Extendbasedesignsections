@@ -50,16 +50,9 @@ export default function EventsPage() {
         <div className="vh-container">
           <SectionHeading subtitle={eventPageContent.weeklySubtitle} title="Standard Weekly Lineup" />
           <Stagger className="grid grid-cols-2 gap-6 md:grid-cols-2 lg:grid-cols-6">
-            {weeklyLineup.map((item, index) => (
-              <StaggerItem
-                key={item.day}
-                className={
-                  index === weeklyLineup.length - 1
-                    ? "col-span-2 flex lg:col-span-2 lg:col-start-3"
-                    : "lg:col-span-2"
-                }
-              >
-                <Card className={index === weeklyLineup.length - 1 ? "w-full p-6 md:w-auto md:mx-auto" : "w-full p-6"}>
+            {weeklyLineup.map((item) => (
+              <StaggerItem key={item.day} className="lg:col-span-2">
+                <Card className="w-full p-6">
                   <CardContent className="p-0">
                     <p className="text-sm font-bold uppercase tracking-[1px]" style={{ color: item.color }}>
                       {item.day}

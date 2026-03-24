@@ -98,7 +98,7 @@ export function Navigation() {
         </div>
 
         <div className="mx-auto flex max-w-7xl items-center lg:hidden">
-          <div className="flex w-full items-center justify-between rounded-full border border-black/5 bg-white px-2.5 py-2 shadow-[0_12px_30px_rgba(0,0,0,0.18)]">
+          <div className="flex w-full items-center justify-between rounded-full border border-white/12 bg-[rgba(15,16,26,0.88)] px-2.5 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.28)] backdrop-blur-xl">
             <Link href="/" className="flex items-center px-2 py-1">
               <Image alt={siteMeta.name} className="h-auto w-[78px] object-contain opacity-90" height={140} priority src="/logo.png" width={140} />
             </Link>

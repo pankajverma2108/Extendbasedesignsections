@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CalendarDays, Clock3, MapPin, Users } from "lucide-react";
 
 import type { EventCardProps } from "@/content/types";
 
@@ -18,9 +19,16 @@ export function EventCard({
   time,
   title,
 }: EventCardProps) {
+  const details = [
+    { icon: CalendarDays, label: date, tone: "text-[var(--vh-pink)]" },
+    { icon: Clock3, label: time, tone: "text-[var(--vh-cyan)]" },
+    { icon: MapPin, label: location, tone: "text-[var(--vh-lime)]" },
+    { icon: Users, label: capacity, tone: "text-[var(--vh-amber)]" },
+  ];
+
   return (
     <FloatCard style={{ rotate: "1deg" }}>
-      <Card className="overflow-hidden hover:border-white">
+      <Card className="overflow-hidden border-white/12 bg-[linear-gradient(180deg,rgba(33,17,34,0.98),rgba(17,10,17,0.98))] hover:border-white/30">
         <div className="relative h-[220px] overflow-hidden">
           <ImageWithFallback alt={title} className="h-full w-full object-cover hover:scale-105" src={image} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
@@ -37,11 +45,24 @@ export function EventCard({
           </div>
         </div>
 
-        <CardContent className="space-y-2 py-5 text-sm text-white/80">
-          <p>{date}</p>
-          <p>{time}</p>
-          <p>{location}</p>
-          <p>{capacity}</p>
+        <CardContent className="space-y-4 py-5">
+          <div className="grid grid-cols-2 gap-2">
+            {details.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={item.label}
+                  className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white/82"
+                >
+                  <span className={`flex h-8 w-8 items-center justify-center rounded-full bg-white/6 ${item.tone}`}>
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="truncate font-medium">{item.label}</span>
+                </div>
+              );
+            })}
+          </div>
           <div className="rounded-[4px] border-2 border-dashed border-[var(--vh-pink)] bg-[var(--vh-pink)]/10 p-3 text-center font-bold text-[var(--vh-pink)]">
             {price}
           </div>

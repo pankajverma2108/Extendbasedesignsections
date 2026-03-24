@@ -91,19 +91,19 @@ function AmenitiesSection() {
             const Icon = amenityIconMap[item.icon as keyof typeof amenityIconMap] ?? Sparkles;
             const scatterPattern = [
               "ml-0",
-              "ml-2",
-              "ml-5",
               "ml-1",
-              "ml-6",
-              "ml-0",
               "ml-3",
               "ml-1",
-              "ml-5",
-              "ml-0",
-              "ml-4",
               "ml-2",
               "ml-0",
-              "ml-5",
+              "ml-2",
+              "ml-1",
+              "ml-3",
+              "ml-0",
+              "ml-2",
+              "ml-2",
+              "ml-0",
+              "ml-3",
             ] as const;
             const offsetClass =
               index % 5 === 0
@@ -115,7 +115,7 @@ function AmenitiesSection() {
                 : index % 5 === 3
                 ? "translate-y-0.5"
                 : "-translate-y-[0.5px]";
-            const scatterClass = scatterPattern[index] ?? scatterPattern[index % scatterPattern.length];
+              const scatterClass = item.label === "AC" ? "ml-1" : scatterPattern[index] ?? scatterPattern[index % scatterPattern.length];
 
             return (
             <StaggerItem key={item.label} className={`${scatterClass} ${offsetClass} md:ml-0 md:translate-y-0`}>

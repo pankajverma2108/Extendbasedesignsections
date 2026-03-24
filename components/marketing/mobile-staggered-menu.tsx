@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { BedDouble, CalendarDays, Ticket, X } from "lucide-react";
 
 import type { NavItem } from "@/content/types";
@@ -184,133 +185,138 @@ export function MobileStaggeredMenu({ items }: MobileStaggeredMenuProps) {
     <div className="md:hidden">
       <DotsMorphButton open={open} onClick={() => setOpen((value) => !value)} />
 
-      <AnimatePresence>
-        {open ? (
-          <>
-            <motion.div
-              animate={{ opacity: 1 }}
-              className="fixed inset-0 z-40 bg-black/65"
-              exit={{ opacity: 0 }}
-              initial={{ opacity: 0 }}
-              onClick={() => setOpen(false)}
-            />
-
-            <motion.aside
-              animate={{ opacity: 1, y: 0 }}
-              className="fixed inset-0 z-50 bg-[#230F14]"
-              exit={{ opacity: 0, y: 6 }}
-              initial={{ opacity: 0, y: 12 }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
-            >
-              <div className="mx-auto h-[100dvh] w-full max-w-[405px] overflow-hidden">
-                <div className="absolute left-1/2 top-0 inline-flex w-[405px] -translate-x-1/2 items-center justify-between p-6">
-                  <button
-                    aria-label="Close menu"
-                    className="inline-flex h-12 w-12 items-center justify-center"
-                    onClick={() => setOpen(false)}
-                    type="button"
-                  >
-                    <X className="h-[18px] w-[18px] text-[#F1F5F9]" />
-                  </button>
-                  <div className="flex flex-1 items-center justify-center pr-12">
-                    <span className="text-center text-[24px] font-bold leading-[30px] tracking-[-0.36px] text-slate-100">Menu</span>
-                  </div>
-                </div>
-
-                <div className="absolute left-1/2 top-24 h-[760px] w-[405px] -translate-x-1/2">
+      {typeof document !== "undefined"
+        ? createPortal(
+            <AnimatePresence>
+              {open ? (
+                <>
                   <motion.div
-                    animate="show"
-                    className="relative h-full w-full"
-                    initial="hidden"
-                    variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
+                    animate={{ opacity: 1 }}
+                    className="fixed inset-0 z-[90] bg-black/65"
+                    exit={{ opacity: 0 }}
+                    initial={{ opacity: 0 }}
+                    onClick={() => setOpen(false)}
+                  />
+
+                  <motion.aside
+                    animate={{ opacity: 1, y: 0 }}
+                    className="fixed inset-0 z-[100] overflow-y-auto bg-[#230F14]"
+                    exit={{ opacity: 0, y: 6 }}
+                    initial={{ opacity: 0, y: 12 }}
+                    transition={{ duration: 0.22, ease: "easeOut" }}
                   >
-                    {cards.map((card) => (
-                      <motion.div
-                        key={card.title}
-                        className="absolute inline-flex w-[342px] flex-col"
-                        style={{ left: card.left, top: card.top, transform: `rotate(${card.rotate})` }}
-                        variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-                      >
-                        <Link
-                          className="relative flex flex-col rounded-[4px] p-1"
-                          href={card.href}
+                    <div className="mx-auto min-h-[100dvh] w-full max-w-[405px] overflow-hidden bg-transparent px-3 pb-8">
+                      <div className="absolute left-1/2 top-0 inline-flex w-[405px] -translate-x-1/2 items-center justify-between p-6">
+                        <button
+                          aria-label="Close menu"
+                          className="inline-flex h-12 w-12 items-center justify-center"
                           onClick={() => setOpen(false)}
-                          style={{ background: card.bg }}
+                          type="button"
                         >
-                          <div className={`flex h-[160px] flex-col justify-between rounded-[2px] border-2 border-dashed p-4 ${card.title === "Social" ? "border-black/10 bg-[rgba(35,15,20,0.1)]" : "border-white/30 bg-[rgba(35,15,20,0.1)]"}`}>
-                            <div className="relative flex items-start justify-between">
-                              {card.iconType === "rooms" ? (
-                                <BedDouble className="h-9 w-9 text-white" strokeWidth={1.8} />
-                              ) : null}
-                              {card.iconType === "events" ? (
-                                <Ticket className="h-9 w-9 text-white" strokeWidth={1.8} />
-                              ) : null}
-                              {card.iconType === "social" ? (
-                                <CalendarDays className="h-9 w-9 text-[#230F14]" strokeWidth={2.2} />
-                              ) : null}
+                          <X className="h-[18px] w-[18px] text-[#F1F5F9]" />
+                        </button>
+                        <div className="flex flex-1 items-center justify-center pr-12">
+                          <span className="text-center text-[24px] font-bold leading-[30px] tracking-[-0.36px] text-slate-100">Menu</span>
+                        </div>
+                      </div>
 
-                              {card.badge ? (
-                                <StickerTag
-                                  bg="#FFFFFF"
-                                  className="rounded-xl border border-white/20 px-2 py-1 text-[10px] font-bold not-italic uppercase tracking-[1px]"
-                                  label={card.badge}
-                                  rotate="rotate-0"
-                                  text="#FF2E62"
-                                />
-                              ) : card.title === "Events" ? (
-                                <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: card.iconBg ?? "transparent" }}>
-                                  <Image alt="open" className="h-[10px] w-[10px]" src={iconArrow} style={{ filter: "brightness(1.2)" }} />
-                                </span>
-                              ) : null}
-                            </div>
+                      <div className="absolute left-1/2 top-24 h-[760px] w-[405px] -translate-x-1/2">
+                        <motion.div
+                          animate="show"
+                          className="relative h-full w-full"
+                          initial="hidden"
+                          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
+                        >
+                          {cards.map((card) => (
+                            <motion.div
+                              key={card.title}
+                              className="absolute inline-flex w-[342px] flex-col"
+                              style={{ left: card.left, top: card.top, transform: `rotate(${card.rotate})` }}
+                              variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
+                            >
+                              <Link
+                                className="relative flex flex-col rounded-[4px] p-1"
+                                href={card.href}
+                                onClick={() => setOpen(false)}
+                                style={{ background: card.bg }}
+                              >
+                                <div className={`flex h-[160px] flex-col justify-between rounded-[2px] border-2 border-dashed p-4 ${card.title === "Social" ? "border-black/10 bg-[rgba(35,15,20,0.1)]" : "border-white/30 bg-[rgba(35,15,20,0.1)]"}`}>
+                                  <div className="relative flex items-start justify-between">
+                                    {card.iconType === "rooms" ? (
+                                      <BedDouble className="h-9 w-9 text-white" strokeWidth={1.8} />
+                                    ) : null}
+                                    {card.iconType === "events" ? (
+                                      <Ticket className="h-9 w-9 text-white" strokeWidth={1.8} />
+                                    ) : null}
+                                    {card.iconType === "social" ? (
+                                      <CalendarDays className="h-9 w-9 text-[#230F14]" strokeWidth={2.2} />
+                                    ) : null}
 
-                            <div>
-                              <p className="text-[30px] font-bold uppercase leading-9 tracking-[-1.5px]" style={{ color: card.text }}>
-                                {card.title}
-                              </p>
-                              <p className="text-sm italic leading-5" style={{ color: card.mutedText }}>
-                                {card.subtitle}
-                              </p>
-                            </div>
+                                    {card.badge ? (
+                                      <StickerTag
+                                        bg="#FFFFFF"
+                                        className="rounded-xl border border-white/20 px-2 py-1 text-[10px] font-bold not-italic uppercase tracking-[1px]"
+                                        label={card.badge}
+                                        rotate="rotate-0"
+                                        text="#FF2E62"
+                                      />
+                                    ) : card.title === "Events" ? (
+                                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: card.iconBg ?? "transparent" }}>
+                                        <Image alt="open" className="h-[10px] w-[10px]" src={iconArrow} style={{ filter: "brightness(1.2)" }} />
+                                      </span>
+                                    ) : null}
+                                  </div>
+
+                                  <div>
+                                    <p className="text-[30px] font-bold uppercase leading-9 tracking-[-1.5px]" style={{ color: card.text }}>
+                                      {card.title}
+                                    </p>
+                                    <p className="text-sm italic leading-5" style={{ color: card.mutedText }}>
+                                      {card.subtitle}
+                                    </p>
+                                  </div>
+                                </div>
+                              </Link>
+
+                              {card.title === "Rooms" ? (
+                                <StickerTag className="absolute -right-1 -top-4" label="Book Now!" rotate="rotate-[12deg]" />
+                              ) : null}
+                            </motion.div>
+                          ))}
+
+                          <div className="absolute left-1/2 top-[600px] grid w-[346px] -translate-x-1/2 grid-cols-2 gap-[11.9px]">
+                            <Link
+                              className="flex h-[136px] w-full rotate-[1deg] flex-col rounded-[4px] bg-[#1E293B] p-1"
+                              href="/property"
+                              onClick={() => setOpen(false)}
+                            >
+                              <div className="flex h-full flex-col justify-between rounded-[2px] border border-[#64748B] bg-[#334155]/50 p-4">
+                                <Image alt="My Stay icon" className="h-9 w-9 object-contain" src={iconMyStay} />
+                                <p className="text-[20px] font-bold uppercase leading-7 text-white">My Stay</p>
+                              </div>
+                            </Link>
+
+                            <Link
+                              className="flex h-[136px] w-full rotate-[-2deg] flex-col rounded-[4px] bg-white p-1"
+                              href="/about"
+                              onClick={() => setOpen(false)}
+                            >
+                              <div className="flex h-full flex-col justify-between rounded-[2px] border border-[#CBD5E1] bg-[#F1F5F9] p-4">
+                                <Image alt="Profile icon" className="h-9 w-9 object-contain" src={iconProfile} />
+                                <p className="text-[20px] font-bold uppercase leading-7 text-[#1E293B]">Profile</p>
+                              </div>
+                            </Link>
                           </div>
-                        </Link>
-
-                        {card.title === "Rooms" ? (
-                          <StickerTag className="absolute -right-1 -top-4" label="Book Now!" rotate="rotate-[12deg]" />
-                        ) : null}
-                      </motion.div>
-                    ))}
-
-                    <div className="absolute left-1/2 top-[600px] grid w-[346px] -translate-x-1/2 grid-cols-2 gap-[11.9px]">
-                      <Link
-                        className="flex h-[136px] w-full rotate-[1deg] flex-col rounded-[4px] bg-[#1E293B] p-1"
-                        href="/property"
-                        onClick={() => setOpen(false)}
-                      >
-                        <div className="flex h-full flex-col justify-between rounded-[2px] border border-[#64748B] bg-[#334155]/50 p-4">
-                          <Image alt="My Stay icon" className="h-3 w-auto" src={iconMyStay} />
-                          <p className="text-[20px] font-bold uppercase leading-7 text-white">My Stay</p>
-                        </div>
-                      </Link>
-
-                      <Link
-                        className="flex h-[136px] w-full rotate-[-2deg] flex-col rounded-[4px] bg-white p-1"
-                        href="/about"
-                        onClick={() => setOpen(false)}
-                      >
-                        <div className="flex h-full flex-col justify-between rounded-[2px] border border-[#CBD5E1] bg-[#F1F5F9] p-4">
-                          <Image alt="Profile icon" className="h-5 w-auto" src={iconProfile} />
-                          <p className="text-[20px] font-bold uppercase leading-7 text-[#1E293B]">Profile</p>
-                        </div>
-                      </Link>
+                        </motion.div>
+                      </div>
                     </div>
-                  </motion.div>
-                </div>
-              </div>
-            </motion.aside>
-          </>
-        ) : null}
-      </AnimatePresence>
+                  </motion.aside>
+                </>
+              ) : null}
+            </AnimatePresence>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

@@ -52,7 +52,6 @@ export const weeklyLineup = [
   { day: "Thursday", event: "Pub Crawl", time: "8:30 PM", color: "#00d1ff" },
   { day: "Friday", event: "DJ Night", time: "9:00 PM", color: "#ff2e62" },
   { day: "Saturday", event: "Open Mic", time: "8:00 PM", color: "#39ff14" },
-  { day: "Sunday", event: "Chill Sunday", time: "6:00 PM", color: "#facc15" },
 ];
 
 export const pastEventImages = [

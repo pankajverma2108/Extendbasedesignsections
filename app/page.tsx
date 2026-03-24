@@ -8,12 +8,11 @@ export default function HomePage() {
     <>
       <section className="relative min-h-[85vh] overflow-hidden">
         <HeroCarousel images={heroImages} titleParts={homePageContent.heroTitle} />
-        <div className="pointer-events-none absolute inset-x-0 bottom-12 z-10 flex justify-center px-4">
-          <div className="pointer-events-auto w-full max-w-[520px]">
+        <div className="absolute inset-x-0 bottom-12 z-10 flex justify-center px-4">
+          <div className="w-full max-w-[640px]">
             <BookingWidget
               destinationHref="/property"
               submitLabel="Book Now"
-              urgencyChips={homePageContent.heroUrgencyChips}
               variant="hero"
             />
           </div>

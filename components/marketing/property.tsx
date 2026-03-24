@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import {
   BatteryCharging,
@@ -31,6 +31,7 @@ import {
   X,
 } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import {
   bookingSummary,
   locationMap,
@@ -43,12 +44,12 @@ import {
   roomCategories,
   roomFaqs,
 } from "@/content/rooms";
-import { siteMeta } from "@/content/site";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { FadeIn, Stagger, StaggerItem } from "@/components/shared/motion";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const amenityIcons = {
   wifi: Wifi,
@@ -190,95 +191,69 @@ function SectionTitle({
 function DateRangePicker({
   dateRange,
   onSelect,
+  align = "right",
 }: {
   dateRange: DateRange | undefined;
   onSelect: (value: DateRange | undefined) => void;
+  align?: "left" | "right";
 }) {
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
-    function handlePointerDown(event: MouseEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [open]);
 
   return (
-    <div className="relative" ref={containerRef}>
-      <button
-        aria-expanded={open}
-        className="vh-panel-soft flex w-full items-center justify-between gap-4 px-4 py-3 text-left hover:border-white/20 hover:bg-white/7"
-        onClick={() => setOpen((value) => !value)}
-        type="button"
-      >
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/6 text-[var(--vh-cyan)]">
-            <CalendarDays className="h-4 w-4" />
-          </span>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/45">Stay dates</p>
-            <p className="mt-1 text-sm font-semibold text-white">
-              {formatShortDate(dateRange?.from)} - {formatShortDate(dateRange?.to)}
-            </p>
+    <Popover onOpenChange={setOpen} open={open}>
+      <PopoverTrigger asChild>
+        <button
+          aria-expanded={open}
+          className="flex w-full items-center justify-between gap-4 rounded-[20px] border border-white/12 bg-[rgba(15,16,26,0.86)] px-4 py-4 text-left hover:border-white/20"
+          type="button"
+        >
+          <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] items-center gap-3 md:gap-5">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/6 text-[var(--vh-cyan)]">
+              <CalendarDays className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">Check In</p>
+              <p className="mt-1 text-sm font-semibold text-white">{formatShortDate(dateRange?.from)}</p>
+            </div>
+            <div className="min-w-0 border-l border-white/10 pl-3 md:pl-5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">Check Out</p>
+              <p className="mt-1 text-sm font-semibold text-white">{formatShortDate(dateRange?.to)}</p>
+            </div>
           </div>
-        </div>
-        <ChevronDown className={`h-4 w-4 text-white/60 ${open ? "rotate-180" : ""}`} />
-      </button>
+          <ChevronDown className={`h-4 w-4 text-white/60 ${open ? "rotate-180" : ""}`} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align={align === "left" ? "start" : "end"}
+        className="z-[200] w-[min(100vw-2rem,420px)] border-white/10 bg-[var(--vh-panel-strong)] p-3"
+      >
+        <Calendar
+          className="vh-calendar-dark rounded-[20px]"
+          defaultMonth={dateRange?.from}
+          mode="range"
+          numberOfMonths={1}
+          onSelect={(nextValue) => {
+            onSelect(nextValue);
 
-      {open ? (
-        <div className="animate-vh-fade-in animate-vh-scale-in absolute right-0 top-full z-40 mt-3 w-[320px] max-w-[calc(100vw-2rem)] rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-2 shadow-[var(--vh-shadow-lg)] md:w-[640px]">
-          <Calendar
-            className="rounded-[20px]"
-            defaultMonth={dateRange?.from}
-            mode="range"
-            numberOfMonths={2}
-            onSelect={(nextValue) => {
-              onSelect(nextValue);
-
-              if (nextValue?.from && nextValue?.to) {
-                setOpen(false);
-              }
-            }}
-            selected={dateRange}
-            disabled={{ before: getLocalDate(0) }}
-          />
-        </div>
-      ) : null}
-    </div>
+            if (nextValue?.from && nextValue?.to) {
+              setOpen(false);
+            }
+          }}
+          selected={dateRange}
+          disabled={{ before: getLocalDate(0) }}
+        />
+      </PopoverContent>
+    </Popover>
   );
 }
 
 function DesktopBookingSummary({
   checkIn,
   checkOut,
-  dateRange,
-  onDateRangeChange,
   selectedCounts,
 }: {
   checkIn: string;
   checkOut: string;
-  dateRange: DateRange | undefined;
-  onDateRangeChange: (value: DateRange | undefined) => void;
   selectedCounts: Record<string, number>;
 }) {
   const propertyHref = useMemo(() => buildPropertyHref(checkIn, checkOut), [checkIn, checkOut]);
@@ -310,10 +285,6 @@ function DesktopBookingSummary({
               <p className="mt-1 text-sm font-semibold">{formatDisplayDate(checkOut)}</p>
             </div>
           </div>
-        </div>
-
-        <div className="mt-4">
-          <DateRangePicker dateRange={dateRange} onSelect={onDateRangeChange} />
         </div>
 
         <div className="mt-5 space-y-3 border-t border-white/10 pt-5 text-sm text-white/82">
@@ -424,7 +395,7 @@ function MobileStickySummary({
           </div>
         ) : null}
 
-        <div className={`flex items-center justify-between gap-4 p-4 ${open && hasSelection ? "border-t border-white/10" : ""}`}>
+        <div className={cn("flex items-center justify-between gap-4 p-4", open && hasSelection ? "border-t border-white/10" : "")}>
           <div>
             <p className="text-xs uppercase tracking-[0.14em] text-white/48">
               {hasSelection ? "Payable Now" : "Starting From"}
@@ -605,12 +576,12 @@ function RoomDetailsPopup({
   );
 }
 
-type RoomsPlpProps = {
+type PropertyProps = {
   initialCheckIn?: string;
   initialCheckOut?: string;
 };
 
-export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
+export function Property({ initialCheckIn, initialCheckOut }: PropertyProps) {
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [selectedCounts, setSelectedCounts] = useState<Record<string, number>>({});
   const [activeRoomSlug, setActiveRoomSlug] = useState<string | null>(null);
@@ -714,7 +685,7 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
 
       <section className="vh-section vh-section-alt">
         <div className="vh-container grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_390px]">
-          <div className="space-y-14 pb-24 lg:pb-0">
+          <div className="space-y-14 pb-6 lg:pb-0">
             <section id="about" className="scroll-mt-28">
               <div className="flex max-w-4xl flex-col gap-6">
                 <div>
@@ -752,7 +723,7 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
                   The good stuff that keeps the stay easy, social, and very hard to complain about.
                 </p>
               </div>
-              <Stagger className="mt-6 grid grid-cols-6 gap-3 md:grid-cols-8 lg:grid-cols-10">
+              <Stagger className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                 {propertyAmenities.map((amenity) => {
                   const Icon = amenityIcons[amenity.icon as keyof typeof amenityIcons] ?? Sparkles;
                   const colorIndex = propertyAmenities.indexOf(amenity) % 4;
@@ -760,13 +731,11 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
 
                   return (
                     <StaggerItem key={amenity.label}>
-                      <div className="text-center">
-                        <div className="flex justify-center">
-                          <span className="flex h-10 w-10 items-center justify-center" style={{ color: colors[colorIndex] }}>
-                            <Icon className="h-5 w-5" />
-                          </span>
-                        </div>
-                        <p className="mt-1 text-xs font-medium text-white/82">{amenity.label}</p>
+                      <div className="mx-auto w-full max-w-[110px] text-center">
+                        <span className="inline-flex h-10 w-10 items-center justify-center" style={{ color: colors[colorIndex] }}>
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <p className="mt-2 text-sm font-medium leading-5 text-white/82">{amenity.label}</p>
                       </div>
                     </StaggerItem>
                   );
@@ -781,6 +750,9 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
                   <p className="mt-2 max-w-[640px] text-sm leading-6 text-slate-300">
                     Pick your perch for tonight. We&apos;ll keep the vibe ready.
                   </p>
+                </div>
+                <div className="max-w-[420px]">
+                  <DateRangePicker align="left" dateRange={dateRange} onSelect={handleRangeChange} />
                 </div>
                 <div className="space-y-5">
                 {roomCategories.map((room) => {
@@ -905,9 +877,9 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
                 </div>
 
                 <Accordion className="space-y-4" defaultValue={["general-guidelines"]} type="multiple">
-                  <AccordionItem className="rounded-lg border border-white/10 bg-white/5 px-4" value="general-guidelines">
+                  <AccordionItem className="overflow-hidden rounded-lg border border-white/10 bg-white/5 px-4" value="general-guidelines">
                     <AccordionTrigger className="text-base">General guidelines</AccordionTrigger>
-                    <AccordionContent className="space-y-3 text-sm leading-7">
+                    <AccordionContent className="space-y-3 border-t border-white/10 pt-4 text-sm leading-7">
                       {propertyGuidelines.summary.map((item) => (
                         <p key={item}>- {item}</p>
                       ))}
@@ -917,11 +889,11 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
                   {propertyGuidelines.sections.map((section, index) => (
                     <AccordionItem
                       key={section.title}
-                      className="rounded-lg border border-white/10 bg-white/5 px-4"
+                      className="overflow-hidden rounded-lg border border-white/10 bg-white/5 px-4"
                       value={`guideline-${index}`}
                     >
                       <AccordionTrigger className="text-base">{section.title}</AccordionTrigger>
-                      <AccordionContent className="space-y-3 text-sm leading-7">
+                      <AccordionContent className="space-y-3 border-t border-white/10 pt-4 text-sm leading-7">
                         {section.content.map((item) => (
                           <p key={item}>- {item}</p>
                         ))}
@@ -940,17 +912,17 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
                     {roomFaqs.map((faq, index) => (
                       <AccordionItem
                         key={faq.question}
-                        className="rounded-lg border border-white/10 bg-white/5 px-4"
+                        className="overflow-hidden rounded-lg border border-white/10 bg-white/5 px-4"
                         value={`faq-${index}`}
                       >
                         <AccordionTrigger className="text-base">{faq.question}</AccordionTrigger>
-                        <AccordionContent className="text-sm leading-7">{faq.answer}</AccordionContent>
+                        <AccordionContent className="border-t border-white/10 pt-4 text-sm leading-7">{faq.answer}</AccordionContent>
                       </AccordionItem>
                     ))}
                   </Accordion>
                 </div>
 
-                <div className="space-y-10">
+                <div className="space-y-6">
                   <section>
                     <SectionTitle title="Location" />
                     <div className="mt-6 overflow-hidden rounded-[18px]">
@@ -989,29 +961,6 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
                     </div>
                   </section>
 
-                  <section>
-                    <SectionTitle title="Contact" />
-                    <div className="mt-6 space-y-4 text-sm leading-7 text-white/82">
-                      <div>
-                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/48">Phone</p>
-                        <Link className="text-base text-[var(--vh-cyan)] hover:text-white" href={siteMeta.contact.phoneHref}>
-                          {siteMeta.contact.phoneDisplay}
-                        </Link>
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/48">Email</p>
-                        <Link className="text-base text-[var(--vh-cyan)] hover:text-white" href={siteMeta.contact.emailHref}>
-                          {siteMeta.contact.email}
-                        </Link>
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/48">Address</p>
-                        {siteMeta.contact.addressLines.map((line) => (
-                          <p key={line}>{line}</p>
-                        ))}
-                      </div>
-                    </div>
-                  </section>
                 </div>
               </div>
             </section>
@@ -1020,14 +969,16 @@ export function RoomsPlp({ initialCheckIn, initialCheckOut }: RoomsPlpProps) {
           <DesktopBookingSummary
             checkIn={checkIn}
             checkOut={checkOut}
-            dateRange={dateRange}
-            onDateRangeChange={handleRangeChange}
             selectedCounts={selectedCounts}
           />
         </div>
       </section>
 
-      <MobileStickySummary checkIn={checkIn} checkOut={checkOut} selectedCounts={selectedCounts} />
+      <MobileStickySummary
+        checkIn={checkIn}
+        checkOut={checkOut}
+        selectedCounts={selectedCounts}
+      />
       <RoomDetailsPopup
         count={activeRoom ? selectedCounts[activeRoom.slug] ?? 0 : 0}
         imageIndex={activeRoomImageIndex}
