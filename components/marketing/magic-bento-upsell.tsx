@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 
-import { ElectricBorder } from "@/components/shared/electric-border";
 import { Button } from "@/components/ui/button";
 
 type BentoItem = {
@@ -22,6 +21,17 @@ type MagicBentoUpsellProps = {
 };
 
 export function MagicBentoUpsell({ title, subtitle, items }: MagicBentoUpsellProps) {
+  const visibleItems = items.slice(0, 6);
+
+  const tileLayout = [
+    "md:col-span-3 md:row-span-1",
+    "md:col-span-3 md:row-span-1",
+    "md:col-span-6 md:row-span-2",
+    "md:col-span-4 md:row-span-2",
+    "md:col-span-2 md:row-span-1",
+    "md:col-span-2 md:row-span-1",
+  ];
+
   return (
     <div className="vh-container">
       <div className="mb-5 flex items-end justify-between gap-4">
@@ -33,7 +43,7 @@ export function MagicBentoUpsell({ title, subtitle, items }: MagicBentoUpsellPro
       </div>
 
       <motion.div
-        className="grid auto-rows-[132px] grid-cols-2 gap-3 sm:auto-rows-[140px] md:grid-cols-4 md:gap-4"
+        className="grid auto-rows-[154px] grid-cols-2 gap-3 md:grid-cols-6 md:auto-rows-[126px] md:gap-4"
         initial="hidden"
         viewport={{ once: true, margin: "-12%" }}
         whileInView="show"
@@ -42,41 +52,38 @@ export function MagicBentoUpsell({ title, subtitle, items }: MagicBentoUpsellPro
           show: { transition: { staggerChildren: 0.06, delayChildren: 0.08 } },
         }}
       >
-        {items.map((item, index) => (
+        {visibleItems.map((item, index) => (
           <motion.div
             key={item.id}
+            className={tileLayout[index]}
             variants={{ hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0 } }}
             transition={{ duration: 0.4, ease: "easeOut" }}
             whileHover={{ y: -4, scale: 1.01 }}
           >
-            <ElectricBorder
-              className={item.colSpan ?? (index === 0 ? "col-span-2 md:col-span-2 md:row-span-2" : "")}
-              innerClassName="h-full p-3 sm:p-4"
-              tone={item.tone}
-            >
+            <div className="vh-bento-tile h-full rounded-[22px] p-5">
               <div className="flex h-full flex-col justify-between">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">{item.kicker}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/64">{item.kicker}</p>
                 <div>
-                  <h3 className="font-biorhyme text-base leading-tight text-white sm:text-lg">{item.title}</h3>
-                  <p className="mt-1 text-xs leading-5 text-white/75 sm:text-sm">{item.body}</p>
+                  <h3 className="font-sora text-[28px] font-semibold leading-[1.04] text-white md:text-[34px]">{item.title}</h3>
+                  <p className="mt-1 max-w-[28ch] text-sm leading-6 text-white/76">{item.body}</p>
                 </div>
               </div>
-            </ElectricBorder>
+            </div>
           </motion.div>
         ))}
 
         <motion.div
-          className="col-span-2 md:col-span-1 md:row-span-2"
+          className="col-span-2 md:col-span-2 md:row-span-2"
           variants={{ hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0 } }}
           transition={{ duration: 0.45, ease: "easeOut" }}
           whileHover={{ y: -5, scale: 1.01 }}
         >
-          <ElectricBorder innerClassName="h-full p-4" tone="pink">
+          <div className="vh-bento-tile h-full rounded-[22px] p-5">
             <div className="flex h-full flex-col justify-between">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">Featured Upsell</p>
-                <h3 className="mt-2 font-biorhyme text-2xl leading-[1.05] text-white">Night Vibe Pack</h3>
-                <p className="mt-2 text-xs leading-5 text-white/75">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/64">Featured Upsell</p>
+                <h3 className="mt-2 font-sora text-[30px] font-semibold leading-[1.05] text-white">Night Vibe Pack</h3>
+                <p className="mt-2 text-sm leading-6 text-white/76">
                   Includes welcome drink, event pass, late checkout hold, and laundry credits.
                 </p>
               </div>
@@ -84,7 +91,7 @@ export function MagicBentoUpsell({ title, subtitle, items }: MagicBentoUpsellPro
                 <Link href="/property">Add to Booking</Link>
               </Button>
             </div>
-          </ElectricBorder>
+          </div>
         </motion.div>
       </motion.div>
     </div>

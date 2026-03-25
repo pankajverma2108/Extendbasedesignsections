@@ -200,12 +200,12 @@ export function MobileStaggeredMenu({ items }: MobileStaggeredMenuProps) {
 
                   <motion.aside
                     animate={{ opacity: 1, y: 0 }}
-                    className="fixed inset-0 z-[100] overflow-y-auto bg-[#230F14]"
+                    className="fixed inset-0 z-[100] overflow-y-auto bg-[radial-gradient(130%_100%_at_10%_0%,rgba(255,46,98,0.18),transparent_52%),radial-gradient(120%_100%_at_85%_18%,rgba(0,209,255,0.12),transparent_58%),linear-gradient(170deg,#1A0B12_0%,#230F14_62%,#140912_100%)]"
                     exit={{ opacity: 0, y: 6 }}
                     initial={{ opacity: 0, y: 12 }}
                     transition={{ duration: 0.22, ease: "easeOut" }}
                   >
-                    <div className="mx-auto min-h-[100dvh] w-full max-w-[405px] overflow-hidden bg-transparent px-3 pb-8">
+                    <div className="mx-auto min-h-[100dvh] w-full max-w-[405px] overflow-hidden bg-transparent px-3 pb-8 pt-1">
                       <div className="absolute left-1/2 top-0 inline-flex w-[405px] -translate-x-1/2 items-center justify-between p-6">
                         <button
                           aria-label="Close menu"
@@ -216,7 +216,7 @@ export function MobileStaggeredMenu({ items }: MobileStaggeredMenuProps) {
                           <X className="h-[18px] w-[18px] text-[#F1F5F9]" />
                         </button>
                         <div className="flex flex-1 items-center justify-center pr-12">
-                          <span className="text-center text-[24px] font-bold leading-[30px] tracking-[-0.36px] text-slate-100">Menu</span>
+                          <span className="text-center text-[42px] font-bold uppercase leading-[38px] tracking-[-0.5px] text-slate-100" style={{ fontFamily: "var(--font-bebas)" }}>Menu</span>
                         </div>
                       </div>
 
@@ -235,7 +235,7 @@ export function MobileStaggeredMenu({ items }: MobileStaggeredMenuProps) {
                               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
                             >
                               <Link
-                                className="relative flex flex-col rounded-[4px] p-1"
+                                className="relative flex flex-col rounded-[6px] p-1 shadow-[0_14px_30px_rgba(0,0,0,0.26)]"
                                 href={card.href}
                                 onClick={() => setOpen(false)}
                                 style={{ background: card.bg }}

@@ -506,7 +506,7 @@ function RoomDetailsPopup({
 
   const gallery = getRoomGallery(room);
   const activeImage = gallery[imageIndex] ?? gallery[0];
-  const detailItems = [...room.features, ...room.amenitiesLegend];
+  const detailItems = Array.from(new Set([...room.features, ...room.amenitiesLegend]));
 
   return (
     <div
@@ -597,11 +597,11 @@ function RoomDetailsPopup({
           <div className="mt-6">
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">Room Amenities</p>
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {detailItems.map((label) => {
+              {detailItems.map((label, index) => {
                 const Icon = iconForLabel(label);
 
                 return (
-                  <div key={label} className="flex items-center gap-3 text-sm text-white/84">
+                  <div key={`${label}-${index}`} className="flex items-center gap-3 text-sm text-white/84">
                     <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[var(--vh-cyan)]">
                       <Icon className="h-4 w-4" />
                     </span>
@@ -865,7 +865,7 @@ export function Property({
                 ) : (
                   roomCategoryList.map((room) => {
                     const count = selectedCounts[room.slug] ?? 0;
-                    const featureLabels = [...room.features, ...room.amenitiesLegend];
+                    const featureLabels = Array.from(new Set([...room.features, ...room.amenitiesLegend]));
                     const roomGallery = getRoomGallery(room);
 
                     return (
@@ -916,7 +916,7 @@ export function Property({
 
                                 return (
                                   <span
-                                    key={label}
+                                    key={`${label}-${index}`}
                                     className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs"
                                     title={label}
                                     style={{ color: colors[colorIndex] }}
