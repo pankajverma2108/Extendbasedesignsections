@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import type { EventCardProps, RoomCardProps } from "@/content/types";
 import {
   BedDouble,
   CalendarCheck,
@@ -136,7 +137,9 @@ function AmenitiesSection() {
   );
 }
 
-function RoomsSection() {
+function RoomsSection({ rooms }: { rooms: RoomCardProps[] }) {
+  const roomItems = rooms.length > 0 ? rooms : homePageContent.homeRooms;
+
   return (
     <SectionFrame>
       <div className="vh-container">
@@ -151,7 +154,7 @@ function RoomsSection() {
           />
         </FadeIn>
         <Stagger className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {homePageContent.homeRooms.map((room) => (
+          {roomItems.map((room) => (
             <StaggerItem key={room.title}>
               <RoomCard {...room} />
             </StaggerItem>
@@ -162,7 +165,15 @@ function RoomsSection() {
   );
 }
 
-function EventsSection() {
+function EventsSection({ events }: { events: EventCardProps[] }) {
+  const eventItems = events.length > 0 ? events : homePageContent.homeEvents;
+  const eventGridClass =
+    eventItems.length <= 1
+      ? "grid grid-cols-1 gap-6 md:grid-cols-1 md:max-w-[460px] md:mx-auto"
+      : eventItems.length === 2
+      ? "grid grid-cols-1 gap-6 md:grid-cols-2"
+      : "grid grid-cols-1 gap-6 md:grid-cols-3";
+
   return (
     <SectionFrame alt>
       <div className="vh-container">
@@ -176,9 +187,9 @@ function EventsSection() {
             text={sectionHeaderStickers.events.text}
           />
         </FadeIn>
-        <Stagger className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {homePageContent.homeEvents.map((event) => (
-            <StaggerItem key={event.title}>
+        <Stagger className={eventGridClass}>
+          {eventItems.slice(0, 3).map((event) => (
+            <StaggerItem key={`${event.title}-${event.date}-${event.time}`}>
               <EventCard {...event} />
             </StaggerItem>
           ))}
@@ -380,22 +391,36 @@ function CtaSection() {
   );
 }
 
-const homeSectionComponents: Record<HomeSectionId, () => ReactNode> = {
-  amenities: AmenitiesSection,
-  rooms: RoomsSection,
-  upsell: UpsellSection,
-  events: EventsSection,
-  experience: ExperienceSection,
-  energy: EnergySection,
-  reviews: ReviewsSection,
-  cta: CtaSection,
-};
-
-export function HomeSections({ order = homeSectionOrder }: { order?: HomeSectionId[] }) {
+export function HomeSections({
+  order = homeSectionOrder,
+  homeEvents = homePageContent.homeEvents,
+  homeRooms = homePageContent.homeRooms,
+}: {
+  order?: HomeSectionId[];
+  homeEvents?: EventCardProps[];
+  homeRooms?: RoomCardProps[];
+}) {
   return (
     <>
       {order.map((sectionId) => {
-        const SectionComponent = homeSectionComponents[sectionId];
+        if (sectionId === "rooms") {
+          return <RoomsSection key={sectionId} rooms={homeRooms} />;
+        }
+
+        if (sectionId === "events") {
+          return <EventsSection key={sectionId} events={homeEvents} />;
+        }
+
+        const sectionComponents: Record<Exclude<HomeSectionId, "rooms" | "events">, () => ReactNode> = {
+          amenities: AmenitiesSection,
+          upsell: UpsellSection,
+          experience: ExperienceSection,
+          energy: EnergySection,
+          reviews: ReviewsSection,
+          cta: CtaSection,
+        };
+
+        const SectionComponent = sectionComponents[sectionId as Exclude<HomeSectionId, "rooms" | "events">];
         return <SectionComponent key={sectionId} />;
       })}
     </>

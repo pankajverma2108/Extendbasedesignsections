@@ -2,8 +2,19 @@ import { HeroCarousel } from "@/components/marketing/hero-carousel";
 import { HomeSections } from "@/components/marketing/home-sections";
 import { BookingWidget } from "@/components/marketing/booking-widget";
 import { heroImages, homePageContent } from "@/content/home";
+import {
+  getDefaultPropertyId,
+  getPublicEvents,
+  getRoomAvailability,
+  roomTypesToHomeCards,
+} from "@/lib/cx-api";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const propertyId = getDefaultPropertyId();
+  const roomTypes = await getRoomAvailability({ propertyId });
+  const dynamicHomeRooms = roomTypesToHomeCards(roomTypes);
+  const dynamicHomeEvents = await getPublicEvents({ propertyId, limit: 3 });
+
   return (
     <>
       <section className="relative min-h-[85vh] overflow-hidden">
@@ -19,7 +30,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <HomeSections />
+      <HomeSections homeEvents={dynamicHomeEvents} homeRooms={dynamicHomeRooms} />
     </>
   );
 }

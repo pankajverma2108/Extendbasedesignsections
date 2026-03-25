@@ -4,9 +4,20 @@ import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { FadeIn, Stagger, StaggerItem } from "@/components/shared/motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { eventPageContent, pastEventImages, upcomingEvents, weeklyLineup } from "@/content/events";
+import { eventPageContent, pastEventImages, weeklyLineup } from "@/content/events";
+import { getDefaultPropertyId, getPublicEvents } from "@/lib/cx-api";
 
-export default function EventsPage() {
+export default async function EventsPage() {
+  const propertyId = getDefaultPropertyId();
+  const liveEvents = await getPublicEvents({ propertyId });
+
+  const eventGridClass =
+    liveEvents.length <= 1
+      ? "grid grid-cols-1 gap-8 md:max-w-[460px] md:mx-auto"
+      : liveEvents.length === 2
+      ? "grid grid-cols-1 gap-8 md:grid-cols-2"
+      : "grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3";
+
   return (
     <>
       <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden">
@@ -36,9 +47,9 @@ export default function EventsPage() {
       <section className="vh-section">
         <div className="vh-container">
           <SectionHeading align="left" subtitle={eventPageContent.upcomingSubtitle} title="This Week" />
-          <Stagger className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {upcomingEvents.map((event) => (
-              <StaggerItem key={event.title}>
+          <Stagger className={eventGridClass}>
+            {liveEvents.map((event) => (
+              <StaggerItem key={`${event.title}-${event.date}-${event.time}`}>
                 <EventCard {...event} />
               </StaggerItem>
             ))}

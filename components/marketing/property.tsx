@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import type { CxRoomCategory } from "@/lib/cx-api";
 import {
   bookingSummary,
   locationMap,
@@ -50,6 +51,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const amenityIcons = {
   wifi: Wifi,
@@ -85,7 +87,7 @@ const roomFeatureIcons: Record<string, typeof Wifi> = {
   "Private bath": Droplets,
 };
 
-type RoomCategory = (typeof roomCategories)[number];
+type RoomCategory = CxRoomCategory;
 
 function getLocalDate(days: number) {
   const date = new Date();
@@ -251,14 +253,16 @@ function DesktopBookingSummary({
   checkIn,
   checkOut,
   selectedCounts,
+  roomCategoryList,
 }: {
   checkIn: string;
   checkOut: string;
   selectedCounts: Record<string, number>;
+  roomCategoryList: RoomCategory[];
 }) {
   const propertyHref = useMemo(() => buildPropertyHref(checkIn, checkOut), [checkIn, checkOut]);
   const nights = getNightCount(checkIn, checkOut);
-  const selectedRooms = roomCategories.filter((room) => (selectedCounts[room.slug] ?? 0) > 0);
+  const selectedRooms = roomCategoryList.filter((room) => (selectedCounts[room.slug] ?? 0) > 0);
   const roomTotal = selectedRooms.reduce(
     (sum, room) => sum + room.basePrice * (selectedCounts[room.slug] ?? 0) * nights,
     0,
@@ -330,14 +334,16 @@ function MobileStickySummary({
   checkIn,
   checkOut,
   selectedCounts,
+  roomCategoryList,
 }: {
   checkIn: string;
   checkOut: string;
   selectedCounts: Record<string, number>;
+  roomCategoryList: RoomCategory[];
 }) {
   const [open, setOpen] = useState(false);
   const nights = getNightCount(checkIn, checkOut);
-  const selectedRooms = roomCategories.filter((room) => (selectedCounts[room.slug] ?? 0) > 0);
+  const selectedRooms = roomCategoryList.filter((room) => (selectedCounts[room.slug] ?? 0) > 0);
   const roomTotal = selectedRooms.reduce(
     (sum, room) => sum + room.basePrice * (selectedCounts[room.slug] ?? 0) * nights,
     0,
@@ -400,7 +406,7 @@ function MobileStickySummary({
             <p className="text-xs uppercase tracking-[0.14em] text-white/48">
               {hasSelection ? "Payable Now" : "Starting From"}
             </p>
-            <p className="text-2xl font-semibold text-white">Rs. {hasSelection ? grandTotal : roomCategories[0].basePrice}</p>
+            <p className="text-2xl font-semibold text-white">Rs. {hasSelection ? grandTotal : roomCategoryList[0]?.basePrice ?? 0}</p>
           </div>
           {hasSelection ? (
             <Button className="h-10 rounded-[16px] px-5 py-2.5 text-sm" onClick={() => setOpen((value) => !value)} type="button">
@@ -417,6 +423,41 @@ function MobileStickySummary({
         </div>
       </div>
     </div>
+  );
+}
+
+function RoomCardSkeleton() {
+  return (
+    <article className="overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)]">
+      <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_188px]">
+        {/* Image skeleton */}
+        <Skeleton className="h-[220px] w-full lg:h-full" />
+        
+        {/* Content skeleton */}
+        <div className="space-y-4 p-5">
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <Skeleton className="h-14 w-full" />
+          <div className="flex gap-2">
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-6 w-20" />
+            <Skeleton className="h-6 w-16" />
+          </div>
+          <Skeleton className="h-4 w-32" />
+        </div>
+        
+        {/* Price skeleton */}
+        <div className="flex flex-col justify-between border-t border-white/10 p-5 lg:border-l lg:border-t-0">
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-8 w-28" />
+          </div>
+          <Skeleton className="mt-5 h-10 w-full rounded-full" />
+        </div>
+      </div>
+    </article>
   );
 }
 
@@ -577,15 +618,26 @@ function RoomDetailsPopup({
 }
 
 type PropertyProps = {
+  propertyId?: string;
   initialCheckIn?: string;
   initialCheckOut?: string;
+  initialRoomCategories?: RoomCategory[];
 };
 
-export function Property({ initialCheckIn, initialCheckOut }: PropertyProps) {
+export function Property({
+  propertyId = "prop-bandra-001",
+  initialCheckIn,
+  initialCheckOut,
+  initialRoomCategories = roomCategories,
+}: PropertyProps) {
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [selectedCounts, setSelectedCounts] = useState<Record<string, number>>({});
   const [activeRoomSlug, setActiveRoomSlug] = useState<string | null>(null);
   const [activeRoomImageIndex, setActiveRoomImageIndex] = useState(0);
+  const [roomCategoryList, setRoomCategoryList] = useState<RoomCategory[]>(
+    initialRoomCategories.length > 0 ? initialRoomCategories : roomCategories,
+  );
+  const [isLoadingRooms, setIsLoadingRooms] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: fromDateString(initialCheckIn) ?? getLocalDate(0),
     to: fromDateString(initialCheckOut) ?? getLocalDate(1),
@@ -593,7 +645,7 @@ export function Property({ initialCheckIn, initialCheckOut }: PropertyProps) {
 
   const checkIn = toLocalDateString(dateRange?.from);
   const checkOut = toLocalDateString(dateRange?.to);
-  const activeRoom = roomCategories.find((room) => room.slug === activeRoomSlug) ?? null;
+  const activeRoom = roomCategoryList.find((room) => room.slug === activeRoomSlug) ?? null;
 
   const updateCount = (slug: string, nextValue: number) => {
     setSelectedCounts((current) => ({
@@ -623,6 +675,55 @@ export function Property({ initialCheckIn, initialCheckOut }: PropertyProps) {
       };
     });
   };
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadRooms() {
+      if (!checkIn || !checkOut) {
+        return;
+      }
+
+      setIsLoadingRooms(true);
+
+      try {
+        const params = new URLSearchParams({
+          property_id: propertyId,
+          checkin: checkIn,
+          checkout: checkOut,
+        });
+
+        const response = await fetch(`/api/cx/rooms?${params.toString()}`, {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = (await response.json()) as { categories?: unknown };
+        const nextCategories = Array.isArray(payload.categories) ? payload.categories : [];
+
+        if (mounted && nextCategories.length > 0) {
+          setRoomCategoryList(nextCategories as RoomCategory[]);
+        }
+      } catch {
+        if (mounted) {
+          setRoomCategoryList((current) => (current.length > 0 ? current : roomCategories));
+        }
+      } finally {
+        if (mounted) {
+          setIsLoadingRooms(false);
+        }
+      }
+    }
+
+    loadRooms();
+
+    return () => {
+      mounted = false;
+    };
+  }, [checkIn, checkOut, propertyId]);
 
   const openRoomPopup = (slug: string) => {
     setActiveRoomSlug(slug);
@@ -755,103 +856,111 @@ export function Property({ initialCheckIn, initialCheckOut }: PropertyProps) {
                   <DateRangePicker align="left" dateRange={dateRange} onSelect={handleRangeChange} />
                 </div>
                 <div className="space-y-5">
-                {roomCategories.map((room) => {
-                  const count = selectedCounts[room.slug] ?? 0;
-                  const featureLabels = [...room.features, ...room.amenitiesLegend];
+                {isLoadingRooms ? (
+                  <>
+                    <RoomCardSkeleton />
+                    <RoomCardSkeleton />
+                    <RoomCardSkeleton />
+                  </>
+                ) : (
+                  roomCategoryList.map((room) => {
+                    const count = selectedCounts[room.slug] ?? 0;
+                    const featureLabels = [...room.features, ...room.amenitiesLegend];
 
-                  return (
-                    <article key={room.slug} className="overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)]" style={{ backgroundColor: "#211122" }}>
-                      <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_188px]">
-                        <button className="group block text-left" onClick={() => openRoomPopup(room.slug)} type="button">
-                          <ImageWithFallback
-                            alt={room.title}
-                            className="h-[220px] w-full object-cover transition duration-300 group-hover:scale-[1.03] lg:h-full"
-                            src={room.image}
-                          />
-                        </button>
+                    return (
+                      <article key={room.slug} className="overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)]" style={{ backgroundColor: "#211122" }}>
+                        <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_188px]">
+                          <button className="group block text-left" onClick={() => openRoomPopup(room.slug)} type="button">
+                            <ImageWithFallback
+                              alt={room.title}
+                              className="h-[220px] w-full object-cover transition duration-300 group-hover:scale-[1.03] lg:h-full"
+                              src={room.image}
+                            />
+                          </button>
 
-                        <div className="space-y-4 p-5">
-                          <div className="flex flex-wrap items-center gap-3">
-                            <button className="text-left" onClick={() => openRoomPopup(room.slug)} type="button">
-                              <h3 className="text-xl font-semibold text-white hover:text-[var(--vh-cyan)]">{room.title}</h3>
-                            </button>
-                            <span className="text-sm text-white/55">{room.guestText}</span>
+                          <div className="space-y-4 p-5">
+                            <div className="flex flex-wrap items-center gap-3">
+                              <button className="text-left" onClick={() => openRoomPopup(room.slug)} type="button">
+                                <h3 className="text-xl font-semibold text-white hover:text-[var(--vh-cyan)]">{room.title}</h3>
+                              </button>
+                              <span className="text-sm text-white/55">{room.guestText}</span>
+                            </div>
+
+                            <p className="text-sm leading-7 text-white/78">
+                              Designed for practical, easy stays with the essentials that matter most for sleep, work, and daily comfort.
+                            </p>
+
+                            <div className="flex flex-wrap gap-1">
+                              {featureLabels.map((label, index) => {
+                                const Icon = iconForLabel(label);
+                                const colorIndex = index % 4;
+                                const colors = ["#00d1ff", "#ff2e62", "#39ff14", "#facc15"];
+
+                                return (
+                                  <span
+                                    key={label}
+                                    className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs"
+                                    title={label}
+                                    style={{ color: colors[colorIndex] }}
+                                  >
+                                    <Icon className="h-3 w-3" />
+                                    <span className="text-white/70">{label}</span>
+                                  </span>
+                                );
+                              })}
+                            </div>
+
+                            <div className="flex items-center justify-between gap-4">
+                              <p className="text-sm font-semibold text-[var(--vh-amber)]">{room.inventoryText}</p>
+                              <button
+                                className="text-sm font-semibold text-[var(--vh-cyan)] hover:text-white"
+                                onClick={() => openRoomPopup(room.slug)}
+                                type="button"
+                              >
+                                View details
+                              </button>
+                            </div>
                           </div>
 
-                          <p className="text-sm leading-7 text-white/78">
-                            Designed for practical, easy stays with the essentials that matter most for sleep, work, and daily comfort.
-                          </p>
+                          <div className="flex flex-col justify-between border-t border-white/10 p-5 lg:border-l lg:border-t-0">
+                            <div>
+                              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">Price / night</p>
+                              <p className="mt-2 text-3xl font-bold text-[#ff2e62]">Rs. {room.basePrice}</p>
+                            </div>
 
-                          <div className="flex flex-wrap gap-1">
-                            {featureLabels.map((label, index) => {
-                              const Icon = iconForLabel(label);
-                              const colorIndex = index % 4;
-                              const colors = ["#00d1ff", "#ff2e62", "#39ff14", "#facc15"];
-
-                              return (
-                                <span
-                                  key={label}
-                                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs"
-                                  title={label}
-                                  style={{ color: colors[colorIndex] }}
-                                >
-                                  <Icon className="h-3 w-3" />
-                                  <span className="text-white/70">{label}</span>
-                                </span>
-                              );
-                            })}
-                          </div>
-
-                          <div className="flex items-center justify-between gap-4">
-                            <p className="text-sm font-semibold text-[var(--vh-amber)]">{room.inventoryText}</p>
-                            <button
-                              className="text-sm font-semibold text-[var(--vh-cyan)] hover:text-white"
-                              onClick={() => openRoomPopup(room.slug)}
-                              type="button"
-                            >
-                              View details
-                            </button>
+                            <div className="mt-5 flex items-center justify-end gap-2">
+                              {count === 0 ? (
+                                <Button className="w-full rounded-full" onClick={() => updateCount(room.slug, 1)} type="button">
+                                  Add
+                                </Button>
+                              ) : (
+                                <div className="ml-auto flex items-center gap-2">
+                                  <button
+                                    aria-label="Decrement Count"
+                                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)]"
+                                    onClick={() => updateCount(room.slug, count - 1)}
+                                    type="button"
+                                  >
+                                    <Minus className="h-4 w-4" />
+                                  </button>
+                                  <span className="w-4 text-center text-sm font-semibold text-white">{count}</span>
+                                  <button
+                                    aria-label="Increment Count"
+                                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)]"
+                                    onClick={() => updateCount(room.slug, count + 1)}
+                                    type="button"
+                                  >
+                                    <Plus className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
-
-                        <div className="flex flex-col justify-between border-t border-white/10 p-5 lg:border-l lg:border-t-0">
-                          <div>
-                            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">Price / night</p>
-                            <p className="mt-2 text-3xl font-bold text-[#ff2e62]">Rs. {room.basePrice}</p>
-                          </div>
-
-                          <div className="mt-5 flex items-center justify-end gap-2">
-                            {count === 0 ? (
-                              <Button className="w-full rounded-full" onClick={() => updateCount(room.slug, 1)} type="button">
-                                Add
-                              </Button>
-                            ) : (
-                              <div className="ml-auto flex items-center gap-2">
-                                <button
-                                  aria-label="Decrement Count"
-                                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)]"
-                                  onClick={() => updateCount(room.slug, count - 1)}
-                                  type="button"
-                                >
-                                  <Minus className="h-4 w-4" />
-                                </button>
-                                <span className="w-4 text-center text-sm font-semibold text-white">{count}</span>
-                                <button
-                                  aria-label="Increment Count"
-                                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)]"
-                                  onClick={() => updateCount(room.slug, count + 1)}
-                                  type="button"
-                                >
-                                  <Plus className="h-4 w-4" />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
+                      </article>
+                    );
+                  })
+                )}
                 </div>
               </div>
             </section>
@@ -970,6 +1079,7 @@ export function Property({ initialCheckIn, initialCheckOut }: PropertyProps) {
             checkIn={checkIn}
             checkOut={checkOut}
             selectedCounts={selectedCounts}
+            roomCategoryList={roomCategoryList}
           />
         </div>
       </section>
@@ -978,6 +1088,7 @@ export function Property({ initialCheckIn, initialCheckOut }: PropertyProps) {
         checkIn={checkIn}
         checkOut={checkOut}
         selectedCounts={selectedCounts}
+        roomCategoryList={roomCategoryList}
       />
       <RoomDetailsPopup
         count={activeRoom ? selectedCounts[activeRoom.slug] ?? 0 : 0}
