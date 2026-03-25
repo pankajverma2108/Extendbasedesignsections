@@ -14,6 +14,7 @@ export type RoomCardProps = {
   price: string;
   occupancy: string;
   image: string;
+  images?: string[];
   badge?: Badge;
   features: string[];
   href: string;

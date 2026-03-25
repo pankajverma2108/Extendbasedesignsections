@@ -1,12 +1,30 @@
 import type { RoomCardProps } from "@/content/types";
 
+const mixedDormImages = [
+  "/images/rooms/room-1.jpg",
+  "/images/rooms/room-2.jpg",
+  "/images/rooms/room-3.webp",
+];
+
+const femaleDormImages = [
+  "/images/rooms/room-2.jpg",
+  "/images/rooms/room-3.webp",
+  "/images/rooms/room-4.jpg",
+];
+
+const privateRoomImages = [
+  "/images/rooms/room-4.jpg",
+  "/images/rooms/room-1.jpg",
+  "/images/rooms/room-3.webp",
+];
+
 export const rooms: RoomCardProps[] = [
   {
     title: "4-Bed Mixed Dorm",
     price: "Rs. 599",
     occupancy: "4 Guests",
-    image:
-      "https://images.unsplash.com/photo-1694151569569-8288e3118519?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
+    image: mixedDormImages[0],
+    images: mixedDormImages,
     badge: { label: "Most Popular", color: "#ff2e62" },
     features: [
       "Reading lights",
@@ -20,8 +38,8 @@ export const rooms: RoomCardProps[] = [
     title: "4-Bed Female Dorm",
     price: "Rs. 599",
     occupancy: "4 Guests",
-    image:
-      "https://images.unsplash.com/photo-1626265774643-f1943311a86b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
+    image: femaleDormImages[0],
+    images: femaleDormImages,
     badge: { label: "Safe Space", color: "#39ff14", textColor: "#0f172a" },
     features: [
       "Women-only space",
@@ -35,8 +53,8 @@ export const rooms: RoomCardProps[] = [
     title: "Private Room",
     price: "Rs. 1,299",
     occupancy: "2 Guests",
-    image:
-      "https://images.unsplash.com/photo-1721522281545-fad32dd5107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
+    image: privateRoomImages[0],
+    images: privateRoomImages,
     badge: { label: "Privacy", color: "#00d1ff", textColor: "#0f172a" },
     features: [
       "Queen-size bed",
@@ -62,19 +80,19 @@ export const propertyHero = {
 
 export const propertyGallery = [
   {
-    src: "https://images.unsplash.com/photo-1694151569569-8288e3118519?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1600",
+    src: "/images/property/hero-1.jpg",
     alt: "Vibe House dorm interior",
   },
   {
-    src: "https://images.unsplash.com/photo-1681747971522-2d7a04c78321?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1600",
+    src: "/images/property/hero-2.jpg",
     alt: "Shared social seating area",
   },
   {
-    src: "https://images.unsplash.com/photo-1641352848574-9dbb6a244a32?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1600",
+    src: "/images/property/hero-3.jpg",
     alt: "Rooftop city-facing lounge",
   },
   {
-    src: "https://images.unsplash.com/photo-1721522281545-fad32dd5107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1600",
+    src: "/images/property/hero-4.jpg",
     alt: "Private room interior",
   },
 ];
@@ -120,8 +138,8 @@ export const roomCategories = [
     slug: "mixed-4-bed",
     title: "Bed in 4-Bed Mixed Dorm",
     shortTitle: "4-Bed Mixed Dorm",
-    image:
-      "https://images.unsplash.com/photo-1694151569569-8288e3118519?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
+    image: mixedDormImages[0],
+    images: mixedDormImages,
     guestText: "x 1 Guest",
     basePrice: 599,
     inventoryText: "07 beds available",
@@ -132,8 +150,8 @@ export const roomCategories = [
     slug: "female-4-bed",
     title: "Bed in 4-Bed Female Dorm",
     shortTitle: "4-Bed Female Dorm",
-    image:
-      "https://images.unsplash.com/photo-1626265774643-f1943311a86b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
+    image: femaleDormImages[0],
+    images: femaleDormImages,
     guestText: "x 1 Guest",
     basePrice: 599,
     inventoryText: "05 beds available",
@@ -144,8 +162,8 @@ export const roomCategories = [
     slug: "private-room",
     title: "Private Room",
     shortTitle: "Private Room",
-    image:
-      "https://images.unsplash.com/photo-1721522281545-fad32dd5107a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
+    image: privateRoomImages[0],
+    images: privateRoomImages,
     guestText: "x 2 Guests",
     basePrice: 1299,
     inventoryText: "03 rooms left",

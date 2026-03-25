@@ -4,8 +4,7 @@ const DEFAULT_API_BASE_URL = "https://vibehousebackend-production.up.railway.app
 const DEFAULT_PROPERTY_ID = "prop-bandra-001";
 const FALLBACK_EVENT_IMAGE =
   "https://images.unsplash.com/photo-1647649644192-af6183269fa4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200";
-const FALLBACK_ROOM_IMAGE =
-  "https://images.unsplash.com/photo-1694151569569-8288e3118519?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200";
+const FALLBACK_ROOM_IMAGE = "/images/rooms/room-1.jpg";
 
 // Lightweight runtime telemetry for malformed payload detection
 export type TelemetryEvent = {
@@ -51,12 +50,37 @@ export type CxRoomCategory = {
   title: string;
   shortTitle: string;
   image: string;
+  images?: string[];
   guestText: string;
   basePrice: number;
   inventoryText: string;
   features: string[];
   amenitiesLegend: string[];
 };
+
+const STATIC_ROOM_GALLERIES = [
+  ["/images/rooms/room-1.jpg", "/images/rooms/room-2.jpg", "/images/rooms/room-3.webp"],
+  ["/images/rooms/room-2.jpg", "/images/rooms/room-3.webp", "/images/rooms/room-4.jpg"],
+  ["/images/rooms/room-4.jpg", "/images/rooms/room-1.jpg", "/images/rooms/room-3.webp"],
+];
+
+function pickStaticRoomGallery(slugOrName: string, index: number): string[] {
+  const id = slugOrName.toLowerCase();
+
+  if (id.includes("female")) {
+    return STATIC_ROOM_GALLERIES[1];
+  }
+
+  if (id.includes("private")) {
+    return STATIC_ROOM_GALLERIES[2];
+  }
+
+  if (id.includes("mixed") || id.includes("dorm")) {
+    return STATIC_ROOM_GALLERIES[0];
+  }
+
+  return STATIC_ROOM_GALLERIES[index % STATIC_ROOM_GALLERIES.length];
+}
 
 type RawEvent = {
   id?: unknown;
@@ -402,16 +426,18 @@ export async function getRoomAvailability(options?: {
 }
 
 export function roomTypesToHomeCards(roomTypes: NormalizedRoomType[]): RoomCardProps[] {
-  return roomTypes.map((room) => {
+  return roomTypes.map((room, index) => {
     const occupancy = room.type.toUpperCase() === "PRIVATE"
       ? `${Math.max(room.bedsPerRoom, 1)} Guests`
       : `${Math.max(room.bedsPerRoom, 1)} Bed${room.bedsPerRoom > 1 ? "s" : ""}`;
+    const images = pickStaticRoomGallery(room.slug || room.name, index);
 
     return {
       title: room.name,
       price: `Rs. ${room.basePricePerNight}`,
       occupancy,
-      image: FALLBACK_ROOM_IMAGE,
+      image: images[0] ?? FALLBACK_ROOM_IMAGE,
+      images,
       badge: roomBadge(room.availableBeds),
       features: room.amenities.length > 0 ? room.amenities : ["Details on arrival"],
       href: "/property",
@@ -436,17 +462,22 @@ function inventoryLabel(availableBeds: number, totalBeds: number, type: string) 
 }
 
 export function roomTypesToPropertyCategories(roomTypes: NormalizedRoomType[]): CxRoomCategory[] {
-  return roomTypes.map((room) => ({
+  return roomTypes.map((room, index) => {
+    const images = pickStaticRoomGallery(room.slug || room.name, index);
+
+    return {
     slug: room.slug || room.id,
     title: room.name,
     shortTitle: room.name,
-    image: FALLBACK_ROOM_IMAGE,
+    image: images[0] ?? FALLBACK_ROOM_IMAGE,
+    images,
     guestText: `x ${Math.max(room.bedsPerRoom, 1)} Guest${room.bedsPerRoom > 1 ? "s" : ""}`,
     basePrice: room.basePricePerNight,
     inventoryText: inventoryLabel(room.availableBeds, room.totalBeds, room.type),
     features: room.amenities.length > 0 ? room.amenities.slice(0, 4) : ["Details on arrival"],
     amenitiesLegend: room.amenities.length > 0 ? room.amenities.slice(0, 4) : ["Details on arrival"],
-  }));
+  };
+  });
 }
 
 export function getDefaultPropertyId() {

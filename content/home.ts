@@ -12,10 +12,10 @@ export type HomeSectionId =
   | "cta";
 
 export const heroImages = [
-  "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1920",
-  "https://images.unsplash.com/photo-1694151569569-8288e3118519?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1920",
-  "https://images.unsplash.com/photo-1641352848574-9dbb6a244a32?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1920",
-  "https://images.unsplash.com/photo-1647649644192-af6183269fa4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1920",
+  "/images/property/hero-1.jpg",
+  "/images/property/hero-2.jpg",
+  "/images/property/hero-3.jpg",
+  "/images/property/hero-4.jpg",
 ];
 
 export const assurances = [
@@ -83,23 +83,38 @@ export const guestEnergyImages = [
 
 export const testimonials = [
   {
-    name: "Sarah M.",
-    country: "Australia",
+    name: "Aarav Sharma",
+    country: "Mumbai, India",
+    platform: "Booking.com",
+    logo: "/testimonials logos/Booking_Logo.png",
     review:
-      "Best hostel experience ever. The staff was amazing and I met so many cool people. The cleanliness is top-notch.",
+      "Best hostel experience ever. The staff was warm, the room was spotless, and I met amazing people in one evening.",
   },
   {
-    name: "Marco R.",
-    country: "Italy",
+    name: "Meera Nair",
+    country: "Bengaluru, India",
+    platform: "MakeMyTrip",
+    logo: "/testimonials logos/MakeMyTrip_ideTNivz-j_1.png",
     review:
-      "The events were incredible. Great vibes, great people, and a location that makes everything easy.",
+      "The events were incredible with great vibes, and the location made every city plan easy to execute.",
   },
   {
-    name: "Yuki T.",
-    country: "Japan",
+    name: "Rohan Kulkarni",
+    country: "Pune, India",
+    platform: "Agoda",
+    logo: "/testimonials logos/Agoda.png",
     review:
-      "I felt safe the entire stay. The female dorms are perfect and the Wi-Fi is excellent for remote work.",
+      "I felt safe through the entire stay and the Wi-Fi handled remote work calls without a single drop.",
   },
+];
+
+export const platformRatings = [
+  { platform: "Booking.com", logo: "/testimonials logos/Booking_Logo.png", rating: "8.9", detail: "2.1k reviews" },
+  { platform: "MakeMyTrip", logo: "/testimonials logos/MakeMyTrip_ideTNivz-j_1.png", rating: "4.4", detail: "1.3k reviews" },
+  { platform: "Agoda", logo: "/testimonials logos/Agoda.png", rating: "8.7", detail: "900+ reviews" },
+  { platform: "Google", logo: "/testimonials logos/icons8-google-logo-96.png", rating: "4.6", detail: "3.4k reviews" },
+  { platform: "Tripadvisor", rating: "4.5", detail: "780 reviews" },
+  { platform: "Hostelworld", rating: "9.1", detail: "640 reviews" },
 ];
 
 export const homePageContent = {
@@ -143,21 +158,21 @@ export const upsellBentoItems = [
   {
     id: "late-checkout",
     title: "Late Checkout Shield",
-    body: "Hold your bunk until 4 PM with one tap during peak weekends.",
+    body: "Hold your bunk safely until 4 PM with priority support during busy checkout weekends.",
     kicker: "Room Control",
     tone: "blue" as const,
   },
   {
     id: "laundry-drop",
     title: "Laundry Drop",
-    body: "Same-day wash-and-fold pickup and return from reception.",
+    body: "Book same-day wash-and-fold pickup and quick return to your room from reception.",
     kicker: "Utility",
     tone: "green" as const,
   },
   {
     id: "city-crawl",
     title: "City Crawl Pass",
-    body: "Skip queue access for tonight's partner venues and hosted route.",
+    body: "Get skip-queue access to partner venues with a hosted route and curated nightlife stops.",
     kicker: "Social",
     tone: "pink" as const,
     colSpan: "col-span-2 md:col-span-2",
@@ -165,16 +180,23 @@ export const upsellBentoItems = [
   {
     id: "locker-plus",
     title: "Locker Plus",
-    body: "Oversize secure storage with priority support from front desk.",
+    body: "Reserve oversized secure storage with front-desk priority when you need extra luggage room.",
     kicker: "Security",
     tone: "blue" as const,
   },
   {
     id: "breakfast",
     title: "Breakfast Combo",
-    body: "Healthy breakfast pack with coffee added to your folio.",
+    body: "Healthy breakfast pack with barista coffee and fresh fruit added to your folio each morning.",
     kicker: "Food",
     tone: "green" as const,
+  },
+  {
+    id: "airport-hop",
+    title: "Airport Hop",
+    body: "Pre-book an airport transfer slot with pickup coordination from our front desk team.",
+    kicker: "Transit",
+    tone: "pink" as const,
   },
 ];
 

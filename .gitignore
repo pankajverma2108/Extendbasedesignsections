@@ -2,3 +2,8 @@ node_modules/
 .next/
 out/
 dist/
+
+# Internal planning and workflow docs (not for remote repo)
+guidelines/finalised_workflows/
+guidelines/api_routes/
+guidelines/

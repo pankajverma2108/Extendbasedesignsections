@@ -176,7 +176,7 @@ function iconForLabel(label: string) {
 }
 
 function getRoomGallery(room: RoomCategory) {
-  const sources = [room.image, ...propertyGallery.map((image) => image.src)];
+  const sources = room.images && room.images.length > 0 ? room.images : [room.image];
   return Array.from(new Set(sources)).slice(0, 5);
 }
 
@@ -866,17 +866,35 @@ export function Property({
                   roomCategoryList.map((room) => {
                     const count = selectedCounts[room.slug] ?? 0;
                     const featureLabels = [...room.features, ...room.amenitiesLegend];
+                    const roomGallery = getRoomGallery(room);
 
                     return (
                       <article key={room.slug} className="overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)]" style={{ backgroundColor: "#211122" }}>
                         <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_188px]">
-                          <button className="group block text-left" onClick={() => openRoomPopup(room.slug)} type="button">
-                            <ImageWithFallback
-                              alt={room.title}
-                              className="h-[220px] w-full object-cover transition duration-300 group-hover:scale-[1.03] lg:h-full"
-                              src={room.image}
-                            />
-                          </button>
+                          <div className="border-b border-white/10 lg:border-b-0 lg:border-r">
+                            <button className="group block w-full text-left" onClick={() => openRoomPopup(room.slug)} type="button">
+                              <ImageWithFallback
+                                alt={room.title}
+                                className="h-[180px] w-full object-cover transition duration-300 group-hover:scale-[1.03] lg:h-[170px]"
+                                src={roomGallery[0] ?? room.image}
+                              />
+                            </button>
+                            <div className="grid grid-cols-3 gap-1 p-1.5">
+                              {roomGallery.slice(0, 3).map((galleryImage, index) => (
+                                <button
+                                  key={`${room.slug}-thumb-${index}`}
+                                  className="overflow-hidden rounded-[8px] border border-white/10"
+                                  onClick={() => {
+                                    openRoomPopup(room.slug);
+                                    setActiveRoomImageIndex(index);
+                                  }}
+                                  type="button"
+                                >
+                                  <ImageWithFallback alt={`${room.title} ${index + 1}`} className="h-14 w-full object-cover" src={galleryImage} />
+                                </button>
+                              ))}
+                            </div>
+                          </div>
 
                           <div className="space-y-4 p-5">
                             <div className="flex flex-wrap items-center gap-3">
