@@ -148,9 +148,12 @@ function DotsMorphButton({
 
 type MobileStaggeredMenuProps = {
   items: NavItem[];
+  isAuthenticated: boolean;
+  onOpenSignIn: () => void;
+  onSignOut: () => void;
 };
 
-export function MobileStaggeredMenu({ items }: MobileStaggeredMenuProps) {
+export function MobileStaggeredMenu({ items, isAuthenticated, onOpenSignIn, onSignOut }: MobileStaggeredMenuProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -298,12 +301,36 @@ export function MobileStaggeredMenu({ items }: MobileStaggeredMenuProps) {
 
                             <Link
                               className="flex h-[136px] w-full rotate-[-2deg] flex-col rounded-[4px] bg-white p-1"
-                              href="/about"
-                              onClick={() => setOpen(false)}
+                              href={isAuthenticated ? "/profile" : aboutLink}
+                              onClick={(event) => {
+                                if (!isAuthenticated) {
+                                  event.preventDefault();
+                                  setOpen(false);
+                                  onOpenSignIn();
+                                  return;
+                                }
+
+                                setOpen(false);
+                              }}
                             >
                               <div className="flex h-full flex-col justify-between rounded-[2px] border border-[#CBD5E1] bg-[#F1F5F9] p-4">
                                 <Image alt="Profile icon" className="h-9 w-9 object-contain" src={iconProfile} />
-                                <p className="text-[20px] font-bold uppercase leading-7 text-[#1E293B]">Profile</p>
+                                <div>
+                                  <p className="text-[20px] font-bold uppercase leading-7 text-[#1E293B]">{isAuthenticated ? "Profile" : "Sign-in"}</p>
+                                  {isAuthenticated ? (
+                                    <button
+                                      className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#ff2e62]"
+                                      onClick={(event) => {
+                                        event.preventDefault();
+                                        onSignOut();
+                                        setOpen(false);
+                                      }}
+                                      type="button"
+                                    >
+                                      Logout
+                                    </button>
+                                  ) : null}
+                                </div>
                               </div>
                             </Link>
                           </div>

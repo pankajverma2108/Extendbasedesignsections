@@ -4,8 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { CircleUserRound } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
+import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { MobileStaggeredMenu } from "@/components/marketing/mobile-staggered-menu";
 import { navItems, siteMeta } from "@/content/site";
 import { cn } from "@/lib/utils";
@@ -14,6 +16,9 @@ export function Navigation() {
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { guest, isAuthenticated, openAuthModal, signOut } = useGuestAuth();
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let lastY = window.scrollY;
@@ -39,6 +44,21 @@ export function Navigation() {
 
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!isProfileMenuOpen) {
+      return;
+    }
+
+    const onWindowClick = (event: MouseEvent) => {
+      if (!profileMenuRef.current?.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("mousedown", onWindowClick);
+    return () => window.removeEventListener("mousedown", onWindowClick);
+  }, [isProfileMenuOpen]);
 
   return (
     <motion.nav
@@ -87,6 +107,55 @@ export function Navigation() {
               >
                 Policies
               </Link>
+              <div className="relative" ref={profileMenuRef}>
+                {!isAuthenticated ? (
+                  <button
+                    className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[var(--vh-pink)] px-4 py-2 text-sm font-semibold text-white shadow-[0px_-1px_0px_0px_#FFFFFF40_inset,_0px_1px_0px_0px_#FFFFFF40_inset] transition hover:bg-[var(--vh-pink-soft)]"
+                    onClick={() => openAuthModal("signin")}
+                    type="button"
+                  >
+                    Sign In
+                  </button>
+                ) : (
+                  <button
+                    className="inline-flex items-center gap-2 rounded-full border border-[var(--vh-pink)]/45 bg-[rgba(35,15,20,0.82)] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[rgba(255,46,98,0.16)]"
+                    onClick={() => setIsProfileMenuOpen((value) => !value)}
+                    type="button"
+                  >
+                    <CircleUserRound className="h-5 w-5" />
+                    <span>{guest?.name.split(" ")[0] ?? "Profile"}</span>
+                  </button>
+                )}
+
+                {isAuthenticated && isProfileMenuOpen ? (
+                  <div className="absolute right-0 top-[calc(100%+10px)] w-[216px] rounded-[22px] border border-white/15 bg-[#06090f] p-2 shadow-[0_20px_48px_rgba(0,0,0,0.45)]">
+                    <Link
+                      href="/bookings"
+                      className="block rounded-xl px-4 py-3 text-base font-semibold text-white/90 transition hover:bg-white/8"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      My Bookings
+                    </Link>
+                    <Link
+                      href="/profile"
+                      className="block rounded-xl px-4 py-3 text-base font-semibold text-white/90 transition hover:bg-white/8"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      My Profile
+                    </Link>
+                    <button
+                      className="block w-full rounded-xl px-4 py-3 text-left text-base font-semibold text-[#f6b3c8] transition hover:bg-white/8"
+                      onClick={() => {
+                        signOut();
+                        setIsProfileMenuOpen(false);
+                      }}
+                      type="button"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : null}
+              </div>
               <Link
                 href="/property"
                 className="rounded-full bg-[var(--vh-pink)] px-4 py-2 text-sm font-medium text-white shadow-[0px_-1px_0px_0px_#FFFFFF40_inset,_0px_1px_0px_0px_#FFFFFF40_inset] transition hover:bg-[var(--vh-pink-soft)]"
@@ -110,7 +179,12 @@ export function Navigation() {
               >
                 Book Now
               </Link>
-              <MobileStaggeredMenu items={navItems} />
+              <MobileStaggeredMenu
+                isAuthenticated={isAuthenticated}
+                items={navItems}
+                onOpenSignIn={() => openAuthModal("signin")}
+                onSignOut={signOut}
+              />
             </div>
           </div>
         </div>

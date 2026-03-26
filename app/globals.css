@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100;200;300;400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "react-day-picker/style.css";
 @import "../src/styles/theme.css";
@@ -55,6 +56,22 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Caveat";
+  src: url("/fonts/Caveat/Caveat-VariableFont_wght.ttf") format("truetype");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/fonts/Space_Grotesk/SpaceGrotesk-VariableFont_wght.ttf") format("truetype");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --font-biorhyme: "Acme", "Trebuchet MS", sans-serif;
   --font-sora: "Nunito", "Segoe UI", sans-serif;
@@ -95,7 +112,7 @@ body {
     linear-gradient(160deg, var(--vh-bg) 0%, var(--vh-bg-soft) 58%, #130c15 100%);
   color: white;
   font-family: var(--font-sora);
-  scrollbar-color: var(--vh-pink) rgba(255, 255, 255, 0.12);
+  scrollbar-color: var(--vh-pink) #111019;
   scrollbar-width: thin;
 }
 
@@ -104,7 +121,7 @@ body {
 }
 
 *::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.08);
+  background: #111019;
 }
 
 *::-webkit-scrollbar-thumb {

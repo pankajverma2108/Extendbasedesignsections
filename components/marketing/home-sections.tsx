@@ -24,7 +24,6 @@ import {
   guestEnergyImages,
   homePageContent,
   homeSectionOrder,
-  platformRatings,
   type HomeSectionId,
   testimonials,
   upsellBentoItems,
@@ -345,9 +344,6 @@ function EnergySection() {
 }
 
 function ReviewsSection() {
-  const ratingRowA = [...platformRatings, ...platformRatings];
-  const ratingRowB = [...platformRatings.slice().reverse(), ...platformRatings.slice().reverse()];
-
   function platformBadge(platform: string) {
     if (platform === "Booking.com") {
       return "bg-[#003580] text-white";
@@ -404,48 +400,6 @@ function ReviewsSection() {
             </StaggerItem>
           ))}
         </Stagger>
-
-        <div className="mt-8 space-y-4 overflow-hidden">
-          <div className="vh-rating-marquee">
-            <div className="vh-rating-track">
-              {ratingRowA.map((rating, index) => (
-                <div key={`${rating.platform}-a-${index}`} className="vh-rating-card">
-                  {rating.logo ? (
-                    <span className="inline-flex items-center rounded-full bg-white/90 px-2 py-1">
-                      <ImageWithFallback alt={rating.platform} className="h-4 w-auto object-contain" src={rating.logo} />
-                    </span>
-                  ) : (
-                    <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] ${platformBadge(rating.platform)}`}>
-                      {rating.platform}
-                    </span>
-                  )}
-                  <p className="text-base font-bold text-white">{rating.rating}/10</p>
-                  <p className="text-xs text-white/65">{rating.detail}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="vh-rating-marquee">
-            <div className="vh-rating-track-reverse">
-              {ratingRowB.map((rating, index) => (
-                <div key={`${rating.platform}-b-${index}`} className="vh-rating-card">
-                  {rating.logo ? (
-                    <span className="inline-flex items-center rounded-full bg-white/90 px-2 py-1">
-                      <ImageWithFallback alt={rating.platform} className="h-4 w-auto object-contain" src={rating.logo} />
-                    </span>
-                  ) : (
-                    <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] ${platformBadge(rating.platform)}`}>
-                      {rating.platform}
-                    </span>
-                  )}
-                  <p className="text-base font-bold text-white">{rating.rating}/10</p>
-                  <p className="text-xs text-white/65">{rating.detail}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
     </SectionFrame>
   );

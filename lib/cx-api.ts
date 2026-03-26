@@ -40,9 +40,9 @@ function recordTelemetry(event: Omit<TelemetryEvent, "timestamp">): void {
   }
 
   // Optional: Log to console in development
-  if (process.env.NODE_ENV === "development") {
-    console.debug("[CX-API Telemetry]", telemetryEvent);
-  }
+  // if (process.env.NODE_ENV === "development") {
+  //   console.debug("[CX-API Telemetry]", telemetryEvent);
+  // }
 }
 
 export type CxRoomCategory = {

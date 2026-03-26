@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { GuestAuthProvider } from "@/components/auth/guest-auth-provider";
 import { Footer } from "@/components/marketing/footer";
 import { Navigation } from "@/components/marketing/navigation";
 import { siteMeta } from "@/content/site";
@@ -23,9 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body className="vh-shell font-sora">
-        <Navigation />
-        <main>{children}</main>
-        <Footer />
+        <GuestAuthProvider>
+          <Navigation />
+          <main>{children}</main>
+          <Footer />
+        </GuestAuthProvider>
       </body>
     </html>
   );

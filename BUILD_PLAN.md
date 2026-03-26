@@ -89,11 +89,11 @@ Build a visually distinct, mobile-first hospitality web app that converts discov
 
 ## 7) Current Sprint Execution Checklist
 - [x] Create full build plan markdown.
-- [ ] Replace extra left custom scrollbar with browser-native themed scrollbar.
-- [ ] Upgrade room cards to support multiple static images.
-- [ ] Ensure three room cards use distinct image sets.
-- [ ] Make room popup gallery use static room image sets from working assets.
-- [ ] Validate no runtime UI dependency on `guidelines/` remains.
+- [x] Replace extra left custom scrollbar with browser-native themed scrollbar.
+- [x] Upgrade room cards to support multiple static images.
+- [x] Ensure three room cards use distinct image sets.
+- [x] Make room popup gallery use static room image sets from working assets.
+- [x] Validate no runtime UI dependency on `guidelines/` remains.
 
 ## 8) Definition of Done for Current Sprint
 - Browser native scrollbar is themed and no duplicate custom scrollbar is visible.

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 type ElectricBorderProps = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
   tone?: "pink" | "blue" | "green";
+  accentColor?: string;
   speed?: number;
   innerClassName?: string;
 };
@@ -22,10 +23,19 @@ export function ElectricBorder({
   children,
   className,
   tone = "pink",
+  accentColor,
   speed = 3.2,
   innerClassName,
   ...props
 }: ElectricBorderProps) {
+  const glowGradient = accentColor
+    ? `linear-gradient(90deg, transparent 0%, ${accentColor} 45%, ${accentColor} 55%, transparent 100%)`
+    : undefined;
+
+  const conicGradient = accentColor
+    ? `conic-gradient(from 0deg, transparent, ${accentColor}, transparent)`
+    : undefined;
+
   return (
     <div className={cn("group relative rounded-[16px]", className)} {...props}>
       <motion.div
@@ -34,6 +44,7 @@ export function ElectricBorder({
         className={cn(
           "pointer-events-none absolute -inset-[1px] rounded-[16px] bg-conic from-transparent via-white/20 to-transparent opacity-80",
         )}
+        style={conicGradient ? { background: conicGradient } : undefined}
         transition={{ duration: speed, ease: "linear", repeat: Infinity }}
       />
       <motion.div
@@ -43,6 +54,7 @@ export function ElectricBorder({
           "pointer-events-none absolute inset-0 rounded-[16px] bg-[length:200%_100%] bg-gradient-to-r blur-[9px] opacity-65",
           toneMap[tone],
         )}
+        style={glowGradient ? { backgroundImage: glowGradient } : undefined}
         transition={{ duration: speed, ease: "easeInOut", repeat: Infinity }}
       />
       <div className={cn("relative rounded-[15px] border border-white/20 bg-[#130b10]", innerClassName)}>{children}</div>

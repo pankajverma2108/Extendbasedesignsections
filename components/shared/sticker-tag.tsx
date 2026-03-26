@@ -18,7 +18,7 @@ export function StickerTag({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-[2px] border border-black/10 px-2 py-1 text-xs italic leading-4 shadow-[0px_2px_4px_-2px_rgba(0,0,0,0.1),0px_4px_6px_-1px_rgba(0,0,0,0.1)]",
+        "inline-flex items-center rounded-[8px] border border-black/15 px-2.5 py-1 text-xs italic leading-4 shadow-[0px_4px_8px_-3px_rgba(0,0,0,0.18),0px_8px_14px_-8px_rgba(0,0,0,0.2)]",
         rotate,
         className,
       )}
