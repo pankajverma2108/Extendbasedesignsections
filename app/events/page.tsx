@@ -2,7 +2,6 @@ import { EventCard } from "@/components/marketing/event-card";
 import { SectionHeading } from "@/components/marketing/section-heading";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { FadeIn, Stagger, StaggerItem } from "@/components/shared/motion";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { eventPageContent, pastEventImages, weeklyLineup } from "@/content/events";
 import { getDefaultPropertyId, getPublicEvents } from "@/lib/cx-api";
@@ -98,9 +97,12 @@ export default async function EventsPage() {
             ))}
           </Stagger>
           <FadeIn className="mt-10 text-center">
-            <Button asChild size="lg">
-              <a href="https://instagram.com/vibehouse">Follow on Instagram</a>
-            </Button>
+            <a
+              className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-md px-6 text-base font-bold uppercase text-white transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-white/30 bg-[var(--vh-pink)] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.18)] hover:-translate-y-0.5"
+              href="https://instagram.com/vibehouse"
+            >
+              Follow on Instagram
+            </a>
           </FadeIn>
         </div>
       </section>

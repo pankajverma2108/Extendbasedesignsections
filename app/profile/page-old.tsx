@@ -43,15 +43,15 @@ export default function ProfilePage() {
   }, [guest?.bookings?.length]);
 
   const memberSinceText = useMemo(() => {
-    const date = new Date(guest?.createdAt || "2021-09-15");
+    const date = new Date(guest?.created_at || "2021-09-15");
     const season = getSeasonFromDate(date);
     const year = date.getFullYear();
     return `Member since ${season} ${year}`;
-  }, [guest?.createdAt]);
+  }, [guest?.created_at]);
 
   const passportId = useMemo(() => {
-    return guest?.passportId || generatePassportId();
-  }, [guest?.passportId]);
+    return generatePassportId();
+  }, []);
 
   if (isRestoringSession) {
     return (
@@ -114,7 +114,7 @@ export default function ProfilePage() {
     updateGuestProfile({
       name: normalizedName,
       email: normalizedEmail,
-      phone: normalizedPhone || undefined,
+      phone: normalizedPhone || null,
     });
 
     setIsEditing(false);
