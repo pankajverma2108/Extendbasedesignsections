@@ -510,39 +510,39 @@ function RoomDetailsPopup({
 
   return (
     <div
-      className="animate-vh-fade-in fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(5,8,14,0.78)] px-4 py-6 backdrop-blur-sm"
+      className="animate-vh-fade-in fixed inset-0 z-[80] overflow-y-auto bg-[rgba(5,8,14,0.78)] px-3 py-4 backdrop-blur-sm"
       onClick={onClose}
       role="presentation"
     >
-      <div
-        className="animate-vh-scale-in grid max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] shadow-[var(--vh-shadow-lg)] lg:grid-cols-[1.2fr_0.8fr]"
-        onClick={(event) => event.stopPropagation()}
-        role="dialog"
-      >
-        <div className="border-b border-white/10 p-4 lg:border-b-0 lg:border-r lg:p-6">
-          <div className="overflow-hidden rounded-[22px]">
-            <ImageWithFallback alt={room.title} className="h-[260px] w-full object-cover md:h-[420px]" src={activeImage} />
+      <div className="flex min-h-full items-start justify-center lg:items-center">
+        <div
+          className="animate-vh-scale-in grid w-full max-w-5xl overflow-hidden rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] shadow-[var(--vh-shadow-lg)] lg:max-h-[92vh] lg:grid-cols-[1.2fr_0.8fr]"
+          onClick={(event) => event.stopPropagation()}
+          role="dialog"
+        >
+          <div className="border-b border-white/10 p-4 lg:border-b-0 lg:border-r lg:p-6">
+            <div className="overflow-hidden rounded-[22px]">
+              <ImageWithFallback alt={room.title} className="h-[220px] w-full object-cover sm:h-[300px] md:h-[420px]" src={activeImage} />
+            </div>
+            <div className="mt-4 grid grid-cols-4 gap-3">
+              {gallery.map((image, index) => (
+                <button
+                  key={image}
+                  className={`overflow-hidden rounded-[16px] border ${index === imageIndex ? "border-[var(--vh-pink)]" : "border-white/10"}`}
+                  onClick={() => onImageChange(index)}
+                  type="button"
+                >
+                  <ImageWithFallback alt={`${room.title} ${index + 1}`} className="h-16 w-full object-cover" src={image} />
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="mt-4 grid grid-cols-4 gap-3">
-            {gallery.map((image, index) => (
-              <button
-                key={image}
-                className={`overflow-hidden rounded-[16px] border ${index === imageIndex ? "border-[var(--vh-pink)]" : "border-white/10"}`}
-                onClick={() => onImageChange(index)}
-                type="button"
-              >
-                <ImageWithFallback alt={`${room.title} ${index + 1}`} className="h-16 w-full object-cover" src={image} />
-              </button>
-            ))}
-          </div>
-        </div>
 
-        <div className="max-h-[92vh] overflow-y-auto p-5 md:p-6">
+          <div className="p-5 md:p-6 lg:max-h-[92vh] lg:overflow-y-auto">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="vh-chip w-fit">Room Details</p>
               <h3 className="mt-4 text-3xl font-bold text-white">{room.title}</h3>
-              <p className="mt-2 text-sm text-white/68">{room.guestText.replace("x ", "")}</p>
             </div>
             <button
               aria-label="Close"
@@ -612,6 +612,7 @@ function RoomDetailsPopup({
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
@@ -901,7 +902,6 @@ export function Property({
                               <button className="text-left" onClick={() => openRoomPopup(room.slug)} type="button">
                                 <h3 className="text-xl font-semibold text-white hover:text-[var(--vh-cyan)]">{room.title}</h3>
                               </button>
-                              <span className="text-sm text-white/55">{room.guestText}</span>
                             </div>
 
                             <p className="text-sm leading-7 text-white/78">

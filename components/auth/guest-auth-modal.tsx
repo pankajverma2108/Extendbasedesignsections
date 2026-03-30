@@ -6,8 +6,6 @@ import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Loader2, X } from "lucide-react";
 
-import { ElectricBorder } from "@/components/shared/electric-border";
-
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 const PHONE_REGEX = /^\+?[1-9]\d{7,14}$/;
@@ -336,11 +334,6 @@ export function GuestAuthModal({
             </button>
           </div>
 
-          <div className="flex justify-center pb-1">
-            <ElectricBorder accentColor="#ff0088" className="rounded-[12px]" innerClassName="rounded-[11px] border-white/25 bg-[#1B2332] px-4 py-2" speed={3}>
-              <span className="text-base font-semibold italic text-white/95">Let&apos;s Vibe!</span>
-            </ElectricBorder>
-          </div>
         </form>
       </div>
     </div>,

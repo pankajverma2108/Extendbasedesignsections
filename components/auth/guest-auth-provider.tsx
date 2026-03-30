@@ -16,6 +16,17 @@ import {
 
 type AuthMode = "signin" | "signup";
 
+type GuestProfileUpdatePayload = {
+  name: string;
+  email: string;
+  phone: string | null;
+  birthDate?: string | null;
+  location?: string | null;
+  gender?: string | null;
+  prefersEmail?: boolean;
+  prefersPhone?: boolean;
+};
+
 type AuthContextValue = {
   isModalOpen: boolean;
   mode: AuthMode;
@@ -25,7 +36,7 @@ type AuthContextValue = {
   isRestoringSession: boolean;
   openAuthModal: (mode?: AuthMode) => void;
   closeAuthModal: () => void;
-  updateGuestProfile: (payload: { name: string; email: string; phone: string | null }) => void;
+  updateGuestProfile: (payload: GuestProfileUpdatePayload) => void;
   signOut: () => void;
 };
 
@@ -36,6 +47,11 @@ type ProfileOverrides = {
   name: string;
   email: string;
   phone: string | null;
+  birthDate: string | null;
+  location: string | null;
+  gender: string | null;
+  prefersEmail: boolean;
+  prefersPhone: boolean;
 };
 
 function readProfileOverrides(): ProfileOverrides | null {
@@ -49,7 +65,22 @@ function readProfileOverrides(): ProfileOverrides | null {
   }
 
   try {
-    return JSON.parse(raw) as ProfileOverrides;
+    const parsed = JSON.parse(raw) as Partial<ProfileOverrides>;
+
+    if (!parsed || typeof parsed !== "object") {
+      return null;
+    }
+
+    return {
+      name: typeof parsed.name === "string" ? parsed.name : "",
+      email: typeof parsed.email === "string" ? parsed.email : "",
+      phone: typeof parsed.phone === "string" || parsed.phone === null ? parsed.phone : null,
+      birthDate: typeof parsed.birthDate === "string" || parsed.birthDate === null ? parsed.birthDate : null,
+      location: typeof parsed.location === "string" || parsed.location === null ? parsed.location : null,
+      gender: typeof parsed.gender === "string" || parsed.gender === null ? parsed.gender : null,
+      prefersEmail: typeof parsed.prefersEmail === "boolean" ? parsed.prefersEmail : true,
+      prefersPhone: typeof parsed.prefersPhone === "boolean" ? parsed.prefersPhone : false,
+    };
   } catch {
     return null;
   }
@@ -65,7 +96,12 @@ function mergeWithOverrides(guest: GuestProfile): GuestProfile {
     ...guest,
     name: overrides.name || guest.name,
     email: overrides.email || guest.email,
-    phone: overrides.phone,
+    phone: overrides.phone ?? guest.phone,
+    birthDate: overrides.birthDate ?? guest.birthDate ?? null,
+    location: overrides.location ?? guest.location ?? null,
+    gender: overrides.gender ?? guest.gender ?? null,
+    prefersEmail: overrides.prefersEmail ?? guest.prefersEmail ?? true,
+    prefersPhone: overrides.prefersPhone ?? guest.prefersPhone ?? false,
   };
 }
 
@@ -135,6 +171,11 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(() => {
     clearStoredGuestToken();
+
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(PROFILE_OVERRIDES_KEY);
+    }
+
     setGuest(null);
   }, []);
 
@@ -177,22 +218,40 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = googleAuthUrl;
   }, []);
 
-  const updateGuestProfile = useCallback((payload: { name: string; email: string; phone: string | null }) => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(PROFILE_OVERRIDES_KEY, JSON.stringify(payload));
-    }
-
+  const updateGuestProfile = useCallback((payload: GuestProfileUpdatePayload) => {
     setGuest((current) => {
       if (!current) {
         return current;
       }
 
-      return {
+      const nextProfile: GuestProfile = {
         ...current,
         name: payload.name,
         email: payload.email,
         phone: payload.phone,
+        birthDate: payload.birthDate ?? current.birthDate ?? null,
+        location: payload.location ?? current.location ?? null,
+        gender: payload.gender ?? current.gender ?? null,
+        prefersEmail: payload.prefersEmail ?? current.prefersEmail ?? true,
+        prefersPhone: payload.prefersPhone ?? current.prefersPhone ?? false,
       };
+
+      if (typeof window !== "undefined") {
+        const overrides: ProfileOverrides = {
+          name: nextProfile.name,
+          email: nextProfile.email,
+          phone: nextProfile.phone,
+          birthDate: nextProfile.birthDate ?? null,
+          location: nextProfile.location ?? null,
+          gender: nextProfile.gender ?? null,
+          prefersEmail: nextProfile.prefersEmail ?? true,
+          prefersPhone: nextProfile.prefersPhone ?? false,
+        };
+
+        window.localStorage.setItem(PROFILE_OVERRIDES_KEY, JSON.stringify(overrides));
+      }
+
+      return nextProfile;
     });
   }, []);
 

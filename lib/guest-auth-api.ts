@@ -7,6 +7,11 @@ export type GuestProfile = {
   phone_verified: boolean;
   profile_photo_url: string | null;
   created_at: string;
+  birthDate?: string | null;
+  location?: string | null;
+  gender?: string | null;
+  prefersEmail?: boolean;
+  prefersPhone?: boolean;
   bookings?: GuestBookingSummary[];
 };
 

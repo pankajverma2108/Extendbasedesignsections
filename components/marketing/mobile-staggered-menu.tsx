@@ -21,12 +21,9 @@ type FigmaMenuCard = {
   text: string;
   mutedText: string;
   rotate: string;
-  top: string;
-  left: string;
   iconType: "rooms" | "events" | "social";
   iconBg?: string;
   badge?: string;
-  iconTone?: "light" | "dark";
 };
 
 const figmaMenuCards: FigmaMenuCard[] = [
@@ -37,12 +34,9 @@ const figmaMenuCards: FigmaMenuCard[] = [
     bg: "#FF2E62",
     text: "#FFFFFF",
     mutedText: "rgba(255,255,255,0.8)",
-    rotate: "-2deg",
-    top: "30px",
-    left: "21px",
+    rotate: "-rotate-[1.5deg]",
     iconType: "rooms",
     badge: "New",
-    iconTone: "light",
   },
   {
     href: "/events",
@@ -51,12 +45,9 @@ const figmaMenuCards: FigmaMenuCard[] = [
     bg: "#00D1FF",
     text: "#FFFFFF",
     mutedText: "rgba(255,255,255,0.82)",
-    rotate: "1.5deg",
-    top: "211.5px",
-    left: "26.2px",
+    rotate: "rotate-[1.5deg]",
     iconType: "events",
     iconBg: "rgba(255,255,255,0.2)",
-    iconTone: "light",
   },
   {
     href: "/about",
@@ -65,11 +56,8 @@ const figmaMenuCards: FigmaMenuCard[] = [
     bg: "#39FF14",
     text: "#230F14",
     mutedText: "rgba(35,15,20,0.6)",
-    rotate: "-2deg",
-    top: "402px",
-    left: "21px",
+    rotate: "-rotate-[1.5deg]",
     iconType: "social",
-    iconTone: "dark",
   },
 ];
 
@@ -150,10 +138,9 @@ type MobileStaggeredMenuProps = {
   items: NavItem[];
   isAuthenticated: boolean;
   onOpenSignIn: () => void;
-  onSignOut: () => void;
 };
 
-export function MobileStaggeredMenu({ items, isAuthenticated, onOpenSignIn, onSignOut }: MobileStaggeredMenuProps) {
+export function MobileStaggeredMenu({ items, isAuthenticated, onOpenSignIn }: MobileStaggeredMenuProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -184,6 +171,8 @@ export function MobileStaggeredMenu({ items, isAuthenticated, onOpenSignIn, onSi
     return { ...card, href: aboutLink };
   });
 
+  const closeMenu = () => setOpen(false);
+
   return (
     <div className="md:hidden">
       <DotsMorphButton open={open} onClick={() => setOpen((value) => !value)} />
@@ -198,61 +187,64 @@ export function MobileStaggeredMenu({ items, isAuthenticated, onOpenSignIn, onSi
                     className="fixed inset-0 z-[90] bg-black/65"
                     exit={{ opacity: 0 }}
                     initial={{ opacity: 0 }}
-                    onClick={() => setOpen(false)}
+                    onClick={closeMenu}
                   />
 
                   <motion.aside
                     animate={{ opacity: 1, y: 0 }}
-                    className="fixed inset-0 z-[100] overflow-y-auto bg-[radial-gradient(130%_100%_at_10%_0%,rgba(255,46,98,0.18),transparent_52%),radial-gradient(120%_100%_at_85%_18%,rgba(0,209,255,0.12),transparent_58%),linear-gradient(170deg,#1A0B12_0%,#230F14_62%,#140912_100%)]"
+                    className="fixed inset-0 z-[100] overflow-hidden bg-[radial-gradient(130%_100%_at_10%_0%,rgba(255,46,98,0.18),transparent_52%),radial-gradient(120%_100%_at_85%_18%,rgba(0,209,255,0.12),transparent_58%),linear-gradient(170deg,#1A0B12_0%,#230F14_62%,#140912_100%)]"
                     exit={{ opacity: 0, y: 6 }}
                     initial={{ opacity: 0, y: 12 }}
                     transition={{ duration: 0.22, ease: "easeOut" }}
                   >
-                    <div className="mx-auto min-h-[100dvh] w-full max-w-[405px] overflow-hidden bg-transparent px-3 pb-8 pt-1">
-                      <div className="absolute left-1/2 top-0 inline-flex w-[405px] -translate-x-1/2 items-center justify-between p-6">
+                    <div className="mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-transparent px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-[max(8px,env(safe-area-inset-top))]">
+                      {/* Section: Header */}
+                      <div className="flex items-center justify-between px-1 pb-3">
                         <button
                           aria-label="Close menu"
-                          className="inline-flex h-12 w-12 items-center justify-center"
-                          onClick={() => setOpen(false)}
+                          className="inline-flex h-11 w-11 items-center justify-center"
+                          onClick={closeMenu}
                           type="button"
                         >
                           <X className="h-[18px] w-[18px] text-[#F1F5F9]" />
                         </button>
-                        <div className="flex flex-1 items-center justify-center pr-12">
-                          <span className="text-center text-[42px] font-bold uppercase leading-[38px] tracking-[-0.5px] text-slate-100" style={{ fontFamily: "var(--font-bebas)" }}>Menu</span>
+
+                        <div className="flex-1 text-center">
+                          <span className="text-center text-[38px] font-bold uppercase leading-[34px] tracking-[-0.5px] text-slate-100" style={{ fontFamily: "var(--font-bebas)" }}>
+                            Menu
+                          </span>
                         </div>
+
+                        <span aria-hidden="true" className="inline-flex h-11 w-11" />
                       </div>
 
-                      <div className="absolute left-1/2 top-24 h-[760px] w-[405px] -translate-x-1/2">
-                        <motion.div
-                          animate="show"
-                          className="relative h-full w-full"
-                          initial="hidden"
-                          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
-                        >
+                      {/* Section: Menu Content */}
+                      <motion.div
+                        animate="show"
+                        className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto] gap-3"
+                        initial="hidden"
+                        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
+                      >
+                        {/* Section: Primary Navigation Cards */}
+                        <motion.div className="grid min-h-0 grid-rows-3 gap-3" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.07 } } }}>
                           {cards.map((card) => (
-                            <motion.div
-                              key={card.title}
-                              className="absolute inline-flex w-[342px] flex-col"
-                              style={{ left: card.left, top: card.top, transform: `rotate(${card.rotate})` }}
-                              variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-                            >
+                            <motion.div key={card.title} className={`min-h-0 ${card.rotate}`} variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
                               <Link
-                                className="relative flex flex-col rounded-[6px] p-1 shadow-[0_14px_30px_rgba(0,0,0,0.26)]"
+                                className="relative flex h-full min-h-[96px] flex-col rounded-[8px] p-1 shadow-[0_14px_30px_rgba(0,0,0,0.26)]"
                                 href={card.href}
-                                onClick={() => setOpen(false)}
+                                onClick={closeMenu}
                                 style={{ background: card.bg }}
                               >
-                                <div className={`flex h-[160px] flex-col justify-between rounded-[2px] border-2 border-dashed p-4 ${card.title === "Social" ? "border-black/10 bg-[rgba(35,15,20,0.1)]" : "border-white/30 bg-[rgba(35,15,20,0.1)]"}`}>
+                                <div className={`flex h-full flex-col justify-between rounded-[4px] border-2 border-dashed p-3 ${card.title === "Social" ? "border-black/10 bg-[rgba(35,15,20,0.1)]" : "border-white/30 bg-[rgba(35,15,20,0.1)]"}`}>
                                   <div className="relative flex items-start justify-between">
                                     {card.iconType === "rooms" ? (
-                                      <BedDouble className="h-9 w-9 text-white" strokeWidth={1.8} />
+                                      <BedDouble className="h-7 w-7 text-white sm:h-8 sm:w-8" strokeWidth={1.8} />
                                     ) : null}
                                     {card.iconType === "events" ? (
-                                      <Ticket className="h-9 w-9 text-white" strokeWidth={1.8} />
+                                      <Ticket className="h-7 w-7 text-white sm:h-8 sm:w-8" strokeWidth={1.8} />
                                     ) : null}
                                     {card.iconType === "social" ? (
-                                      <CalendarDays className="h-9 w-9 text-[#230F14]" strokeWidth={2.2} />
+                                      <CalendarDays className="h-7 w-7 text-[#230F14] sm:h-8 sm:w-8" strokeWidth={2.2} />
                                     ) : null}
 
                                     {card.badge ? (
@@ -271,10 +263,10 @@ export function MobileStaggeredMenu({ items, isAuthenticated, onOpenSignIn, onSi
                                   </div>
 
                                   <div>
-                                    <p className="text-[30px] font-bold uppercase leading-9 tracking-[-1.5px]" style={{ color: card.text }}>
+                                    <p className="text-[24px] font-bold uppercase leading-7 tracking-[-1px] sm:text-[28px] sm:leading-8" style={{ color: card.text }}>
                                       {card.title}
                                     </p>
-                                    <p className="text-sm italic leading-5" style={{ color: card.mutedText }}>
+                                    <p className="text-xs italic leading-5 sm:text-sm" style={{ color: card.mutedText }}>
                                       {card.subtitle}
                                     </p>
                                   </div>
@@ -282,60 +274,56 @@ export function MobileStaggeredMenu({ items, isAuthenticated, onOpenSignIn, onSi
                               </Link>
 
                               {card.title === "Rooms" ? (
-                                <StickerTag className="absolute -right-1 -top-4" label="Book Now!" rotate="rotate-[12deg]" />
+                                <StickerTag className="absolute -right-1 -top-3" label="Book Now!" rotate="rotate-[10deg]" />
                               ) : null}
                             </motion.div>
                           ))}
-
-                          <div className="absolute left-1/2 top-[600px] grid w-[346px] -translate-x-1/2 grid-cols-2 gap-[11.9px]">
-                            <Link
-                              className="flex h-[136px] w-full rotate-[1deg] flex-col rounded-[4px] bg-[#1E293B] p-1"
-                              href="/property"
-                              onClick={() => setOpen(false)}
-                            >
-                              <div className="flex h-full flex-col justify-between rounded-[2px] border border-[#64748B] bg-[#334155]/50 p-4">
-                                <Image alt="My Stay icon" className="h-9 w-9 object-contain" src={iconMyStay} />
-                                <p className="text-[20px] font-bold uppercase leading-7 text-white">My Stay</p>
-                              </div>
-                            </Link>
-
-                            <Link
-                              className="flex h-[136px] w-full rotate-[-2deg] flex-col rounded-[4px] bg-white p-1"
-                              href={isAuthenticated ? "/profile" : aboutLink}
-                              onClick={(event) => {
-                                if (!isAuthenticated) {
-                                  event.preventDefault();
-                                  setOpen(false);
-                                  onOpenSignIn();
-                                  return;
-                                }
-
-                                setOpen(false);
-                              }}
-                            >
-                              <div className="flex h-full flex-col justify-between rounded-[2px] border border-[#CBD5E1] bg-[#F1F5F9] p-4">
-                                <Image alt="Profile icon" className="h-9 w-9 object-contain" src={iconProfile} />
-                                <div>
-                                  <p className="text-[20px] font-bold uppercase leading-7 text-[#1E293B]">{isAuthenticated ? "Profile" : "Sign-in"}</p>
-                                  {isAuthenticated ? (
-                                    <button
-                                      className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#ff2e62]"
-                                      onClick={(event) => {
-                                        event.preventDefault();
-                                        onSignOut();
-                                        setOpen(false);
-                                      }}
-                                      type="button"
-                                    >
-                                      Logout
-                                    </button>
-                                  ) : null}
-                                </div>
-                              </div>
-                            </Link>
-                          </div>
                         </motion.div>
-                      </div>
+
+                        {/* Section: Account Cards */}
+                        <motion.div className="grid grid-cols-2 gap-3 pb-1" variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}>
+                          <Link
+                            className="flex h-[120px] w-full rotate-[1deg] flex-col rounded-[6px] bg-[#1E293B] p-1"
+                            href="/bookings"
+                            onClick={(event) => {
+                              if (!isAuthenticated) {
+                                event.preventDefault();
+                                closeMenu();
+                                onOpenSignIn();
+                                return;
+                              }
+
+                              closeMenu();
+                            }}
+                          >
+                            <div className="flex h-full flex-col justify-between rounded-[4px] border border-[#64748B] bg-[#334155]/50 p-3.5">
+                              <Image alt="My Stay icon" className="h-9 w-9 object-contain" src={iconMyStay} />
+                              <p className="text-[20px] font-bold uppercase leading-7 text-white">My Stay</p>
+                            </div>
+                          </Link>
+
+                          <Link
+                            className="flex h-[120px] w-full -rotate-[1deg] flex-col rounded-[6px] bg-white p-1"
+                            href="/profile"
+                            onClick={(event) => {
+                              if (!isAuthenticated) {
+                                event.preventDefault();
+                                closeMenu();
+                                onOpenSignIn();
+                                return;
+                              }
+
+                              closeMenu();
+                            }}
+                          >
+                            <div className="flex h-full flex-col justify-between rounded-[4px] border border-[#CBD5E1] bg-[#F1F5F9] p-3.5">
+                              <Image alt="Profile icon" className="h-9 w-9 object-contain" src={iconProfile} />
+                              <p className="text-[20px] font-bold uppercase leading-7 text-[#1E293B]">{isAuthenticated ? "Profile" : "Sign-in"}</p>
+                            </div>
+                          </Link>
+                        </motion.div>
+
+                      </motion.div>
                     </div>
                   </motion.aside>
                 </>

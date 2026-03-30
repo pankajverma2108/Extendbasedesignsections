@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Crown, Sparkles } from "lucide-react";
 
@@ -45,6 +45,11 @@ export default function ProfilePage() {
   const [name, setName] = useState(guest?.name ?? "");
   const [email, setEmail] = useState(guest?.email ?? "");
   const [phone, setPhone] = useState(guest?.phone ?? "");
+  const [birthDate, setBirthDate] = useState(guest?.birthDate ?? "");
+  const [fromLocation, setFromLocation] = useState(guest?.location ?? "");
+  const [gender, setGender] = useState(guest?.gender ?? "");
+  const [prefersEmail, setPrefersEmail] = useState(guest?.prefersEmail ?? true);
+  const [prefersPhone, setPrefersPhone] = useState(guest?.prefersPhone ?? false);
   const [error, setError] = useState<string | null>(null);
 
   const memberSinceText = useMemo(() => {
@@ -57,6 +62,24 @@ export default function ProfilePage() {
   const passportId = useMemo(() => {
     return buildPassportId(guest?.id ?? "guest", guest?.created_at ?? "2021-09-15");
   }, [guest?.created_at, guest?.id]);
+
+  const communicationPreference = useMemo(() => {
+    const channels = [
+      guest?.prefersEmail ? "Email" : null,
+      guest?.prefersPhone ? "Phone" : null,
+    ].filter(Boolean);
+
+    return channels.length > 0 ? channels.join(" + ") : "Not set";
+  }, [guest?.prefersEmail, guest?.prefersPhone]);
+
+  useEffect(() => {
+    if (isRestoringSession || isAuthenticated) {
+      return;
+    }
+
+    openAuthModal("signin");
+    router.replace("/");
+  }, [isAuthenticated, isRestoringSession, openAuthModal, router]);
 
   if (isRestoringSession) {
     return (
@@ -74,14 +97,7 @@ export default function ProfilePage() {
         <div className="vh-container">
           <div className="mx-auto max-w-[520px] rounded-[12px] border border-white/15 bg-white/5 p-8 text-center">
             <h1 className="text-3xl font-bold uppercase tracking-[1px] text-white">Vibe Passport</h1>
-            <p className="mt-2 text-white/75">Sign in to unlock your profile and booking identity.</p>
-            <button
-              className="mt-6 inline-flex rounded-[10px] border-2 border-[#0F172A] bg-[var(--vh-pink)] px-5 py-3 text-sm font-extrabold uppercase tracking-[1px] text-white"
-              onClick={() => openAuthModal("signin")}
-              type="button"
-            >
-              Sign In
-            </button>
+            <p className="mt-2 text-white/75">Redirecting you to sign in...</p>
           </div>
         </div>
       </section>
@@ -92,6 +108,11 @@ export default function ProfilePage() {
     setName(guest.name);
     setEmail(guest.email);
     setPhone(guest.phone ?? "");
+    setBirthDate(guest.birthDate ?? "");
+    setFromLocation(guest.location ?? "");
+    setGender(guest.gender ?? "");
+    setPrefersEmail(guest.prefersEmail ?? true);
+    setPrefersPhone(guest.prefersPhone ?? false);
     setError(null);
     setIsEditing(true);
   };
@@ -116,10 +137,30 @@ export default function ProfilePage() {
       return;
     }
 
+    if (birthDate) {
+      const dateValue = new Date(`${birthDate}T00:00:00`);
+      const now = new Date();
+
+      if (Number.isNaN(dateValue.getTime()) || dateValue > now) {
+        setError("Born on date must be valid and not in the future.");
+        return;
+      }
+    }
+
+    if (!prefersEmail && !prefersPhone) {
+      setError("Select at least one communication preference.");
+      return;
+    }
+
     updateGuestProfile({
       name: normalizedName,
       email: normalizedEmail,
       phone: normalizedPhone || null,
+      birthDate: birthDate || null,
+      location: fromLocation.trim() || null,
+      gender: gender || null,
+      prefersEmail,
+      prefersPhone,
     });
 
     setIsEditing(false);
@@ -194,6 +235,31 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* Section: Passport Details */}
+            <section className="rounded-lg border border-white/12 bg-white/[0.04] p-4">
+              <h3 className="font-['Space_Grotesk'] text-sm font-bold uppercase tracking-[0.14em] text-white/85">
+                Passport Details
+              </h3>
+              <div className="mt-3 grid gap-3 text-sm text-white/80 sm:grid-cols-2">
+                <div className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2.5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">Born On</p>
+                  <p className="mt-1 font-semibold text-white">{guest.birthDate || "Not set"}</p>
+                </div>
+                <div className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2.5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">I Am From</p>
+                  <p className="mt-1 font-semibold text-white">{guest.location || "Not set"}</p>
+                </div>
+                <div className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2.5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">Gender</p>
+                  <p className="mt-1 font-semibold text-white">{guest.gender || "Not set"}</p>
+                </div>
+                <div className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2.5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">Communication</p>
+                  <p className="mt-1 font-semibold text-white">{communicationPreference}</p>
+                </div>
+              </div>
+            </section>
+
             {/* Section: Vibe Notes */}
             <section className="relative rounded-lg border border-[var(--vh-cyan)]/35 bg-[rgba(0,240,255,0.08)] p-4">
               <div className="absolute -top-2 right-0 z-10">
@@ -230,7 +296,7 @@ export default function ProfilePage() {
                 <div className="space-y-3">
                   <label className="block">
                     <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
-                      Name
+                      Full Name
                     </span>
                     <input
                       className="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[var(--vh-pink)]"
@@ -256,7 +322,7 @@ export default function ProfilePage() {
 
                   <label className="block">
                     <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
-                      Phone (Optional)
+                      Phone
                     </span>
                     <input
                       className="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[var(--vh-pink)]"
@@ -266,6 +332,86 @@ export default function ProfilePage() {
                       value={phone}
                     />
                   </label>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
+                        Born On
+                      </span>
+                      <input
+                        className="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[var(--vh-pink)]"
+                        onChange={(e) => setBirthDate(e.target.value)}
+                        type="date"
+                        value={birthDate}
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
+                        I Am From
+                      </span>
+                      <input
+                        className="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[var(--vh-pink)]"
+                        onChange={(e) => setFromLocation(e.target.value)}
+                        placeholder="City, Country"
+                        type="text"
+                        value={fromLocation}
+                      />
+                    </label>
+                  </div>
+
+                  <label className="block">
+                    <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
+                      Gender
+                    </span>
+                    <select
+                      className="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[var(--vh-pink)]"
+                      onChange={(e) => setGender(e.target.value)}
+                      value={gender}
+                    >
+                      <option className="bg-[var(--vh-surface-2)] text-white" value="">
+                        Select
+                      </option>
+                      <option className="bg-[var(--vh-surface-2)] text-white" value="Female">
+                        Female
+                      </option>
+                      <option className="bg-[var(--vh-surface-2)] text-white" value="Male">
+                        Male
+                      </option>
+                      <option className="bg-[var(--vh-surface-2)] text-white" value="Non-binary">
+                        Non-binary
+                      </option>
+                      <option className="bg-[var(--vh-surface-2)] text-white" value="Prefer not to say">
+                        Prefer not to say
+                      </option>
+                    </select>
+                  </label>
+
+                  <div className="rounded-md border border-white/15 bg-white/[0.03] px-3 py-3">
+                    <p className="mb-2 font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
+                      Communication Preferences
+                    </p>
+                    <div className="flex flex-wrap gap-4 text-sm text-white/85">
+                      <label className="inline-flex items-center gap-2">
+                        <input
+                          checked={prefersEmail}
+                          className="h-4 w-4 accent-[var(--vh-pink)]"
+                          onChange={(e) => setPrefersEmail(e.target.checked)}
+                          type="checkbox"
+                        />
+                        Email
+                      </label>
+                      <label className="inline-flex items-center gap-2">
+                        <input
+                          checked={prefersPhone}
+                          className="h-4 w-4 accent-[var(--vh-cyan)]"
+                          onChange={(e) => setPrefersPhone(e.target.checked)}
+                          type="checkbox"
+                        />
+                        Phone
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 {error ? (

@@ -307,7 +307,7 @@ select {
   }
 
   .vh-section {
-    @apply py-10 md:py-12;
+    @apply py-8 md:py-10;
     background-color: var(--vh-section-a);
   }
 

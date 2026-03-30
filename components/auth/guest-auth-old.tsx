@@ -35,6 +35,10 @@ type GuestAuthModalProps = {
   onGoogleAuth: () => void;
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+const PHONE_REGEX = /^\+?[1-9]\d{7,14}$/;
+
 export function GuestAuthModal({
   open,
   mode,
@@ -55,15 +59,6 @@ export function GuestAuthModal({
   const [rememberMe, setRememberMe] = useState(true);
   const [agreed, setAgreed] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-
-  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-  const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
-  const PHONE_REGEX = /^\+?[1-9]\d{7,14}$/;
-
-  const handleBodyOverflow = (shouldHide: boolean) => {
-    if (typeof document === "undefined") return;
-    document.body.style.overflow = shouldHide ? "hidden" : "";
-  };
 
   const switchMode = (nextMode: AuthMode) => {
     setLocalError(null);

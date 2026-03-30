@@ -10,7 +10,7 @@
 
 | Term | Meaning |
 |---|---|
-| **Guest** | Any user registered on the Vibe House PWA (email + password) |
+| **Guest** | Any user registered on the Vibe House PWA (email + password OR Google OAuth) |
 | **Customer (Cx)** | Guest who has at least one linked booking (`ezee_reservation_id`) |
 | **PRIMARY** | Guest whose email/phone matches the original booker in eZee |
 | **SECONDARY** | Additional guest added to a booking, approved by PRIMARY |
@@ -19,6 +19,50 @@
 A guest account never expires. Booking IDs never expire — guests can always view past stays, download invoices, etc.
 
 ---
+
+## 0. Google OAuth (Recommended)
+
+### Step 1 — Initiate Google Login
+
+**GET** `/guest/auth/google`
+
+No auth, no body. The browser navigates to this URL and Passport immediately redirects to Google's consent screen.
+
+```
+// Simply open this in the browser:
+http://localhost:8080/guest/auth/google
+```
+
+### Step 2 — Google Callback (handled automatically)
+
+**GET** `/guest/auth/google/callback`
+
+Google redirects here after the user grants consent. The backend:
+1. Validates the OAuth code with Google
+2. Runs the upsert logic (see below)
+3. Redirects to `FRONTEND_URL/auth/google/success?token=<jwt>&name=<name>`
+
+The **frontend** reads `?token` from the query string, stores it in localStorage, and navigates home — same JWT format as email/password login.
+
+**Upsert logic (3 cases)**:
+
+| Case | What Happens |
+|------|-------------|
+| Google ID already linked (`auth_providers` row exists) | Returning Google user — issue token immediately |
+| Email exists but no Google provider | Link Google to the existing account, mark `email_verified=true` |
+| Completely new user | Create `guests` row (no `password_hash`) + `auth_providers` row, `email_verified=true` |
+
+**Environment variables needed**:
+```env
+GOOGLE_OAUTH_CLIENT_ID=...
+GOOGLE_OAUTH_CLIENT_SECRET=...
+GOOGLE_OAUTH_CALLBACK_URL=http://localhost:8080/guest/auth/google/callback
+FRONTEND_URL=http://localhost:3000
+```
+
+---
+
+
 
 ## 1. Guest Signup
 
