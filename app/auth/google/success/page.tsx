@@ -10,7 +10,7 @@ export default function GoogleAuthSuccessPage() {
     const token = searchParams.get("token") ?? searchParams.get("access_token");
 
     if (!token) {
-      window.location.replace("/?auth=google-error");
+      window.location.replace("/auth/google/error?reason=missing_token");
       return;
     }
 
