@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { getGuestGoogleAuthUrl } from "@/lib/guest-auth-api";
 
@@ -15,6 +15,14 @@ const reasonMap: Record<string, ReasonDetails> = {
     title: "Google Login Could Not Be Completed",
     description: "We could not finish the callback handshake. This is usually a temporary server-side issue.",
   },
+  auth_failed: {
+    title: "Google Authentication Failed",
+    description: "We could not exchange the Google sign-in response for your account session. Please try again.",
+  },
+  login_failed: {
+    title: "Account Login Could Not Be Completed",
+    description: "Google sign-in succeeded, but we could not finish creating your account session. Please try again.",
+  },
   missing_token: {
     title: "Google Login Did Not Return A Token",
     description: "Google sign-in finished, but no session token reached the app.",
@@ -26,14 +34,9 @@ const reasonMap: Record<string, ReasonDetails> = {
 };
 
 export default function GoogleAuthErrorPage() {
-  const [reason, setReason] = useState("unknown");
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setReason(params.get("reason") ?? "unknown");
-  }, []);
-
-  const reasonDetails = useMemo(() => reasonMap[reason] ?? reasonMap.unknown, [reason]);
+  const searchParams = useSearchParams();
+  const reason = searchParams.get("reason") ?? "unknown";
+  const reasonDetails = reasonMap[reason] ?? reasonMap.unknown;
 
   return (
     <section className="vh-section py-20 pt-28 md:pt-32">
