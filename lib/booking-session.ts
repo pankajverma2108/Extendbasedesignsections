@@ -1,0 +1,205 @@
+export type BookingDraftRoom = {
+  roomTypeId: string;
+  slug: string;
+  title: string;
+  roomType: string;
+  quantity: number;
+  basePrice: number;
+  totalPrice: number;
+  availableCount: number;
+  guestText: string;
+  image?: string;
+  amenities: string[];
+};
+
+export type BookingDraftAddon = {
+  productId: string;
+  name: string;
+  category: "COMMODITY" | "SERVICE";
+  quantity: number;
+  unitPrice: number;
+  inStock: boolean;
+};
+
+export type BookingDraft = {
+  propertyId: string;
+  checkinDate: string;
+  checkoutDate: string;
+  rooms: BookingDraftRoom[];
+  addons: BookingDraftAddon[];
+  signature: string;
+  createdAt: number;
+};
+
+export type PendingBookingSnapshot = {
+  signature: string;
+  order: {
+    ezeeReservationId: string;
+    propertyId: string;
+    propertyName: string;
+    checkinDate: string;
+    checkoutDate: string;
+    totalGuests: number;
+    noOfNights: number;
+    subtotalRooms: number;
+    subtotalAddons: number;
+    grandTotal: number;
+    addonOrderId: string | null;
+    status: string;
+  };
+};
+
+export type ConfirmedBookingSnapshot = {
+  ezeeReservationId: string;
+  propertyId: string;
+  propertyName: string;
+  roomTypeName: string;
+  roomSummary: string;
+  checkinDate: string;
+  checkoutDate: string;
+  amountPaid: number;
+  paymentId: string;
+  createdAt: number;
+};
+
+const BOOKING_DRAFT_KEY = "vh_booking_draft";
+const CONFIRMED_BOOKING_PREFIX = "vh_confirmed_booking:";
+
+type StoredBookingState = {
+  draft: BookingDraft;
+  pendingOrder?: PendingBookingSnapshot | null;
+};
+
+function isBrowser(): boolean {
+  return typeof window !== "undefined";
+}
+
+export function buildBookingSignature(draft: {
+  propertyId: string;
+  checkinDate: string;
+  checkoutDate: string;
+  rooms: Array<{ roomTypeId: string; quantity: number }>;
+  addons: Array<{ productId: string; quantity: number }>;
+}): string {
+  const rooms = [...draft.rooms]
+    .filter((room) => room.quantity > 0)
+    .sort((left, right) => left.roomTypeId.localeCompare(right.roomTypeId))
+    .map((room) => `${room.roomTypeId}:${room.quantity}`)
+    .join("|");
+
+  const addons = [...draft.addons]
+    .filter((addon) => addon.quantity > 0)
+    .sort((left, right) => left.productId.localeCompare(right.productId))
+    .map((addon) => `${addon.productId}:${addon.quantity}`)
+    .join("|");
+
+  return [draft.propertyId, draft.checkinDate, draft.checkoutDate, rooms, addons].join("::");
+}
+
+export function getStoredBookingState(): StoredBookingState | null {
+  if (!isBrowser()) {
+    return null;
+  }
+
+  const raw = window.localStorage.getItem(BOOKING_DRAFT_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<StoredBookingState>;
+    if (!parsed?.draft) {
+      return null;
+    }
+
+    return {
+      draft: parsed.draft as BookingDraft,
+      pendingOrder: parsed.pendingOrder ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function saveBookingDraft(draft: BookingDraft): void {
+  if (!isBrowser()) {
+    return;
+  }
+
+  const current = getStoredBookingState();
+  const nextState: StoredBookingState = {
+    draft,
+    pendingOrder: current?.pendingOrder?.signature === draft.signature ? current.pendingOrder : null,
+  };
+
+  window.localStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
+}
+
+export function savePendingBookingOrder(snapshot: PendingBookingSnapshot): void {
+  if (!isBrowser()) {
+    return;
+  }
+
+  const current = getStoredBookingState();
+  if (!current?.draft) {
+    return;
+  }
+
+  const nextState: StoredBookingState = {
+    draft: current.draft,
+    pendingOrder: snapshot,
+  };
+
+  window.localStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
+}
+
+export function clearPendingBookingOrder(): void {
+  if (!isBrowser()) {
+    return;
+  }
+
+  const current = getStoredBookingState();
+  if (!current?.draft) {
+    return;
+  }
+
+  const nextState: StoredBookingState = {
+    draft: current.draft,
+    pendingOrder: null,
+  };
+
+  window.localStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
+}
+
+export function clearBookingDraft(): void {
+  if (!isBrowser()) {
+    return;
+  }
+
+  window.localStorage.removeItem(BOOKING_DRAFT_KEY);
+}
+
+export function saveConfirmedBookingSnapshot(snapshot: ConfirmedBookingSnapshot): void {
+  if (!isBrowser()) {
+    return;
+  }
+
+  window.localStorage.setItem(`${CONFIRMED_BOOKING_PREFIX}${snapshot.ezeeReservationId}`, JSON.stringify(snapshot));
+}
+
+export function getConfirmedBookingSnapshot(ezeeReservationId: string): ConfirmedBookingSnapshot | null {
+  if (!isBrowser()) {
+    return null;
+  }
+
+  const raw = window.localStorage.getItem(`${CONFIRMED_BOOKING_PREFIX}${ezeeReservationId}`);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(raw) as ConfirmedBookingSnapshot;
+  } catch {
+    return null;
+  }
+}

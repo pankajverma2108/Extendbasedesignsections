@@ -1,3 +1,5 @@
+import { getApiBaseUrl, requestJson } from "@/lib/vibehouse-api";
+
 export type GuestProfile = {
   id: string;
   name: string;
@@ -42,70 +44,10 @@ export type GuestLoginPayload = {
   password: string;
 };
 
-const DEFAULT_API_BASE_URL = "https://vibehousebackend-production.up.railway.app";
 const DEFAULT_GOOGLE_AUTH_PATH = "/guest/auth/google";
 
 const LOCAL_STORAGE_KEY = "vh_guest_access_token";
 const SESSION_STORAGE_KEY = "vh_guest_access_token_session";
-
-function apiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL;
-}
-
-function parseApiError(data: unknown, fallback: string): string {
-  if (!data || typeof data !== "object") {
-    return fallback;
-  }
-
-  const message = (data as { message?: unknown }).message;
-
-  if (Array.isArray(message)) {
-    return message.join(". ");
-  }
-
-  if (typeof message === "string" && message.trim().length > 0) {
-    return message;
-  }
-
-  return fallback;
-}
-
-async function requestJson<T>(
-  path: string,
-  options?: {
-    method?: "GET" | "POST";
-    body?: Record<string, unknown>;
-    token?: string;
-  },
-): Promise<T> {
-  const response = await fetch(`${apiBaseUrl()}${path}`, {
-    method: options?.method ?? "GET",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      ...(options?.token ? { Authorization: `Bearer ${options.token}` } : {}),
-    },
-    body: options?.body ? JSON.stringify(options.body) : undefined,
-    cache: "no-store",
-  });
-
-  const rawText = await response.text();
-  let data: unknown = null;
-
-  if (rawText.trim()) {
-    try {
-      data = JSON.parse(rawText);
-    } catch {
-      data = null;
-    }
-  }
-
-  if (!response.ok) {
-    throw new Error(parseApiError(data, "Request failed. Please try again."));
-  }
-
-  return data as T;
-}
 
 export async function signupGuest(payload: GuestSignupPayload): Promise<GuestAuthResponse> {
   return requestJson<GuestAuthResponse>("/guest/auth/signup", {
@@ -129,7 +71,7 @@ export async function getGuestMe(token: string): Promise<GuestProfile> {
 }
 
 export function getGuestGoogleAuthUrl(): string {
-  return process.env.NEXT_PUBLIC_GUEST_GOOGLE_AUTH_URL?.trim() || `${apiBaseUrl()}${DEFAULT_GOOGLE_AUTH_PATH}`;
+  return process.env.NEXT_PUBLIC_GUEST_GOOGLE_AUTH_URL?.trim() || `${getApiBaseUrl()}${DEFAULT_GOOGLE_AUTH_PATH}`;
 }
 
 export function getStoredGuestToken(): string | null {

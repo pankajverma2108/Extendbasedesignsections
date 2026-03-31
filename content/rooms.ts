@@ -1,4 +1,5 @@
 import type { RoomCardProps } from "@/content/types";
+import type { CxRoomCategory } from "@/lib/cx-api";
 
 const mixedDormImages = [
   "/images/rooms/room-1.jpg",
@@ -133,8 +134,10 @@ export const nearbyAttractions = [
   { name: "Lalbagh Botanical Garden", travel: "18 min drive", type: "City Escape" },
 ];
 
-export const roomCategories = [
+export const roomCategories: CxRoomCategory[] = [
   {
+    roomTypeId: "mixed-4-bed",
+    roomType: "4-Bed Mixed Dorm",
     slug: "mixed-4-bed",
     title: "Bed in 4-Bed Mixed Dorm",
     shortTitle: "4-Bed Mixed Dorm",
@@ -142,11 +145,16 @@ export const roomCategories = [
     images: mixedDormImages,
     guestText: "x 1 Guest",
     basePrice: 599,
+    totalPrice: 599,
+    availableCount: 7,
+    totalCount: 7,
     inventoryText: "07 beds available",
     features: ["Privacy curtain", "Reading light", "USB charging", "Personal locker"],
     amenitiesLegend: ["AC", "Locker", "Fresh linen", "Housekeeping"],
   },
   {
+    roomTypeId: "female-4-bed",
+    roomType: "4-Bed Female Dorm",
     slug: "female-4-bed",
     title: "Bed in 4-Bed Female Dorm",
     shortTitle: "4-Bed Female Dorm",
@@ -154,11 +162,16 @@ export const roomCategories = [
     images: femaleDormImages,
     guestText: "x 1 Guest",
     basePrice: 599,
+    totalPrice: 599,
+    availableCount: 5,
+    totalCount: 5,
     inventoryText: "05 beds available",
     features: ["Women-only floor", "En-suite access", "Reading light", "Secure locker"],
     amenitiesLegend: ["AC", "Locker", "Fresh linen", "Housekeeping"],
   },
   {
+    roomTypeId: "private-room",
+    roomType: "Private Room",
     slug: "private-room",
     title: "Private Room",
     shortTitle: "Private Room",
@@ -166,6 +179,9 @@ export const roomCategories = [
     images: privateRoomImages,
     guestText: "x 2 Guests",
     basePrice: 1299,
+    totalPrice: 1299,
+    availableCount: 3,
+    totalCount: 3,
     inventoryText: "03 rooms left",
     features: ["Queen bed", "En-suite bathroom", "Work desk", "Mini-fridge"],
     amenitiesLegend: ["AC", "Private bath", "Fresh linen", "Housekeeping"],

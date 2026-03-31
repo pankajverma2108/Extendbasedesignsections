@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import {
@@ -32,6 +33,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { buildBookingSignature, saveBookingDraft, type BookingDraftRoom } from "@/lib/booking-session";
 import type { CxRoomCategory } from "@/lib/cx-api";
 import {
   bookingSummary,
@@ -254,11 +256,13 @@ function DesktopBookingSummary({
   checkOut,
   selectedCounts,
   roomCategoryList,
+  onContinue,
 }: {
   checkIn: string;
   checkOut: string;
   selectedCounts: Record<string, number>;
   roomCategoryList: RoomCategory[];
+  onContinue: () => void;
 }) {
   const propertyHref = useMemo(() => buildPropertyHref(checkIn, checkOut), [checkIn, checkOut]);
   const nights = getNightCount(checkIn, checkOut);
@@ -323,7 +327,13 @@ function DesktopBookingSummary({
         </div>
 
         <Button asChild className="mt-5 w-full">
-          <Link href={`${propertyHref}#availability`}>Book Now</Link>
+          {selectedRooms.length > 0 ? (
+            <button onClick={onContinue} type="button">
+              Continue to checkout
+            </button>
+          ) : (
+            <Link href={`${propertyHref}#availability`}>Book Now</Link>
+          )}
         </Button>
       </div>
     </aside>
@@ -335,11 +345,13 @@ function MobileStickySummary({
   checkOut,
   selectedCounts,
   roomCategoryList,
+  onContinue,
 }: {
   checkIn: string;
   checkOut: string;
   selectedCounts: Record<string, number>;
   roomCategoryList: RoomCategory[];
+  onContinue: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const nights = getNightCount(checkIn, checkOut);
@@ -409,9 +421,14 @@ function MobileStickySummary({
             <p className="text-2xl font-semibold text-white">Rs. {hasSelection ? grandTotal : roomCategoryList[0]?.basePrice ?? 0}</p>
           </div>
           {hasSelection ? (
-            <Button className="h-10 rounded-[16px] px-5 py-2.5 text-sm" onClick={() => setOpen((value) => !value)} type="button">
-              {open ? "Hide Summary" : "View Summary"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button className="h-10 rounded-[16px] px-4 py-2.5 text-sm" onClick={() => setOpen((value) => !value)} type="button">
+                {open ? "Hide Summary" : "View Summary"}
+              </Button>
+              <Button className="h-10 rounded-[16px] px-4 py-2.5 text-sm" onClick={onContinue} type="button">
+                Checkout
+              </Button>
+            </div>
           ) : (
             <a
               className="inline-flex h-10 items-center justify-center rounded-[16px] bg-[var(--vh-pink)] px-5 py-2.5 text-sm font-semibold text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,0.18)]"
@@ -631,6 +648,7 @@ export function Property({
   initialCheckOut,
   initialRoomCategories = roomCategories,
 }: PropertyProps) {
+  const router = useRouter();
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [selectedCounts, setSelectedCounts] = useState<Record<string, number>>({});
   const [activeRoomSlug, setActiveRoomSlug] = useState<string | null>(null);
@@ -647,11 +665,33 @@ export function Property({
   const checkIn = toLocalDateString(dateRange?.from);
   const checkOut = toLocalDateString(dateRange?.to);
   const activeRoom = roomCategoryList.find((room) => room.slug === activeRoomSlug) ?? null;
+  const selectedRoomDrafts = useMemo<BookingDraftRoom[]>(
+    () =>
+      roomCategoryList
+        .filter((room) => (selectedCounts[room.slug] ?? 0) > 0)
+        .map((room) => ({
+          roomTypeId: room.roomTypeId,
+          slug: room.slug,
+          title: room.title,
+          roomType: room.roomType,
+          quantity: selectedCounts[room.slug] ?? 0,
+          basePrice: room.basePrice,
+          totalPrice: room.totalPrice,
+          availableCount: room.availableCount,
+          guestText: room.guestText,
+          image: room.image,
+          amenities: [...room.features, ...room.amenitiesLegend],
+        })),
+    [roomCategoryList, selectedCounts],
+  );
 
   const updateCount = (slug: string, nextValue: number) => {
+    const room = roomCategoryList.find((item) => item.slug === slug);
+    const maxCount = Math.max(0, room?.availableCount ?? 0);
+
     setSelectedCounts((current) => ({
       ...current,
-      [slug]: Math.max(0, nextValue),
+      [slug]: Math.min(maxCount, Math.max(0, nextValue)),
     }));
   };
 
@@ -707,6 +747,17 @@ export function Property({
 
         if (mounted && nextCategories.length > 0) {
           setRoomCategoryList(nextCategories as RoomCategory[]);
+          setSelectedCounts((current) => {
+            const allowed = new Map(
+              (nextCategories as RoomCategory[]).map((room) => [room.slug, Math.max(0, room.availableCount)]),
+            );
+
+            return Object.fromEntries(
+              Object.entries(current)
+                .map<[string, number]>(([slug, quantity]) => [slug, Math.min(quantity, allowed.get(slug) ?? 0)])
+                .filter((entry): entry is [string, number] => entry[1] > 0),
+            );
+          });
         }
       } catch {
         if (mounted) {
@@ -729,6 +780,35 @@ export function Property({
   const openRoomPopup = (slug: string) => {
     setActiveRoomSlug(slug);
     setActiveRoomImageIndex(0);
+  };
+
+  const continueToCheckout = () => {
+    if (!checkIn || !checkOut || selectedRoomDrafts.length === 0) {
+      return;
+    }
+
+    const signature = buildBookingSignature({
+      propertyId,
+      checkinDate: checkIn,
+      checkoutDate: checkOut,
+      rooms: selectedRoomDrafts.map((room) => ({
+        roomTypeId: room.roomTypeId,
+        quantity: room.quantity,
+      })),
+      addons: [],
+    });
+
+    saveBookingDraft({
+      propertyId,
+      checkinDate: checkIn,
+      checkoutDate: checkOut,
+      rooms: selectedRoomDrafts,
+      addons: [],
+      signature,
+      createdAt: Date.now(),
+    });
+
+    router.push("/booking");
   };
 
   return (
@@ -947,7 +1027,11 @@ export function Property({
                             </div>
 
                             <div className="mt-5 flex items-center justify-end gap-2">
-                              {count === 0 ? (
+                              {room.availableCount <= 0 ? (
+                                <Button className="w-full rounded-full" disabled type="button">
+                                  Sold out
+                                </Button>
+                              ) : count === 0 ? (
                                 <Button className="w-full rounded-full" onClick={() => updateCount(room.slug, 1)} type="button">
                                   Add
                                 </Button>
@@ -1096,6 +1180,7 @@ export function Property({
           <DesktopBookingSummary
             checkIn={checkIn}
             checkOut={checkOut}
+            onContinue={continueToCheckout}
             selectedCounts={selectedCounts}
             roomCategoryList={roomCategoryList}
           />
@@ -1105,6 +1190,7 @@ export function Property({
       <MobileStickySummary
         checkIn={checkIn}
         checkOut={checkOut}
+        onContinue={continueToCheckout}
         selectedCounts={selectedCounts}
         roomCategoryList={roomCategoryList}
       />

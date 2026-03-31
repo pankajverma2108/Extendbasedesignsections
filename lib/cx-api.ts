@@ -46,13 +46,18 @@ function recordTelemetry(event: Omit<TelemetryEvent, "timestamp">): void {
 }
 
 export type CxRoomCategory = {
+  roomTypeId: string;
   slug: string;
   title: string;
   shortTitle: string;
   image: string;
   images?: string[];
+  roomType: string;
   guestText: string;
   basePrice: number;
+  totalPrice: number;
+  availableCount: number;
+  totalCount: number;
   inventoryText: string;
   features: string[];
   amenitiesLegend: string[];
@@ -466,17 +471,22 @@ export function roomTypesToPropertyCategories(roomTypes: NormalizedRoomType[]): 
     const images = pickStaticRoomGallery(room.slug || room.name, index);
 
     return {
-    slug: room.slug || room.id,
-    title: room.name,
-    shortTitle: room.name,
-    image: images[0] ?? FALLBACK_ROOM_IMAGE,
-    images,
-    guestText: `x ${Math.max(room.bedsPerRoom, 1)} Guest${room.bedsPerRoom > 1 ? "s" : ""}`,
-    basePrice: room.basePricePerNight,
-    inventoryText: inventoryLabel(room.availableBeds, room.totalBeds, room.type),
-    features: room.amenities.length > 0 ? room.amenities.slice(0, 4) : ["Details on arrival"],
-    amenitiesLegend: room.amenities.length > 0 ? room.amenities.slice(0, 4) : ["Details on arrival"],
-  };
+      roomTypeId: room.id,
+      slug: room.slug || room.id,
+      title: room.name,
+      shortTitle: room.name,
+      image: images[0] ?? FALLBACK_ROOM_IMAGE,
+      images,
+      roomType: room.type,
+      guestText: `x ${Math.max(room.bedsPerRoom, 1)} Guest${room.bedsPerRoom > 1 ? "s" : ""}`,
+      basePrice: room.basePricePerNight,
+      totalPrice: room.totalPrice,
+      availableCount: room.availableBeds,
+      totalCount: room.totalBeds,
+      inventoryText: inventoryLabel(room.availableBeds, room.totalBeds, room.type),
+      features: room.amenities.length > 0 ? room.amenities.slice(0, 4) : ["Details on arrival"],
+      amenitiesLegend: room.amenities.length > 0 ? room.amenities.slice(0, 4) : ["Details on arrival"],
+    };
   });
 }
 
