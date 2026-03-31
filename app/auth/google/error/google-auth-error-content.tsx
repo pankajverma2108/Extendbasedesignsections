@@ -27,6 +27,10 @@ const reasonMap: Record<string, ReasonDetails> = {
     title: "Google Login Did Not Return A Token",
     description: "Google sign-in finished, but no session token reached the app.",
   },
+  session_validation_failed: {
+    title: "Google Session Could Not Be Restored",
+    description: "We received a Google login token, but the backend rejected it when the app tried to restore your session.",
+  },
   unknown: {
     title: "Login Could Not Be Completed",
     description: "Something interrupted sign-in before your session was created.",
@@ -36,6 +40,7 @@ const reasonMap: Record<string, ReasonDetails> = {
 export function GoogleAuthErrorContent() {
   const searchParams = useSearchParams();
   const reason = searchParams.get("reason") ?? "unknown";
+  const detail = searchParams.get("detail");
   const reasonDetails = reasonMap[reason] ?? reasonMap.unknown;
 
   return (
@@ -44,6 +49,7 @@ export function GoogleAuthErrorContent() {
         <div className="mx-auto max-w-[560px] rounded-[14px] border border-[#ff2e62]/45 bg-[#2a1118] p-8 text-center shadow-[0_20px_50px_rgba(0,0,0,0.28)]">
           <h1 className="text-3xl font-bold uppercase tracking-[1px] text-white">{reasonDetails.title}</h1>
           <p className="mt-3 text-white/80">{reasonDetails.description}</p>
+          {detail ? <p className="mt-2 text-sm text-white/70">Detail: {detail}</p> : null}
           <p className="mt-2 text-sm text-white/60">Reason: {reason}</p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">

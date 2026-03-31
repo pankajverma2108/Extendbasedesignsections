@@ -2,20 +2,48 @@
 
 import { useEffect } from "react";
 
-import { setStoredGuestToken } from "@/lib/guest-auth-api";
+import { getGuestMe, setStoredGuestToken } from "@/lib/guest-auth-api";
 
 export default function GoogleAuthSuccessPage() {
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const token = searchParams.get("token") ?? searchParams.get("access_token");
+    let cancelled = false;
 
-    if (!token) {
-      window.location.replace("/auth/google/error?reason=missing_token");
-      return;
-    }
+    const finalizeGoogleLogin = async () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const token = searchParams.get("token") ?? searchParams.get("access_token");
 
-    setStoredGuestToken(token, true);
-    window.location.replace("/");
+      if (!token) {
+        window.location.replace("/auth/google/error?reason=missing_token");
+        return;
+      }
+
+      setStoredGuestToken(token, true);
+
+      try {
+        await getGuestMe(token);
+
+        if (!cancelled) {
+          window.location.replace("/");
+        }
+      } catch (error) {
+        const detail =
+          error instanceof Error && error.message.trim().length > 0
+            ? error.message
+            : "The returned Google session token was rejected by /guest/auth/me.";
+
+        if (!cancelled) {
+          window.location.replace(
+            `/auth/google/error?reason=session_validation_failed&detail=${encodeURIComponent(detail)}`,
+          );
+        }
+      }
+    };
+
+    void finalizeGoogleLogin();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (

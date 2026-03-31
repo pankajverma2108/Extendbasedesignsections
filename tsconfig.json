@@ -38,6 +38,7 @@
   ],
   "exclude": [
     "node_modules",
+    "guidelines/Vibehouse_backend/**/*",
     "src/app/**/*",
     "src/imports/**/*",
     "src/main.tsx",
