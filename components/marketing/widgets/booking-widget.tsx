@@ -153,7 +153,8 @@ export function BookingWidget({
   }, [checkIn, checkOut]);
 
   const destinationWithDates = useMemo(() => {
-    const params = new URLSearchParams();
+    const [basePath, existingQuery = ""] = destinationHref.split("?", 2);
+    const params = new URLSearchParams(existingQuery);
 
     if (checkIn) {
       params.set("checkin", checkIn);
@@ -164,7 +165,7 @@ export function BookingWidget({
     }
 
     const query = params.toString();
-    return query ? `${destinationHref}?${query}` : destinationHref;
+    return query ? `${basePath}?${query}` : basePath;
   }, [checkIn, checkOut, destinationHref]);
 
   if (variant === "hero") {

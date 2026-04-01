@@ -58,6 +58,18 @@ type RazorpayInstance = {
 
 type RazorpayConstructor = new (options: Record<string, unknown>) => RazorpayInstance;
 
+type DiagnosticStatus = "request" | "success" | "error" | "info";
+
+type BookingDiagnosticEvent = {
+  id: string;
+  timestamp: number;
+  step: string;
+  status: DiagnosticStatus;
+  request?: unknown;
+  response?: unknown;
+  error?: string;
+};
+
 declare global {
   interface Window {
     Razorpay?: RazorpayConstructor;
@@ -129,6 +141,14 @@ function createDraftWithAddons(
   };
 }
 
+function toDiagnosticPreview(value: unknown): string {
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
 export function BookingCheckoutPage() {
   const router = useRouter();
   const { guest, isAuthenticated, openAuthModal } = useGuestAuth();
@@ -138,8 +158,39 @@ export function BookingCheckoutPage() {
   const [isLoadingCatalog, setIsLoadingCatalog] = useState(true);
   const [isPaying, setIsPaying] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [verifyErrorMessage, setVerifyErrorMessage] = useState<string | null>(null);
+  const [failErrorMessage, setFailErrorMessage] = useState<string | null>(null);
+  const [flowStage, setFlowStage] = useState<
+    "idle" | "creating-order" | "creating-payment-order" | "opening-razorpay" | "verifying-payment" | "confirmed" | "failed"
+  >("idle");
+  const [diagnostics, setDiagnostics] = useState<BookingDiagnosticEvent[]>([]);
   const [resumeAfterAuth, setResumeAfterAuth] = useState(false);
   const paymentHandledRef = useRef(false);
+
+  const appendDiagnostic = useCallback(
+    (
+      step: string,
+      status: DiagnosticStatus,
+      payload?: {
+        request?: unknown;
+        response?: unknown;
+        error?: string;
+      },
+    ) => {
+      const event: BookingDiagnosticEvent = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        timestamp: Date.now(),
+        step,
+        status,
+        request: payload?.request,
+        response: payload?.response,
+        error: payload?.error,
+      };
+
+      setDiagnostics((current) => [...current, event].slice(-40));
+    },
+    [],
+  );
 
   useEffect(() => {
     const stored = getStoredBookingState();
@@ -258,13 +309,27 @@ export function BookingCheckoutPage() {
 
     const token = getStoredGuestToken();
     if (!token || !isAuthenticated) {
+      appendDiagnostic("auth-check", "info", {
+        response: { isAuthenticated, hasToken: Boolean(token) },
+      });
       setResumeAfterAuth(true);
       openAuthModal("signin");
       return;
     }
 
     setIsPaying(true);
+    setFlowStage("creating-order");
     setErrorMessage(null);
+    setVerifyErrorMessage(null);
+    setFailErrorMessage(null);
+    setDiagnostics([]);
+    appendDiagnostic("flow-start", "info", {
+      response: {
+        property_id: draft.propertyId,
+        checkin_date: draft.checkinDate,
+        checkout_date: draft.checkoutDate,
+      },
+    });
 
     try {
       const activeRooms = draft.rooms.filter((room) => room.quantity > 0);
@@ -292,6 +357,22 @@ export function BookingCheckoutPage() {
             status: pendingSnapshot.order.status,
           }
         : await createGuestBookingOrder(token, {
+            ...(appendDiagnostic("create-booking-order", "request", {
+              request: {
+                property_id: draft.propertyId,
+                checkin_date: draft.checkinDate,
+                checkout_date: draft.checkoutDate,
+                rooms: activeRooms.map((room) => ({
+                  room_type_id: room.roomTypeId,
+                  quantity: room.quantity,
+                })),
+                addons: activeAddons.map((addon) => ({
+                  product_id: addon.productId,
+                  quantity: addon.quantity,
+                })),
+              },
+            }),
+            {}),
             property_id: draft.propertyId,
             checkin_date: draft.checkinDate,
             checkout_date: draft.checkoutDate,
@@ -304,6 +385,16 @@ export function BookingCheckoutPage() {
               quantity: addon.quantity,
             })),
           });
+
+      if (pendingSnapshot) {
+        appendDiagnostic("create-booking-order", "info", {
+          response: { source: "pending-snapshot", ezee_reservation_id: orderSummary.ezee_reservation_id },
+        });
+      } else {
+        appendDiagnostic("create-booking-order", "success", {
+          response: orderSummary,
+        });
+      }
 
       savePendingBookingOrder({
         signature: draft.signature,
@@ -323,13 +414,29 @@ export function BookingCheckoutPage() {
         },
       });
 
+      setFlowStage("creating-payment-order");
+      appendDiagnostic("create-payment-order", "request", {
+        request: {
+          ezee_reservation_id: orderSummary.ezee_reservation_id,
+          grand_total: orderSummary.grand_total,
+          addon_order_id: orderSummary.addon_order_id ?? undefined,
+        },
+      });
+
       const paymentOrder = await createBookingPaymentOrder(token, {
         ezee_reservation_id: orderSummary.ezee_reservation_id,
         grand_total: orderSummary.grand_total,
         ...(orderSummary.addon_order_id ? { addon_order_id: orderSummary.addon_order_id } : {}),
       });
 
+      appendDiagnostic("create-payment-order", "success", {
+        response: paymentOrder,
+      });
+
+      setFlowStage("opening-razorpay");
+      appendDiagnostic("load-razorpay-script", "request");
       await loadRazorpayCheckout();
+      appendDiagnostic("load-razorpay-script", "success");
       if (!window.Razorpay) {
         throw new Error("Razorpay checkout did not initialise correctly.");
       }
@@ -344,11 +451,26 @@ export function BookingCheckoutPage() {
           }
 
           paymentHandledRef.current = true;
+          setFlowStage("failed");
+          appendDiagnostic("razorpay-failed", "error", {
+            error: message,
+          });
 
           try {
+            appendDiagnostic("payment-fail", "request", {
+              request: { razorpay_order_id: paymentOrder.razorpay_order_id },
+            });
             await failBookingPayment(token, paymentOrder.razorpay_order_id);
+            appendDiagnostic("payment-fail", "success", {
+              response: { razorpay_order_id: paymentOrder.razorpay_order_id },
+            });
           } catch {
             // The backend owns rollback; if this call fails we still surface the primary error.
+            setFailErrorMessage("Rollback API call failed after payment failure/cancel. Check diagnostics below.");
+            appendDiagnostic("payment-fail", "error", {
+              error: "Rollback API call failed",
+              request: { razorpay_order_id: paymentOrder.razorpay_order_id },
+            });
           }
 
           clearPendingBookingOrder();
@@ -385,9 +507,16 @@ export function BookingCheckoutPage() {
             }
 
             paymentHandledRef.current = true;
+            setFlowStage("verifying-payment");
+            appendDiagnostic("verify-payment", "request", {
+              request: response,
+            });
 
             try {
               const verification = await verifyBookingPayment(token, response);
+              appendDiagnostic("verify-payment", "success", {
+                response: verification,
+              });
               clearPendingBookingOrder();
               clearBookingDraft();
               saveConfirmedBookingSnapshot({
@@ -405,10 +534,18 @@ export function BookingCheckoutPage() {
                 paymentId: verification.payment_id,
                 createdAt: Date.now(),
               });
+              setFlowStage("confirmed");
               router.push(`/bookings/${encodeURIComponent(orderSummary.ezee_reservation_id)}?fresh=1`);
               resolve();
             } catch (error) {
               clearPendingBookingOrder();
+              const message = error instanceof Error ? error.message : "Payment verification failed.";
+              setVerifyErrorMessage(message);
+              setFlowStage("failed");
+              appendDiagnostic("verify-payment", "error", {
+                error: message,
+                request: response,
+              });
               reject(error instanceof Error ? error : new Error("Payment verification failed."));
             }
           },
@@ -421,11 +558,15 @@ export function BookingCheckoutPage() {
         razorpay.open();
       });
     } catch (error) {
+      setFlowStage("failed");
+      appendDiagnostic("checkout-flow", "error", {
+        error: error instanceof Error ? error.message : "Unable to start the payment flow.",
+      });
       setErrorMessage(error instanceof Error ? error.message : "Unable to start the payment flow.");
     } finally {
       setIsPaying(false);
     }
-  }, [draft, guest, isAuthenticated, openAuthModal, router]);
+  }, [appendDiagnostic, draft, guest, isAuthenticated, openAuthModal, router]);
 
   useEffect(() => {
     if (!resumeAfterAuth || !isAuthenticated) {
@@ -692,6 +833,18 @@ export function BookingCheckoutPage() {
               </div>
             ) : null}
 
+            {verifyErrorMessage ? (
+              <div className="mt-5 rounded-[18px] border border-[rgba(255,204,102,0.24)] bg-[rgba(255,204,102,0.1)] px-4 py-3 text-sm text-white/90">
+                Verification failed after checkout success: {verifyErrorMessage}
+              </div>
+            ) : null}
+
+            {failErrorMessage ? (
+              <div className="mt-3 rounded-[18px] border border-[rgba(255,76,48,0.24)] bg-[rgba(255,76,48,0.1)] px-4 py-3 text-sm text-white/90">
+                {failErrorMessage}
+              </div>
+            ) : null}
+
             <Button className="mt-6 h-12 w-full rounded-full text-base" disabled={isPaying} onClick={() => void handlePayment()} type="button">
               {isPaying ? (
                 <>
@@ -709,6 +862,43 @@ export function BookingCheckoutPage() {
             <p className="mt-4 text-center text-xs leading-6 text-white/52">
               By continuing, you agree to the booking flow, cancellation policy, and pre-arrival ID verification requirements documented for this property.
             </p>
+
+            <details className="mt-4 rounded-[16px] border border-white/10 bg-white/5 p-3 text-xs text-white/80">
+              <summary className="cursor-pointer select-none font-semibold text-white">
+                Temporary booking diagnostics ({flowStage})
+              </summary>
+              <div className="mt-3 space-y-3">
+                {diagnostics.length === 0 ? (
+                  <p className="text-white/55">No events yet. Click &quot;Continue to Razorpay&quot; to start diagnostics capture.</p>
+                ) : (
+                  diagnostics.map((event) => (
+                    <div key={event.id} className="rounded-[12px] border border-white/10 bg-[#0b1020] p-3">
+                      <p className="font-semibold text-white">
+                        {event.step} • {event.status}
+                      </p>
+                      <p className="mt-1 text-[11px] text-white/50">
+                        {new Date(event.timestamp).toLocaleString()}
+                      </p>
+                      {event.error ? (
+                        <pre className="mt-2 overflow-auto whitespace-pre-wrap rounded-[10px] bg-[rgba(255,76,48,0.12)] p-2 text-[11px] text-white">
+                          {event.error}
+                        </pre>
+                      ) : null}
+                      {typeof event.request !== "undefined" ? (
+                        <pre className="mt-2 overflow-auto whitespace-pre-wrap rounded-[10px] bg-black/30 p-2 text-[11px] text-white/90">
+                          req: {toDiagnosticPreview(event.request)}
+                        </pre>
+                      ) : null}
+                      {typeof event.response !== "undefined" ? (
+                        <pre className="mt-2 overflow-auto whitespace-pre-wrap rounded-[10px] bg-black/30 p-2 text-[11px] text-white/90">
+                          res: {toDiagnosticPreview(event.response)}
+                        </pre>
+                      ) : null}
+                    </div>
+                  ))
+                )}
+              </div>
+            </details>
           </div>
         </aside>
       </div>

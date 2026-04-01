@@ -1,26 +1,27 @@
 import { NextResponse } from "next/server";
 
-import { getDefaultPropertyId, getRoomAvailability, roomTypesToPropertyCategories } from "@/lib/cx-api";
+import { getDefaultPropertyId, getRoomAvailabilitySnapshot, roomTypesToPropertyCategories } from "@/lib/cx-api";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const propertyId = searchParams.get("property_id") || getDefaultPropertyId();
+  const configuredPropertyId = getDefaultPropertyId();
+  const propertyId = searchParams.get("property_id") || configuredPropertyId || undefined;
   const checkin = searchParams.get("checkin") || undefined;
   const checkout = searchParams.get("checkout") || undefined;
 
-  const roomTypes = await getRoomAvailability({
+  const snapshot = await getRoomAvailabilitySnapshot({
     propertyId,
     checkin,
     checkout,
   });
 
-  const categories = roomTypesToPropertyCategories(roomTypes);
+  const categories = roomTypesToPropertyCategories(snapshot.roomTypes);
 
   return NextResponse.json({
-    property_id: propertyId,
-    checkin,
-    checkout,
-    room_types: roomTypes,
+    property_id: snapshot.propertyId || propertyId || configuredPropertyId,
+    checkin: snapshot.checkin || checkin,
+    checkout: snapshot.checkout || checkout,
+    room_types: snapshot.roomTypes,
     categories,
   });
 }

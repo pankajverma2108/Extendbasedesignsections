@@ -405,14 +405,14 @@ function ReviewsSection() {
   );
 }
 
-function CtaSection() {
+function CtaSection({ destinationHref = "/property" }: { destinationHref?: string }) {
   return (
     <SectionFrame alt>
       <div className="vh-container">
         <FadeIn className="mx-auto max-w-[520px] rounded-[12px] border-4 border-white bg-gradient-to-br from-[var(--vh-pink)] via-[var(--vh-pink-soft)] to-[var(--vh-pink)] p-6 shadow-[12px_12px_0px_0px_rgba(255,255,255,0.25)]">
           <SectionHeading subtitle={homePageContent.ctaBody} title={homePageContent.ctaTitle} />
           <BookingWidget
-            destinationHref="/property"
+            destinationHref={destinationHref}
             submitLabel="Book Now"
             urgencyChips={homePageContent.ctaUrgencyChips}
             variant="cta"
@@ -430,10 +430,12 @@ export function HomeSections({
   order = homeSectionOrder,
   homeEvents = homePageContent.homeEvents,
   homeRooms = homePageContent.homeRooms,
+  propertyDestinationHref = "/property",
 }: {
   order?: HomeSectionId[];
   homeEvents?: EventCardProps[];
   homeRooms?: RoomCardProps[];
+  propertyDestinationHref?: string;
 }) {
   return (
     <>
@@ -452,7 +454,7 @@ export function HomeSections({
           experience: ExperienceSection,
           energy: EnergySection,
           reviews: ReviewsSection,
-          cta: CtaSection,
+          cta: () => <CtaSection destinationHref={propertyDestinationHref} />,
         };
 
         const SectionComponent = sectionComponents[sectionId as Exclude<HomeSectionId, "rooms" | "events">];

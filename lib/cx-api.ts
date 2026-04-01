@@ -1,7 +1,6 @@
 import type { EventCardProps, RoomCardProps } from "@/content/types";
 
 const DEFAULT_API_BASE_URL = "https://vibehousebackend-production.up.railway.app";
-const DEFAULT_PROPERTY_ID = "prop-bandra-001";
 const FALLBACK_EVENT_IMAGE =
   "https://images.unsplash.com/photo-1647649644192-af6183269fa4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200";
 const FALLBACK_ROOM_IMAGE = "/images/rooms/room-1.jpg";
@@ -121,6 +120,13 @@ type RawRoomAvailability = {
   checkout_date?: unknown;
   no_of_nights?: unknown;
   room_types?: unknown;
+};
+
+export type RoomAvailabilitySnapshot = {
+  propertyId: string;
+  checkin: string;
+  checkout: string;
+  roomTypes: NormalizedRoomType[];
 };
 
 export type NormalizedRoomType = {
@@ -314,9 +320,12 @@ export async function getPublicEvents(options?: {
   propertyId?: string;
   limit?: number;
 }): Promise<EventCardProps[]> {
-  const propertyId = options?.propertyId || DEFAULT_PROPERTY_ID;
+  const propertyId = ensureString(options?.propertyId);
   const limit = options?.limit;
-  const raw = await fetchUnknownJson(`/public/events?property_id=${encodeURIComponent(propertyId)}`);
+  const path = propertyId
+    ? `/public/events?property_id=${encodeURIComponent(propertyId)}`
+    : "/public/events";
+  const raw = await fetchUnknownJson(path);
   
   if (!raw) {
     recordTelemetry({ type: "null_payload", source: "event" });
@@ -407,15 +416,33 @@ export async function getRoomAvailability(options?: {
   checkin?: string;
   checkout?: string;
 }): Promise<NormalizedRoomType[]> {
-  const propertyId = options?.propertyId || DEFAULT_PROPERTY_ID;
+  const snapshot = await getRoomAvailabilitySnapshot(options);
+  return snapshot.roomTypes;
+}
+
+export async function getRoomAvailabilitySnapshot(options?: {
+  propertyId?: string;
+  checkin?: string;
+  checkout?: string;
+}): Promise<RoomAvailabilitySnapshot> {
+  const propertyId = ensureString(options?.propertyId);
   const checkin = ensureString(options?.checkin) || new Date().toISOString().slice(0, 10);
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const checkout = ensureString(options?.checkout) || tomorrow.toISOString().slice(0, 10);
 
-  const path = `/guest/booking/rooms?property_id=${encodeURIComponent(propertyId)}&checkin=${encodeURIComponent(checkin)}&checkout=${encodeURIComponent(checkout)}`;
+  const params = new URLSearchParams({
+    checkin,
+    checkout,
+  });
+  if (propertyId) {
+    params.set("property_id", propertyId);
+  }
+
+  const path = `/guest/booking/rooms?${params.toString()}`;
   const raw = (await fetchUnknownJson(path)) as RawRoomAvailability | null;
-  
+  const resolvedPropertyId = ensureString(raw?.property_id, propertyId);
+
   if (!raw) {
     recordTelemetry({ type: "null_payload", source: "room" });
   }
@@ -424,10 +451,20 @@ export async function getRoomAvailability(options?: {
 
   if (list.length === 0) {
     recordTelemetry({ type: "empty_array", source: "room" });
-    return fallbackRoomTypes();
+    return {
+      propertyId: resolvedPropertyId,
+      checkin,
+      checkout,
+      roomTypes: fallbackRoomTypes(),
+    };
   }
 
-  return list.map(normalizeRoomType);
+  return {
+    propertyId: resolvedPropertyId,
+    checkin,
+    checkout,
+    roomTypes: list.map(normalizeRoomType),
+  };
 }
 
 export function roomTypesToHomeCards(roomTypes: NormalizedRoomType[]): RoomCardProps[] {
@@ -491,5 +528,5 @@ export function roomTypesToPropertyCategories(roomTypes: NormalizedRoomType[]): 
 }
 
 export function getDefaultPropertyId() {
-  return process.env.NEXT_PUBLIC_PROPERTY_ID?.trim() || DEFAULT_PROPERTY_ID;
+  return process.env.NEXT_PUBLIC_PROPERTY_ID?.trim() || "";
 }

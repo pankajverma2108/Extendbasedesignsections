@@ -158,7 +158,7 @@ function getNightCount(checkIn: string, checkOut: string): number {
   return Math.max(1, Math.round((end - start) / 86400000));
 }
 
-function buildPropertyHref(checkIn: string, checkOut: string): string {
+function buildPropertyHref(checkIn: string, checkOut: string, propertyId?: string): string {
   const params = new URLSearchParams();
 
   if (checkIn) {
@@ -167,6 +167,10 @@ function buildPropertyHref(checkIn: string, checkOut: string): string {
 
   if (checkOut) {
     params.set("checkout", checkOut);
+  }
+
+  if (propertyId) {
+    params.set("property_id", propertyId);
   }
 
   const query = params.toString();
@@ -257,14 +261,19 @@ function DesktopBookingSummary({
   selectedCounts,
   roomCategoryList,
   onContinue,
+  propertyId,
 }: {
   checkIn: string;
   checkOut: string;
   selectedCounts: Record<string, number>;
   roomCategoryList: RoomCategory[];
   onContinue: () => void;
+  propertyId?: string;
 }) {
-  const propertyHref = useMemo(() => buildPropertyHref(checkIn, checkOut), [checkIn, checkOut]);
+  const propertyHref = useMemo(
+    () => buildPropertyHref(checkIn, checkOut, propertyId),
+    [checkIn, checkOut, propertyId],
+  );
   const nights = getNightCount(checkIn, checkOut);
   const selectedRooms = roomCategoryList.filter((room) => (selectedCounts[room.slug] ?? 0) > 0);
   const roomTotal = selectedRooms.reduce(
@@ -643,7 +652,7 @@ type PropertyProps = {
 };
 
 export function Property({
-  propertyId = "prop-bandra-001",
+  propertyId,
   initialCheckIn,
   initialCheckOut,
   initialRoomCategories = roomCategories,
@@ -656,6 +665,8 @@ export function Property({
   const [roomCategoryList, setRoomCategoryList] = useState<RoomCategory[]>(
     initialRoomCategories.length > 0 ? initialRoomCategories : roomCategories,
   );
+  const [resolvedPropertyId, setResolvedPropertyId] = useState(propertyId ?? "");
+  const [propertyContextError, setPropertyContextError] = useState<string | null>(null);
   const [isLoadingRooms, setIsLoadingRooms] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: fromDateString(initialCheckIn) ?? getLocalDate(0),
@@ -729,21 +740,39 @@ export function Property({
 
       try {
         const params = new URLSearchParams({
-          property_id: propertyId,
           checkin: checkIn,
           checkout: checkOut,
         });
+        if (resolvedPropertyId) {
+          params.set("property_id", resolvedPropertyId);
+        }
 
         const response = await fetch(`/api/cx/rooms?${params.toString()}`, {
           cache: "no-store",
         });
 
         if (!response.ok) {
+          if (mounted) {
+            setPropertyContextError("Room availability request failed. Retry once before continuing to checkout.");
+          }
           return;
         }
 
-        const payload = (await response.json()) as { categories?: unknown };
+        const payload = (await response.json()) as { categories?: unknown; property_id?: unknown };
         const nextCategories = Array.isArray(payload.categories) ? payload.categories : [];
+        const nextPropertyId = typeof payload.property_id === "string" ? payload.property_id.trim() : "";
+
+        if (mounted && nextPropertyId && nextPropertyId !== resolvedPropertyId) {
+          setResolvedPropertyId(nextPropertyId);
+        }
+
+        if (mounted) {
+          setPropertyContextError(
+            nextPropertyId || resolvedPropertyId
+              ? null
+              : "Availability loaded without a backend property context. Open this page with ?property_id=... or configure NEXT_PUBLIC_PROPERTY_ID before checkout.",
+          );
+        }
 
         if (mounted && nextCategories.length > 0) {
           setRoomCategoryList(nextCategories as RoomCategory[]);
@@ -761,6 +790,7 @@ export function Property({
         }
       } catch {
         if (mounted) {
+          setPropertyContextError("Unable to refresh room availability right now. Retry before continuing to checkout.");
           setRoomCategoryList((current) => (current.length > 0 ? current : roomCategories));
         }
       } finally {
@@ -775,7 +805,7 @@ export function Property({
     return () => {
       mounted = false;
     };
-  }, [checkIn, checkOut, propertyId]);
+  }, [checkIn, checkOut, resolvedPropertyId]);
 
   const openRoomPopup = (slug: string) => {
     setActiveRoomSlug(slug);
@@ -783,12 +813,19 @@ export function Property({
   };
 
   const continueToCheckout = () => {
+    if (!resolvedPropertyId) {
+      setPropertyContextError(
+        "Checkout is blocked because the booking property could not be resolved from the live API response.",
+      );
+      return;
+    }
+
     if (!checkIn || !checkOut || selectedRoomDrafts.length === 0) {
       return;
     }
 
     const signature = buildBookingSignature({
-      propertyId,
+      propertyId: resolvedPropertyId,
       checkinDate: checkIn,
       checkoutDate: checkOut,
       rooms: selectedRoomDrafts.map((room) => ({
@@ -799,7 +836,7 @@ export function Property({
     });
 
     saveBookingDraft({
-      propertyId,
+      propertyId: resolvedPropertyId,
       checkinDate: checkIn,
       checkoutDate: checkOut,
       rooms: selectedRoomDrafts,
@@ -936,6 +973,11 @@ export function Property({
                 <div className="max-w-[420px]">
                   <DateRangePicker align="left" dateRange={dateRange} onSelect={handleRangeChange} />
                 </div>
+                {propertyContextError ? (
+                  <div className="rounded-[18px] border border-[rgba(255,76,48,0.24)] bg-[rgba(255,76,48,0.1)] px-4 py-3 text-sm text-white/88">
+                    {propertyContextError}
+                  </div>
+                ) : null}
                 <div className="space-y-5">
                 {isLoadingRooms ? (
                   <>
@@ -1181,6 +1223,7 @@ export function Property({
             checkIn={checkIn}
             checkOut={checkOut}
             onContinue={continueToCheckout}
+            propertyId={resolvedPropertyId}
             selectedCounts={selectedCounts}
             roomCategoryList={roomCategoryList}
           />

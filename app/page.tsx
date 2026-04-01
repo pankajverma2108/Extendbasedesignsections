@@ -2,15 +2,20 @@ import { HeroCarousel } from "@/components/marketing/widgets/hero-carousel";
 import { HomeSections } from "@/components/marketing/pages/home-sections";
 import { BookingWidget } from "@/components/marketing/widgets/booking-widget";
 import { heroImages, homePageContent } from "@/content/home";
-import {
-  getDefaultPropertyId,
-  getPublicEvents,
-  getRoomAvailability,
-  roomTypesToHomeCards,
-} from "@/lib/cx-api";
+import { getDefaultPropertyId, getPublicEvents, getRoomAvailability, roomTypesToHomeCards } from "@/lib/cx-api";
 
-export default async function HomePage() {
-  const propertyId = getDefaultPropertyId();
+type HomePageProps = {
+  searchParams?: Promise<{
+    property_id?: string;
+  }>;
+};
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const params = await searchParams;
+  const propertyId = params?.property_id || getDefaultPropertyId() || undefined;
+  const propertyDestinationHref = propertyId
+    ? `/property?property_id=${encodeURIComponent(propertyId)}`
+    : "/property";
   const roomTypes = await getRoomAvailability({ propertyId });
   const dynamicHomeRooms = roomTypesToHomeCards(roomTypes);
   const dynamicHomeEvents = await getPublicEvents({ propertyId, limit: 3 });
@@ -22,7 +27,7 @@ export default async function HomePage() {
         <div className="absolute inset-x-0 bottom-8 z-10 flex justify-center px-4">
           <div className="w-full max-w-[560px]">
             <BookingWidget
-              destinationHref="/property"
+              destinationHref={propertyDestinationHref}
               submitLabel="Book Now"
               variant="hero"
             />
@@ -30,7 +35,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <HomeSections homeEvents={dynamicHomeEvents} homeRooms={dynamicHomeRooms} />
+      <HomeSections
+        homeEvents={dynamicHomeEvents}
+        homeRooms={dynamicHomeRooms}
+        propertyDestinationHref={propertyDestinationHref}
+      />
     </>
   );
 }

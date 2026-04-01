@@ -7,7 +7,7 @@ import { eventPageContent, pastEventImages, weeklyLineup } from "@/content/event
 import { getDefaultPropertyId, getPublicEvents } from "@/lib/cx-api";
 
 export default async function EventsPage() {
-  const propertyId = getDefaultPropertyId();
+  const propertyId = getDefaultPropertyId() || undefined;
   const liveEvents = await getPublicEvents({ propertyId });
 
   const eventGridClass =

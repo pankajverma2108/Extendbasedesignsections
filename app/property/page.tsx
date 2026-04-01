@@ -9,12 +9,13 @@ type PropertyPageProps = {
   searchParams?: Promise<{
     checkin?: string;
     checkout?: string;
+    property_id?: string;
   }>;
 };
 
 export default async function PropertyPage({ searchParams }: PropertyPageProps) {
   const params = await searchParams;
-  const propertyId = getDefaultPropertyId();
+  const propertyId = params?.property_id || getDefaultPropertyId() || undefined;
   const roomTypes = await getRoomAvailability({
     propertyId,
     checkin: params?.checkin,
