@@ -68,6 +68,52 @@ const STATIC_ROOM_GALLERIES = [
   ["/images/rooms/room-4.jpg", "/images/rooms/room-1.jpg", "/images/rooms/room-3.webp"],
 ];
 
+type HardcodedRoomPresentation = {
+  shortTitle: string;
+  guestText: string;
+  features: string[];
+  amenitiesLegend: string[];
+};
+
+const HARDCODED_ROOM_PRESENTATION: Array<{
+  match: (room: NormalizedRoomType) => boolean;
+  presentation: HardcodedRoomPresentation;
+}> = [
+  {
+    match: (room) => {
+      const haystack = `${room.name} ${room.slug}`.toLowerCase();
+      return haystack.includes("deluxe") || haystack.includes("queen") || haystack.includes("private");
+    },
+    presentation: {
+      shortTitle: "Private Room",
+      guestText: "x 2 Guests",
+      features: ["Queen bed", "En-suite bathroom", "Work desk", "Mini-fridge"],
+      amenitiesLegend: ["AC", "Private bath", "Fresh linen", "Housekeeping"],
+    },
+  },
+  {
+    match: (room) => {
+      const haystack = `${room.name} ${room.slug}`.toLowerCase();
+      return haystack.includes("female");
+    },
+    presentation: {
+      shortTitle: "4-Bed Female Dorm",
+      guestText: "x 1 Guest",
+      features: ["Women-only floor", "En-suite access", "Reading light", "Secure locker"],
+      amenitiesLegend: ["AC", "Locker", "Fresh linen", "Housekeeping"],
+    },
+  },
+  {
+    match: () => true,
+    presentation: {
+      shortTitle: "4-Bed Mixed Dorm",
+      guestText: "x 1 Guest",
+      features: ["Privacy curtain", "Reading light", "USB charging", "Personal locker"],
+      amenitiesLegend: ["AC", "Locker", "Fresh linen", "Housekeeping"],
+    },
+  },
+];
+
 function pickStaticRoomGallery(slugOrName: string, index: number): string[] {
   const id = slugOrName.toLowerCase();
 
@@ -84,6 +130,10 @@ function pickStaticRoomGallery(slugOrName: string, index: number): string[] {
   }
 
   return STATIC_ROOM_GALLERIES[index % STATIC_ROOM_GALLERIES.length];
+}
+
+function getHardcodedRoomPresentation(room: NormalizedRoomType): HardcodedRoomPresentation {
+  return HARDCODED_ROOM_PRESENTATION.find((entry) => entry.match(room))!.presentation;
 }
 
 type RawEvent = {
@@ -506,23 +556,24 @@ function inventoryLabel(availableBeds: number, totalBeds: number, type: string) 
 export function roomTypesToPropertyCategories(roomTypes: NormalizedRoomType[]): CxRoomCategory[] {
   return roomTypes.map((room, index) => {
     const images = pickStaticRoomGallery(room.slug || room.name, index);
+    const presentation = getHardcodedRoomPresentation(room);
 
     return {
       roomTypeId: room.id,
       slug: room.slug || room.id,
       title: room.name,
-      shortTitle: room.name,
+      shortTitle: presentation.shortTitle,
       image: images[0] ?? FALLBACK_ROOM_IMAGE,
       images,
       roomType: room.type,
-      guestText: `x ${Math.max(room.bedsPerRoom, 1)} Guest${room.bedsPerRoom > 1 ? "s" : ""}`,
+      guestText: presentation.guestText,
       basePrice: room.basePricePerNight,
       totalPrice: room.totalPrice,
       availableCount: room.availableBeds,
       totalCount: room.totalBeds,
       inventoryText: inventoryLabel(room.availableBeds, room.totalBeds, room.type),
-      features: room.amenities.length > 0 ? room.amenities.slice(0, 4) : ["Details on arrival"],
-      amenitiesLegend: room.amenities.length > 0 ? room.amenities.slice(0, 4) : ["Details on arrival"],
+      features: presentation.features,
+      amenitiesLegend: presentation.amenitiesLegend,
     };
   });
 }

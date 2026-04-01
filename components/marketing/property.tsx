@@ -712,18 +712,9 @@ export function Property({
         return current;
       }
 
-      const fallbackTo = nextValue.to ?? current?.to ?? getLocalDate(1);
-
-      if (fallbackTo < nextValue.from) {
-        return {
-          from: nextValue.from,
-          to: nextValue.from,
-        };
-      }
-
       return {
         from: nextValue.from,
-        to: fallbackTo,
+        to: nextValue.to,
       };
     });
   };

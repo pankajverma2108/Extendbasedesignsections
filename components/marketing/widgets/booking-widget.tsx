@@ -190,12 +190,9 @@ export function BookingWidget({
                     return;
                   }
 
-                  const fallbackTo = nextValue.to ?? dateRange?.to ?? getLocalDate(1);
-                  const normalizedTo = fallbackTo < nextValue.from ? nextValue.from : fallbackTo;
-
                   setDateRange({
                     from: nextValue.from,
-                    to: normalizedTo,
+                    to: nextValue.to,
                   });
 
                   if (nextValue?.from && nextValue?.to) {
@@ -249,12 +246,9 @@ export function BookingWidget({
                 return;
               }
 
-              const fallbackTo = nextValue.to ?? dateRange?.to ?? getLocalDate(1);
-              const normalizedTo = fallbackTo < nextValue.from ? nextValue.from : fallbackTo;
-
               setDateRange({
                 from: nextValue.from,
-                to: normalizedTo,
+                to: nextValue.to,
               });
 
               if (nextValue?.from && nextValue?.to) {
