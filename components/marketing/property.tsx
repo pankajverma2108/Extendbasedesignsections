@@ -147,6 +147,21 @@ function formatShortDate(date?: Date) {
   }).format(date);
 }
 
+function resolveNextRange(current: DateRange | undefined, nextValue: DateRange | undefined, selectedDay?: Date) {
+  if (!selectedDay) {
+    return nextValue;
+  }
+
+  if (current?.from && current?.to) {
+    return {
+      from: selectedDay,
+      to: undefined,
+    };
+  }
+
+  return nextValue;
+}
+
 function getNightCount(checkIn: string, checkOut: string): number {
   if (!checkIn || !checkOut) {
     return 1;
@@ -202,7 +217,7 @@ function DateRangePicker({
   align = "right",
 }: {
   dateRange: DateRange | undefined;
-  onSelect: (value: DateRange | undefined) => void;
+  onSelect: (value: DateRange | undefined, selectedDay?: Date) => void;
   align?: "left" | "right";
 }) {
   const [open, setOpen] = useState(false);
@@ -240,8 +255,8 @@ function DateRangePicker({
           defaultMonth={dateRange?.from}
           mode="range"
           numberOfMonths={1}
-          onSelect={(nextValue) => {
-            onSelect(nextValue);
+          onSelect={(nextValue, selectedDay) => {
+            onSelect(nextValue, selectedDay);
 
             if (nextValue?.from && nextValue?.to) {
               setOpen(false);
@@ -706,16 +721,14 @@ export function Property({
     }));
   };
 
-  const handleRangeChange = (nextValue: DateRange | undefined) => {
+  const handleRangeChange = (nextValue: DateRange | undefined, selectedDay?: Date) => {
     setDateRange((current) => {
-      if (!nextValue?.from) {
+      const resolvedRange = resolveNextRange(current, nextValue, selectedDay);
+      if (!resolvedRange?.from) {
         return current;
       }
 
-      return {
-        from: nextValue.from,
-        to: nextValue.to,
-      };
+      return resolvedRange;
     });
   };
 

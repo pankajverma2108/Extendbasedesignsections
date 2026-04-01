@@ -51,6 +51,21 @@ function formatShortDate(date?: Date) {
   }).format(date);
 }
 
+function resolveNextRange(current: DateRange | undefined, nextValue: DateRange | undefined, selectedDay?: Date) {
+  if (!selectedDay) {
+    return nextValue;
+  }
+
+  if (current?.from && current?.to) {
+    return {
+      from: selectedDay,
+      to: undefined,
+    };
+  }
+
+  return nextValue;
+}
+
 type DateSummaryButtonProps = ComponentPropsWithoutRef<"button"> & {
   dateRange: DateRange | undefined;
   open: boolean;
@@ -185,17 +200,16 @@ export function BookingWidget({
                 defaultMonth={dateRange?.from}
                 mode="range"
                 numberOfMonths={1}
-                onSelect={(nextValue) => {
-                  if (!nextValue?.from) {
+                onSelect={(nextValue, selectedDay) => {
+                  const resolvedRange = resolveNextRange(dateRange, nextValue, selectedDay);
+
+                  if (!resolvedRange?.from) {
                     return;
                   }
 
-                  setDateRange({
-                    from: nextValue.from,
-                    to: nextValue.to,
-                  });
+                  setDateRange(resolvedRange);
 
-                  if (nextValue?.from && nextValue?.to) {
+                  if (resolvedRange.from && resolvedRange.to) {
                     setOpen(false);
                   }
                 }}
@@ -241,17 +255,16 @@ export function BookingWidget({
             defaultMonth={dateRange?.from}
             mode="range"
             numberOfMonths={1}
-            onSelect={(nextValue) => {
-              if (!nextValue?.from) {
+            onSelect={(nextValue, selectedDay) => {
+              const resolvedRange = resolveNextRange(dateRange, nextValue, selectedDay);
+
+              if (!resolvedRange?.from) {
                 return;
               }
 
-              setDateRange({
-                from: nextValue.from,
-                to: nextValue.to,
-              });
+              setDateRange(resolvedRange);
 
-              if (nextValue?.from && nextValue?.to) {
+              if (resolvedRange.from && resolvedRange.to) {
                 setOpen(false);
               }
             }}

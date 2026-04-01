@@ -26,6 +26,7 @@ import {
   runBookingKycOcr,
   submitBookingKyc,
   uploadFileToPresignedUrl,
+  type BookingKycDetailResponse,
   type BookingSlotSummary,
   type KycSubmitPayload,
 } from "@/lib/booking-api";
@@ -56,6 +57,99 @@ function emptyKycState(): KycEditorState {
     purpose: "LEISURE",
     consent_given: false,
   };
+}
+
+function createEditorState(
+  kyc: BookingKycDetailResponse["kyc"],
+  slotGuestName?: string | null,
+  guestPhone?: string | null,
+): KycEditorState {
+  if (!kyc) {
+    return {
+      ...emptyKycState(),
+      full_name: slotGuestName || "",
+      contact_number: guestPhone || "",
+    };
+  }
+
+  return {
+    nationality_type: kyc.nationality_type || "INDIAN",
+    id_type: kyc.id_type || "AADHAAR",
+    full_name: kyc.full_name || slotGuestName || "",
+    date_of_birth: kyc.date_of_birth || "",
+    id_number: kyc.id_number || "",
+    permanent_address: kyc.permanent_address || "",
+    contact_number: kyc.contact_number || guestPhone || "",
+    coming_from: kyc.coming_from || "",
+    going_to: kyc.going_to || "",
+    purpose: kyc.purpose || "LEISURE",
+    front_image_url: kyc.front_image_url || undefined,
+    back_image_url: kyc.back_image_url || undefined,
+    consent_given: Boolean(kyc.consent_given),
+  };
+}
+
+function validateKycPayload(payload: KycSubmitPayload): string[] {
+  const errors: string[] = [];
+  const trimmedFullName = payload.full_name.trim();
+  const trimmedIdNumber = payload.id_number.trim();
+  const trimmedAddress = payload.permanent_address.trim();
+  const trimmedContact = payload.contact_number.trim();
+  const trimmedComingFrom = payload.coming_from.trim();
+  const trimmedGoingTo = payload.going_to.trim();
+
+  if (payload.nationality_type !== "INDIAN") {
+    errors.push("Nationality must be INDIAN for this KYC flow.");
+  }
+
+  if (!KYC_ID_TYPES.includes(payload.id_type)) {
+    errors.push("Select a valid ID type before submitting.");
+  }
+
+  if (trimmedFullName.length === 0) {
+    errors.push("Full name is required.");
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.date_of_birth)) {
+    errors.push("Date of birth must be in YYYY-MM-DD format.");
+  } else {
+    const birthDate = new Date(`${payload.date_of_birth}T00:00:00`);
+    const minimumAdultDate = new Date();
+    minimumAdultDate.setFullYear(minimumAdultDate.getFullYear() - 18);
+    if (birthDate > minimumAdultDate) {
+      errors.push("Guest must be 18 years or older.");
+    }
+  }
+
+  if (trimmedIdNumber.length === 0) {
+    errors.push("ID number is required.");
+  }
+
+  if (trimmedAddress.length === 0) {
+    errors.push("Permanent address is required.");
+  }
+
+  if (!/^\+\d{10,15}$/.test(trimmedContact)) {
+    errors.push("Contact number must include country code, for example +919876543210.");
+  }
+
+  if (trimmedComingFrom.length === 0) {
+    errors.push("Coming from is required.");
+  }
+
+  if (trimmedGoingTo.length === 0) {
+    errors.push("Going to is required.");
+  }
+
+  if (!KYC_PURPOSES.includes(payload.purpose)) {
+    errors.push("Select a valid purpose before submitting.");
+  }
+
+  if (!payload.consent_given) {
+    errors.push("Consent is required before you can submit KYC.");
+  }
+
+  return errors;
 }
 
 function normaliseOcrDate(input?: string | null): string {
@@ -97,7 +191,7 @@ function slotStatusTone(status: string): string {
 }
 
 export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: string }) {
-  const { isAuthenticated, isRestoringSession, openAuthModal } = useGuestAuth();
+  const { guest, isAuthenticated, isRestoringSession, openAuthModal } = useGuestAuth();
   const [bookingTitle, setBookingTitle] = useState<string>("Pre-arrival setup");
   const [slots, setSlots] = useState<BookingSlotSummary[]>([]);
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
@@ -154,34 +248,17 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
 
       if (preferredSlotId) {
         const slotDetail = await getBookingKycDetail(token, ezeeReservationId, preferredSlotId);
-        setEditorState(
-          slotDetail.kyc
-            ? {
-                nationality_type: slotDetail.kyc.nationality_type || "INDIAN",
-                id_type: slotDetail.kyc.id_type || "AADHAAR",
-                full_name: slotDetail.kyc.full_name || "",
-                date_of_birth: slotDetail.kyc.date_of_birth || "",
-                id_number: slotDetail.kyc.id_number || "",
-                permanent_address: slotDetail.kyc.permanent_address || "",
-                contact_number: slotDetail.kyc.contact_number || "",
-                coming_from: slotDetail.kyc.coming_from || "",
-                going_to: slotDetail.kyc.going_to || "",
-                purpose: slotDetail.kyc.purpose || "LEISURE",
-                front_image_url: slotDetail.kyc.front_image_url || undefined,
-                back_image_url: slotDetail.kyc.back_image_url || undefined,
-                consent_given: Boolean(slotDetail.kyc.consent_given),
-              }
-            : emptyKycState(),
-        );
+        const selectedSlot = slotResponse.slots.find((slot) => slot.slot_id === preferredSlotId) ?? null;
+        setEditorState(createEditorState(slotDetail.kyc, selectedSlot?.guest_name, guest?.phone));
       } else {
-        setEditorState(emptyKycState());
+        setEditorState(createEditorState(null, null, guest?.phone));
       }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Unable to load pre-arrival setup.");
     } finally {
       setIsLoading(false);
     }
-  }, [activeSlotId, ezeeReservationId]);
+  }, [activeSlotId, ezeeReservationId, guest?.phone]);
 
   useEffect(() => {
     if (isRestoringSession) {
@@ -209,25 +286,8 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
 
     try {
       const slotDetail = await getBookingKycDetail(token, ezeeReservationId, nextSlotId);
-      setEditorState(
-        slotDetail.kyc
-          ? {
-              nationality_type: slotDetail.kyc.nationality_type || "INDIAN",
-              id_type: slotDetail.kyc.id_type || "AADHAAR",
-              full_name: slotDetail.kyc.full_name || "",
-              date_of_birth: slotDetail.kyc.date_of_birth || "",
-              id_number: slotDetail.kyc.id_number || "",
-              permanent_address: slotDetail.kyc.permanent_address || "",
-              contact_number: slotDetail.kyc.contact_number || "",
-              coming_from: slotDetail.kyc.coming_from || "",
-              going_to: slotDetail.kyc.going_to || "",
-              purpose: slotDetail.kyc.purpose || "LEISURE",
-              front_image_url: slotDetail.kyc.front_image_url || undefined,
-              back_image_url: slotDetail.kyc.back_image_url || undefined,
-              consent_given: Boolean(slotDetail.kyc.consent_given),
-            }
-          : emptyKycState(),
-      );
+      const nextSlot = slots.find((slot) => slot.slot_id === nextSlotId) ?? null;
+      setEditorState(createEditorState(slotDetail.kyc, nextSlot?.guest_name, guest?.phone));
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Unable to open this slot.");
     }
@@ -375,21 +435,28 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     setSuccessMessage(null);
 
     try {
-      const response = await submitBookingKyc(token, ezeeReservationId, activeSlotId, {
+      const payload: KycSubmitPayload = {
         nationality_type: editorState.nationality_type,
         id_type: editorState.id_type,
-        full_name: editorState.full_name,
+        full_name: editorState.full_name.trim(),
         date_of_birth: editorState.date_of_birth,
-        id_number: editorState.id_number,
-        permanent_address: editorState.permanent_address,
-        contact_number: editorState.contact_number,
-        coming_from: editorState.coming_from,
-        going_to: editorState.going_to,
+        id_number: editorState.id_number.trim(),
+        permanent_address: editorState.permanent_address.trim(),
+        contact_number: editorState.contact_number.trim(),
+        coming_from: editorState.coming_from.trim(),
+        going_to: editorState.going_to.trim(),
         purpose: editorState.purpose,
         front_image_url: editorState.front_image_url,
         back_image_url: editorState.back_image_url,
         consent_given: editorState.consent_given,
-      });
+      };
+      const validationErrors = validateKycPayload(payload);
+      if (validationErrors.length > 0) {
+        setErrorMessage(validationErrors.join(" "));
+        return;
+      }
+
+      const response = await submitBookingKyc(token, ezeeReservationId, activeSlotId, payload);
 
       setSuccessMessage(response.message);
       await loadSlots(activeSlotId);
@@ -485,7 +552,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
 
             <div className="mt-6 space-y-3">
               {slots.map((slot) => (
-                <button
+                <div
                   key={slot.slot_id}
                   className={cn(
                     "w-full rounded-[20px] border p-4 text-left transition",
@@ -494,7 +561,14 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                       : "border-white/10 bg-white/5 hover:border-white/20",
                   )}
                   onClick={() => void selectSlot(slot.slot_id)}
-                  type="button"
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      void selectSlot(slot.slot_id);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -523,7 +597,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                       </button>
                     ) : null}
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </div>
