@@ -3,12 +3,16 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ArrowLeft,
+  CalendarDays,
   ChevronRight,
   FileSearch,
   IdCard,
   LoaderCircle,
+  MapPin,
   Plus,
   ShieldCheck,
+  Sparkles,
   Trash2,
   Upload,
   Users,
@@ -190,6 +194,25 @@ function slotStatusTone(status: string): string {
   return "border-white/10 bg-white/5 text-white/70";
 }
 
+function missionStepCount(editorState: KycEditorState): number {
+  const hasDocument = Boolean(editorState.front_image_key || editorState.front_image_url);
+  const identityComplete = Boolean(
+    editorState.full_name.trim() &&
+      editorState.date_of_birth &&
+      editorState.id_number.trim(),
+  );
+  const travelComplete = Boolean(
+    editorState.permanent_address.trim() &&
+      editorState.contact_number.trim() &&
+      editorState.coming_from.trim() &&
+      editorState.going_to.trim() &&
+      editorState.purpose,
+  );
+  const consentComplete = editorState.consent_given;
+
+  return [hasDocument, identityComplete, travelComplete, consentComplete].filter(Boolean).length;
+}
+
 export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: string }) {
   const { guest, isAuthenticated, isRestoringSession, openAuthModal } = useGuestAuth();
   const [bookingTitle, setBookingTitle] = useState<string>("Pre-arrival setup");
@@ -209,6 +232,11 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     () => slots.find((slot) => slot.slot_id === activeSlotId) ?? null,
     [activeSlotId, slots],
   );
+  const completedSlotCount = useMemo(
+    () => slots.filter((slot) => slot.kyc_status === "PRE_VERIFIED" || slot.kyc_status === "VERIFIED").length,
+    [slots],
+  );
+  const activeMissionSteps = useMemo(() => missionStepCount(editorState), [editorState]);
 
   const canEditActiveSlot =
     Boolean(activeSlot?.can_edit ?? true) &&
@@ -517,320 +545,298 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
       </BookingPageShell>
     );
   }
-
   return (
-    <BookingPageShell
-      badge="Pre-arrival Setup"
-      title={bookingTitle}
-      description="Complete KYC for each guest slot before arrival. OCR is optional; if extraction misses anything, correct the fields manually before submitting."
-    >
-      {errorMessage ? (
-        <div className="rounded-[22px] border border-[rgba(255,76,48,0.24)] bg-[rgba(255,76,48,0.1)] px-5 py-4 text-sm text-white/86">
-          {errorMessage}
-        </div>
-      ) : null}
-
-      {successMessage ? (
-        <div className="rounded-[22px] border border-[rgba(57,247,44,0.2)] bg-[rgba(57,247,44,0.08)] px-5 py-4 text-sm text-white/86">
-          {successMessage}
-        </div>
-      ) : null}
-
-      <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <div className="space-y-6">
-          <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)]">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="vh-chip w-fit">Guest Slots</p>
-                <h2 className="mt-3 font-suez text-3xl uppercase tracking-[-0.04em] text-white">Who’s staying?</h2>
-              </div>
-              <Button className="rounded-full" disabled={isMutating} onClick={() => void handleAddSlot()} type="button">
-                <Plus className="mr-2 h-4 w-4" />
-                Add slot
+    <section className="vh-section min-h-screen bg-[var(--vh-section-b)] pt-24 md:pt-28">
+      <div className="vh-container">
+        <div className="mx-auto max-w-6xl">
+          <div className="overflow-hidden rounded-[28px] border border-[rgba(255,46,98,0.14)] bg-[#230f14] shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
+            <div className="flex items-center justify-between bg-[rgba(35,15,20,0.9)] px-4 py-5 backdrop-blur-sm md:px-6">
+              <Button asChild className="h-10 w-10 rounded-[12px] border border-white/10 bg-transparent p-0 text-[var(--vh-pink)] shadow-none hover:bg-white/8" variant="ghost">
+                <Link href={`/bookings/${encodeURIComponent(ezeeReservationId)}`} aria-label="Back to booking">
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
               </Button>
-            </div>
-
-            <div className="mt-6 space-y-3">
-              {slots.map((slot) => (
-                <div
-                  key={slot.slot_id}
-                  className={cn(
-                    "w-full rounded-[20px] border p-4 text-left transition",
-                    activeSlotId === slot.slot_id
-                      ? "border-[var(--vh-pink)] bg-[rgba(255,46,98,0.12)]"
-                      : "border-white/10 bg-white/5 hover:border-white/20",
-                  )}
-                  onClick={() => void selectSlot(slot.slot_id)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      void selectSlot(slot.slot_id);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.16em] text-white/45">{slot.label}</p>
-                      <p className="mt-2 text-lg font-semibold text-white">{slot.guest_name || "Guest details pending"}</p>
-                    </div>
-                    <div className={`rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] ${slotStatusTone(slot.kyc_status)}`}>
-                      {slotStatusLabel(slot.kyc_status)}
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex items-center justify-between gap-3">
-                    <p className="text-sm text-white/62">{slot.can_edit === false ? "Read only" : "Editable by this guest"}</p>
-                    {slots.length > 1 ? (
-                      <button
-                        aria-label={`Delete ${slot.label}`}
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[#0f172a] text-white/78"
-                        disabled={isMutating}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          void handleDeleteSlot(slot.slot_id);
-                        }}
-                        type="button"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)]">
-            <p className="vh-chip w-fit">Flow Notes</p>
-            <div className="mt-5 space-y-4">
-              <div className="flex items-start gap-3">
-                <IdCard className="mt-1 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
-                <p className="text-sm leading-7 text-white/70">Accepted IDs: Aadhaar, Voter ID, Driving Licence, Passport. PAN is not accepted.</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-[var(--vh-cyan)]" />
-                <p className="text-sm leading-7 text-white/70">Only Indian nationals are supported by this KYC flow, and every guest must be 18 or older.</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <Users className="mt-1 h-4 w-4 shrink-0 text-[var(--vh-amber)]" />
-                <p className="text-sm leading-7 text-white/70">If more guests are joining the reservation, add another slot first, then complete KYC for that slot as well.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)]">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="vh-chip w-fit">Active Slot</p>
-              <h2 className="mt-3 font-suez text-3xl uppercase tracking-[-0.04em] text-white">{activeSlot?.label || "Select a slot"}</h2>
-              <p className="mt-2 text-sm leading-7 text-white/68">
-                {activeSlot?.guest_name || "Fill the guest details, upload the documents if you have them, and submit the reviewed KYC form."}
+              <p className="font-['Space_Grotesk'] text-2xl font-bold uppercase tracking-[-0.04em] text-slate-100 [text-shadow:2px_2px_0px_#ff2e62]">
+                Pre-Arrival
               </p>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-[var(--vh-pink)]">
+                <Sparkles className="h-4 w-4" />
+              </div>
             </div>
-            <Button asChild className="rounded-full border border-white/15 bg-transparent text-white hover:bg-white/8">
-              <Link href={`/bookings/${encodeURIComponent(ezeeReservationId)}`}>
-                Back to booking
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <label className="rounded-[20px] border border-white/10 bg-white/5 p-5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.16em] text-white/45">Front document</p>
-                  <p className="mt-2 text-sm text-white/68">
-                    {editorState.front_image_url ? "Uploaded and ready for OCR." : "Upload JPG, PNG, or HEIC."}
-                  </p>
+            <div className="px-4 py-6 md:px-6">
+              {errorMessage ? (
+                <div className="rounded-[22px] border border-[rgba(255,76,48,0.24)] bg-[rgba(255,76,48,0.1)] px-5 py-4 text-sm text-white/86">
+                  {errorMessage}
                 </div>
-                {isUploadingFront ? <LoaderCircle className="h-4 w-4 animate-spin text-[var(--vh-pink)]" /> : <Upload className="h-4 w-4 text-[var(--vh-pink)]" />}
-              </div>
-              <input
-                accept="image/*"
-                className="mt-4 block w-full text-sm text-white"
-                disabled={!canEditActiveSlot || isUploadingFront}
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) {
-                    void handleUpload("front", file);
-                  }
-                }}
-                type="file"
-              />
-            </label>
+              ) : null}
 
-            <label className="rounded-[20px] border border-white/10 bg-white/5 p-5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.16em] text-white/45">Back document</p>
-                  <p className="mt-2 text-sm text-white/68">
-                    {editorState.back_image_url ? "Uploaded and ready for OCR." : "Optional for IDs that need two sides."}
-                  </p>
+              {successMessage ? (
+                <div className="mt-4 rounded-[22px] border border-[rgba(57,247,44,0.2)] bg-[rgba(57,247,44,0.08)] px-5 py-4 text-sm text-white/86">
+                  {successMessage}
                 </div>
-                {isUploadingBack ? <LoaderCircle className="h-4 w-4 animate-spin text-[var(--vh-pink)]" /> : <Upload className="h-4 w-4 text-[var(--vh-pink)]" />}
+              ) : null}
+
+              <div className="mt-6 rounded-[20px] border border-[rgba(255,46,98,0.24)] bg-[rgba(255,46,98,0.1)] p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-pink)]">Mission Progress</p>
+                  <p className="font-['Space_Grotesk'] text-xs font-bold text-slate-100">{activeMissionSteps} / 4</p>
+                </div>
+                <div className="mt-3 h-6 rounded-full border-2 border-[rgba(255,46,98,0.3)] bg-[rgba(255,46,98,0.08)] p-[2px]">
+                  <div className="flex h-full items-center justify-end rounded-full bg-[var(--vh-pink)] px-2" style={{ width: `${Math.max(25, (activeMissionSteps / 4) * 100)}%` }}>
+                    <div className="h-2 flex-1 rounded-full bg-white/30" />
+                  </div>
+                </div>
               </div>
-              <input
-                accept="image/*"
-                className="mt-4 block w-full text-sm text-white"
-                disabled={!canEditActiveSlot || isUploadingBack}
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) {
-                    void handleUpload("back", file);
-                  }
-                }}
-                type="file"
-              />
-            </label>
-          </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Button
-              className="rounded-full"
-              disabled={!canEditActiveSlot || !editorState.front_image_key || isRunningOcr}
-              onClick={() => void handleRunOcr()}
-              type="button"
-            >
-              {isRunningOcr ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <FileSearch className="mr-2 h-4 w-4" />}
-              Run OCR
-            </Button>
-            <p className="text-sm text-white/58">OCR prefills the form but does not submit KYC by itself.</p>
-          </div>
+              <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="space-y-6">
+                  <section className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <h2 className="font-['Space_Grotesk'] text-[20px] font-bold uppercase text-white">1. ID Verification</h2>
+                      <IdCard className="h-4 w-4 text-[var(--vh-pink)]" />
+                    </div>
+                    <div className="-rotate-1 rounded-[4px] border border-[#e2e8f0] bg-white p-4 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)]">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <label className="rounded-[12px] bg-[#f1f5f9] p-4 text-[#0f172a]">
+                          <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 border-b border-slate-300/80 pb-4 text-center">
+                            <div className="h-12 w-12 bg-center bg-no-repeat" style={{ backgroundImage: "url('/design-guidelines/pre-arrival/Image.png')", backgroundSize: "contain" }} />
+                            <div>
+                              <p className="font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Click to snap</p>
+                              <p className="mt-2 text-sm text-slate-500">&quot;Gotta make sure it&apos;s really you, boss!&quot;</p>
+                            </div>
+                          </div>
+                          <div className="mt-4 flex items-center justify-between gap-3">
+                            <div>
+                              <p className="font-['Space_Grotesk'] text-sm font-bold uppercase text-slate-900">Front document</p>
+                              <p className="mt-1 text-xs text-slate-500">{editorState.front_image_url ? "Uploaded and ready for OCR." : "Upload JPG, PNG, or HEIC."}</p>
+                            </div>
+                            {isUploadingFront ? <LoaderCircle className="h-4 w-4 animate-spin text-[var(--vh-pink)]" /> : <Upload className="h-4 w-4 text-[var(--vh-pink)]" />}
+                          </div>
+                          <input accept="image/*" className="mt-4 block w-full text-sm text-slate-700" disabled={!canEditActiveSlot || isUploadingFront} onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            if (file) {
+                              void handleUpload("front", file);
+                            }
+                          }} type="file" />
+                        </label>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <label className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Nationality</span>
-              <select
-                className="vh-input"
-                disabled={!canEditActiveSlot}
-                onChange={(event) => setEditorState((current) => ({ ...current, nationality_type: event.target.value }))}
-                value={editorState.nationality_type}
-              >
-                <option value="INDIAN">INDIAN</option>
-              </select>
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">ID Type</span>
-              <select
-                className="vh-input"
-                disabled={!canEditActiveSlot}
-                onChange={(event) => setEditorState((current) => ({ ...current, id_type: event.target.value }))}
-                value={editorState.id_type}
-              >
-                {KYC_ID_TYPES.map((idType) => (
-                  <option key={idType} value={idType}>
-                    {idType}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Full Name</span>
-              <input
-                className="vh-input"
-                disabled={!canEditActiveSlot}
-                onChange={(event) => setEditorState((current) => ({ ...current, full_name: event.target.value }))}
-                value={editorState.full_name}
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Date of Birth</span>
-              <input
-                className="vh-input"
-                disabled={!canEditActiveSlot}
-                onChange={(event) => setEditorState((current) => ({ ...current, date_of_birth: event.target.value }))}
-                type="date"
-                value={editorState.date_of_birth}
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">ID Number</span>
-              <input
-                className="vh-input"
-                disabled={!canEditActiveSlot}
-                onChange={(event) => setEditorState((current) => ({ ...current, id_number: event.target.value }))}
-                value={editorState.id_number}
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Contact Number</span>
-              <input
-                className="vh-input"
-                disabled={!canEditActiveSlot}
-                onChange={(event) => setEditorState((current) => ({ ...current, contact_number: event.target.value }))}
-                value={editorState.contact_number}
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Coming From</span>
-              <input
-                className="vh-input"
-                disabled={!canEditActiveSlot}
-                onChange={(event) => setEditorState((current) => ({ ...current, coming_from: event.target.value }))}
-                value={editorState.coming_from}
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Going To</span>
-              <input
-                className="vh-input"
-                disabled={!canEditActiveSlot}
-                onChange={(event) => setEditorState((current) => ({ ...current, going_to: event.target.value }))}
-                value={editorState.going_to}
-              />
-            </label>
-            <label className="space-y-2 md:col-span-2">
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Permanent Address</span>
-              <textarea
-                className="vh-input min-h-[120px] resize-y"
-                disabled={!canEditActiveSlot}
-                onChange={(event) => setEditorState((current) => ({ ...current, permanent_address: event.target.value }))}
-                value={editorState.permanent_address}
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Purpose</span>
-              <select
-                className="vh-input"
-                disabled={!canEditActiveSlot}
-                onChange={(event) => setEditorState((current) => ({ ...current, purpose: event.target.value }))}
-                value={editorState.purpose}
-              >
-                {KYC_PURPOSES.map((purpose) => (
-                  <option key={purpose} value={purpose}>
-                    {purpose}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+                        <label className="rotate-[1deg] rounded-[4px] border-4 border-[var(--vh-pink)] bg-[#0f172a] p-4 text-white shadow-[0_20px_25px_-5px_rgba(0,0,0,0.22)]">
+                          <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 text-center">
+                            <ShieldCheck className="h-10 w-10 text-[var(--vh-pink)]" />
+                            <div>
+                              <p className="font-['Space_Grotesk'] text-sm font-black uppercase">Back document</p>
+                              <p className="mt-2 text-xs text-white/70">{editorState.back_image_url ? "Uploaded and ready for OCR." : "Optional for IDs that need two sides."}</p>
+                            </div>
+                          </div>
+                          <div className="mt-4 flex items-center justify-between gap-3">
+                            <p className="font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.12em] text-[var(--vh-pink)]">Optional support file</p>
+                            {isUploadingBack ? <LoaderCircle className="h-4 w-4 animate-spin text-white" /> : <Upload className="h-4 w-4 text-white" />}
+                          </div>
+                          <input accept="image/*" className="mt-4 block w-full text-sm text-white" disabled={!canEditActiveSlot || isUploadingBack} onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            if (file) {
+                              void handleUpload("back", file);
+                            }
+                          }} type="file" />
+                        </label>
+                      </div>
 
-          <label className="mt-6 flex items-start gap-3 rounded-[20px] border border-white/10 bg-white/5 p-4">
-            <input
-              checked={editorState.consent_given}
-              className="mt-1"
-              disabled={!canEditActiveSlot}
-              onChange={(event) => setEditorState((current) => ({ ...current, consent_given: event.target.checked }))}
-              type="checkbox"
-            />
-            <span className="text-sm leading-7 text-white/72">
-              I confirm that the submitted information is accurate, matches the uploaded ID, and can be used for pre-check-in verification.
-            </span>
-          </label>
+                      <div className="mt-4 flex flex-wrap items-center gap-3">
+                        <Button className="rounded-[8px] bg-[var(--vh-pink)] px-5 py-5 text-sm font-black uppercase tracking-[0.12em] shadow-[0_6px_0_0_#9a1c3b]" disabled={!canEditActiveSlot || !editorState.front_image_key || isRunningOcr} onClick={() => void handleRunOcr()} type="button">
+                          {isRunningOcr ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <FileSearch className="mr-2 h-4 w-4" />}
+                          Run OCR
+                        </Button>
+                        <p className="text-sm text-slate-500">OCR prefills the form but does not submit KYC by itself.</p>
+                      </div>
+                    </div>
+                  </section>
+                  <section className="space-y-4">
+                    <h2 className="font-['Space_Grotesk'] text-[20px] font-bold uppercase text-white">2. Traveler Details</h2>
+                    <div className="rounded-[24px] border border-white/12 bg-[rgba(15,16,26,0.92)] p-6 shadow-[var(--vh-shadow-lg)]">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Nationality</span>
+                          <select className="vh-input" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, nationality_type: event.target.value }))} value={editorState.nationality_type}>
+                            <option value="INDIAN">INDIAN</option>
+                          </select>
+                        </label>
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">ID Type</span>
+                          <select className="vh-input" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, id_type: event.target.value }))} value={editorState.id_type}>
+                            {KYC_ID_TYPES.map((idType) => (
+                              <option key={idType} value={idType}>{idType}</option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Full Name</span>
+                          <input className="vh-input" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, full_name: event.target.value }))} value={editorState.full_name} />
+                        </label>
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Date of Birth</span>
+                          <input className="vh-input" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, date_of_birth: event.target.value }))} type="date" value={editorState.date_of_birth} />
+                        </label>
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">ID Number</span>
+                          <input className="vh-input" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, id_number: event.target.value }))} value={editorState.id_number} />
+                        </label>
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Contact Number</span>
+                          <input className="vh-input" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, contact_number: event.target.value }))} value={editorState.contact_number} />
+                        </label>
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Coming From</span>
+                          <input className="vh-input" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, coming_from: event.target.value }))} value={editorState.coming_from} />
+                        </label>
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Going To</span>
+                          <input className="vh-input" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, going_to: event.target.value }))} value={editorState.going_to} />
+                        </label>
+                        <label className="space-y-2 md:col-span-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Permanent Address</span>
+                          <textarea className="vh-input min-h-[120px] resize-y" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, permanent_address: event.target.value }))} value={editorState.permanent_address} />
+                        </label>
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">Purpose</span>
+                          <select className="vh-input" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, purpose: event.target.value }))} value={editorState.purpose}>
+                            {KYC_PURPOSES.map((purpose) => (
+                              <option key={purpose} value={purpose}>{purpose}</option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+                  </section>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Button className="rounded-full" disabled={!canEditActiveSlot || isSubmitting} onClick={() => void handleSubmit()} type="button">
-              {isSubmitting ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
-              Submit KYC
-            </Button>
-            {!canEditActiveSlot ? <p className="text-sm text-white/58">This slot is locked because it has already been submitted or verified.</p> : null}
+                  <section className="space-y-4">
+                    <h2 className="font-['Space_Grotesk'] text-[20px] font-bold uppercase text-white">3. House Rules</h2>
+                    <div className="rounded-[24px] border-2 border-[rgba(255,46,98,0.2)] bg-[linear-gradient(145deg,rgba(255,46,98,0.1)_0%,#230f14_100%)] p-6 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]">
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-3 border-b border-[rgba(255,46,98,0.3)] pb-3">
+                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
+                          <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Bring the same government ID to the property for final verification.</p>
+                        </div>
+                        <div className="flex items-start gap-3 border-b border-[rgba(255,46,98,0.3)] pb-3">
+                          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
+                          <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Only Indian nationals above 18 years are supported in this KYC flow.</p>
+                        </div>
+                        <div className="flex items-start gap-3 border-b border-[rgba(255,46,98,0.3)] pb-3">
+                          <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
+                          <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Accepted IDs: Aadhaar, Voter ID, Driving Licence, Passport.</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <Users className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
+                          <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Add another guest slot before submission if more guests are joining this stay.</p>
+                        </div>
+                      </div>
+
+                      <label className="mt-6 flex items-start gap-3 rounded-[12px] border border-white/10 bg-white/5 p-4">
+                        <input checked={editorState.consent_given} className="mt-1" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, consent_given: event.target.checked }))} type="checkbox" />
+                        <span className="text-sm leading-7 text-white/72">I confirm that the submitted information is accurate, matches the uploaded ID, and can be used for pre-check-in verification.</span>
+                      </label>
+                    </div>
+                  </section>
+
+                  <div className="pt-2">
+                    <Button className="w-full rounded-[8px] bg-[var(--vh-pink)] py-6 text-xl font-black uppercase tracking-[0.16em] shadow-[0_8px_0_0_#9a1c3b]" disabled={!canEditActiveSlot || isSubmitting} onClick={() => void handleSubmit()} type="button">
+                      {isSubmitting ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}
+                      Finish Setup
+                    </Button>
+                    <p className="mt-4 text-center font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.1em] text-slate-500">You&apos;re almost home, traveler.</p>
+                    {!canEditActiveSlot ? <p className="mt-3 text-center text-sm text-white/58">This slot is locked because it has already been submitted or verified.</p> : null}
+                  </div>
+                </div>
+                <div className="space-y-6">
+                  <section className="space-y-4">
+                    <h2 className="font-['Space_Grotesk'] text-[20px] font-bold uppercase text-white">4. Who&apos;s Staying?</h2>
+                    <div className="rounded-[24px] border border-white/12 bg-[rgba(15,16,26,0.92)] p-6 shadow-[var(--vh-shadow-lg)]">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.16em] text-white/45">Guest Slots</p>
+                          <p className="mt-2 text-sm text-white/68">{completedSlotCount}/{slots.length} verified</p>
+                        </div>
+                        <Button className="rounded-[8px]" disabled={isMutating} onClick={() => void handleAddSlot()} type="button">
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add slot
+                        </Button>
+                      </div>
+                      <div className="mt-6 space-y-3">
+                        {slots.map((slot) => (
+                          <div
+                            key={slot.slot_id}
+                            className={cn(
+                              "w-full rounded-[20px] border p-4 text-left transition",
+                              activeSlotId === slot.slot_id
+                                ? "border-[var(--vh-pink)] bg-[rgba(255,46,98,0.12)]"
+                                : "border-white/10 bg-white/5 hover:border-white/20",
+                            )}
+                            onClick={() => void selectSlot(slot.slot_id)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                void selectSlot(slot.slot_id);
+                              }
+                            }}
+                            role="button"
+                            tabIndex={0}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-xs uppercase tracking-[0.16em] text-white/45">{slot.label}</p>
+                                <p className="mt-2 text-lg font-semibold text-white">{slot.guest_name || "Guest details pending"}</p>
+                              </div>
+                              <div className={`rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] ${slotStatusTone(slot.kyc_status)}`}>
+                                {slotStatusLabel(slot.kyc_status)}
+                              </div>
+                            </div>
+                            <div className="mt-4 flex items-center justify-between gap-3">
+                              <p className="text-sm text-white/62">{slot.can_edit === false ? "Read only" : "Editable by this guest"}</p>
+                              {slots.length > 1 ? (
+                                <button
+                                  aria-label={`Delete ${slot.label}`}
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[#0f172a] text-white/78"
+                                  disabled={isMutating}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    void handleDeleteSlot(slot.slot_id);
+                                  }}
+                                  type="button"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              ) : null}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+
+                  <div className="rounded-[24px] border border-white/12 bg-[rgba(15,16,26,0.92)] p-6 shadow-[var(--vh-shadow-lg)]">
+                    <p className="text-xs uppercase tracking-[0.16em] text-white/45">Active Slot</p>
+                    <h3 className="mt-3 font-['Space_Grotesk'] text-3xl font-bold uppercase tracking-[-0.04em] text-white">{activeSlot?.label || "Select a slot"}</h3>
+                    <p className="mt-3 text-sm leading-7 text-white/68">{activeSlot?.guest_name || "Fill the guest details, upload the documents if you have them, and submit the reviewed KYC form."}</p>
+                    <div className="mt-5 rounded-[20px] border border-white/10 bg-white/5 p-4">
+                      <div className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] ${slotStatusTone(activeSlot?.kyc_status || "NOT_STARTED")}`}>
+                        {slotStatusLabel(activeSlot?.kyc_status || "NOT_STARTED")}
+                      </div>
+                      <p className="mt-4 text-sm text-white/72">Booking: {bookingTitle}</p>
+                      <p className="mt-2 text-sm text-white/72">Reservation: {ezeeReservationId}</p>
+                    </div>
+                    <Button asChild className="mt-5 w-full rounded-[8px] border border-white/15 bg-transparent text-white hover:bg-white/8" variant="outline">
+                      <Link href={`/bookings/${encodeURIComponent(ezeeReservationId)}`}>
+                        Back to booking
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </BookingPageShell>
+    </section>
   );
 }
