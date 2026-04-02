@@ -17,7 +17,7 @@ export function SectionHeading({
 
   return (
     <FadeIn className={`mb-5 ${alignment}`}>
-      <h2 className="vh-retro-3d text-[2rem] leading-none md:text-[3rem]">{title}</h2>
+      <h2 className="vh-title">{title}</h2>
       {subtitle ? <p className="vh-subtitle mt-1.5">{subtitle}</p> : null}
       {tagline ? <p className="mx-auto mt-3 max-w-[720px] text-[15px] font-medium leading-7 text-white/84 md:text-base">{tagline}</p> : null}
     </FadeIn>

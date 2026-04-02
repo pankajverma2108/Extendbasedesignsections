@@ -241,7 +241,7 @@ function SectionTitle({
   title: string;
   className?: string;
 }) {
-  return <h2 className={`vh-retro-3d text-[1.9rem] leading-none md:text-[2.6rem] ${className}`}>{title}</h2>;
+  return <h2 className={`text-[28px] font-bold leading-[34px] text-white ${className}`}>{title}</h2>;
 }
 
 function DateRangePicker({
