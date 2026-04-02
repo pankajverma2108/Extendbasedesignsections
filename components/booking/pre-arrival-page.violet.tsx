@@ -26,7 +26,6 @@ import {
   getBookingKycDetail,
   getBookingKycSlots,
   getBookingKycUploadUrl,
-  getStoreCatalog,
   linkGuestBooking,
   runBookingKycOcr,
   submitBookingKyc,
@@ -34,7 +33,6 @@ import {
   type BookingKycDetailResponse,
   type BookingSlotSummary,
   type KycSubmitPayload,
-  type StoreCatalogItem,
 } from "@/lib/booking-api";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { cn } from "@/lib/utils";
@@ -218,9 +216,6 @@ function missionStepCount(editorState: KycEditorState): number {
 export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: string }) {
   const { guest, isAuthenticated, isRestoringSession, openAuthModal } = useGuestAuth();
   const [bookingTitle, setBookingTitle] = useState<string>("Pre-arrival setup");
-  const [activeTab, setActiveTab] = useState<"kyc" | "addons">("kyc");
-  const [catalogItems, setCatalogItems] = useState<StoreCatalogItem[]>([]);
-  const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>({});
   const [slots, setSlots] = useState<BookingSlotSummary[]>([]);
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
   const [editorState, setEditorState] = useState<KycEditorState>(emptyKycState);
@@ -264,9 +259,6 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
         linkGuestBooking(token, ezeeReservationId),
         getBookingKycSlots(token, ezeeReservationId),
       ]);
-
-      const catalog = await getStoreCatalog(detail.booking.property_id).catch(() => []);
-      setCatalogItems(catalog);
 
       setBookingTitle(detail.booking.room_type_name || "Pre-arrival setup");
       setSlots(slotResponse.slots);
@@ -557,8 +549,8 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     <section className="vh-section min-h-screen bg-[var(--vh-section-b)] pt-24 md:pt-28 animate-vh-fade-in">
       <div className="vh-container">
         <div className="mx-auto max-w-6xl">
-          <div className="animate-vh-slide-up overflow-hidden rounded-[28px] border border-[rgba(253,16,94,0.14)] bg-[var(--vh-section-a)] shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
-            <div className="flex items-center justify-between border-b border-[rgba(253,16,94,0.1)] bg-[rgba(253,16,94,0.03)] px-4 py-5 backdrop-blur-md md:px-6">
+          <div className="animate-vh-slide-up overflow-hidden rounded-[28px] border border-[rgba(151,135,243,0.14)] bg-[var(--vh-section-a)] shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
+            <div className="flex items-center justify-between border-b border-[rgba(151,135,243,0.1)] bg-[rgba(151,135,243,0.03)] px-4 py-5 backdrop-blur-md md:px-6">
               <Button asChild className="h-10 w-10 rounded-[12px] border border-white/10 bg-transparent p-0 text-[var(--vh-pink)] shadow-none hover:bg-white/10 transition-all duration-300" variant="ghost">
                 <Link href={`/bookings/${encodeURIComponent(ezeeReservationId)}`} aria-label="Back to booking">
                   <ArrowLeft className="h-4 w-4" />
@@ -567,7 +559,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
               <p className="font-['Space_Grotesk'] text-2xl font-bold uppercase tracking-[-0.04em] text-slate-100 [text-shadow:2px_2px_0px_var(--vh-pink)]">
                 Pre-Arrival
               </p>
-              <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[rgba(253,16,94,0.3)] bg-[rgba(253,16,94,0.1)] text-[var(--vh-pink)] shadow-[0_0_10px_rgba(253,16,94,0.1)]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[rgba(151,135,243,0.3)] bg-[rgba(151,135,243,0.1)] text-[var(--vh-pink)] shadow-[0_0_10px_rgba(151,135,243,0.1)]">
                 <Sparkles className="h-4 w-4" />
               </div>
             </div>
@@ -585,30 +577,13 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                 </div>
               ) : null}
 
-              <div className="mt-6 flex gap-2 w-full max-w-[400px] rounded-[16px] bg-[rgba(253,16,94,0.05)] p-1.5 border border-[rgba(253,16,94,0.2)] mx-auto">
-                <button
-                  onClick={() => setActiveTab('kyc')}
-                  className={`flex-1 rounded-[12px] py-2.5 text-sm font-bold uppercase tracking-[0.1em] transition-all ${activeTab === 'kyc' ? 'bg-[var(--vh-pink)] text-white shadow-[0_4px_15px_rgba(253,16,94,0.3)]' : 'text-[var(--vh-pink)] hover:bg-[rgba(253,16,94,0.1)]'}`}
-                >
-                  KYC & Docs
-                </button>
-                <button
-                  onClick={() => setActiveTab('addons')}
-                  className={`flex-1 rounded-[12px] py-2.5 text-sm font-bold uppercase tracking-[0.1em] transition-all ${activeTab === 'addons' ? 'bg-[var(--vh-cyan)] text-[var(--vh-surface-2)] shadow-[0_4px_15px_rgba(234,239,254,0.3)]' : 'text-[var(--vh-cyan)] hover:bg-[rgba(234,239,254,0.1)]'}`}
-                >
-                  Pre-book Add-ons
-                </button>
-              </div>
-
-              {activeTab === "kyc" && (
-                <>
-                  <div className="mt-6 rounded-[20px] border border-[rgba(253,16,94,0.24)] bg-[rgba(253,16,94,0.08)] p-4 backdrop-blur-sm">
+              <div className="mt-6 rounded-[20px] border border-[rgba(151,135,243,0.24)] bg-[rgba(151,135,243,0.08)] p-4 backdrop-blur-sm">
                 <div className="flex items-center justify-between gap-4">
                   <p className="font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-pink)]">Mission Progress</p>
                   <p className="font-['Space_Grotesk'] text-xs font-bold text-slate-100">{activeMissionSteps} / 4</p>
                 </div>
-                <div className="mt-3 h-6 rounded-full border-2 border-[rgba(253,16,94,0.3)] bg-[rgba(253,16,94,0.08)] p-[2px]">
-                  <div className="flex h-full items-center justify-end rounded-full bg-gradient-to-r from-[var(--vh-pink)] to-[#ff3a7a] px-2 transition-all duration-500 shadow-[0_0_10px_rgba(253,16,94,0.4)]" style={{ width: `${Math.max(25, (activeMissionSteps / 4) * 100)}%` }}>
+                <div className="mt-3 h-6 rounded-full border-2 border-[rgba(151,135,243,0.3)] bg-[rgba(151,135,243,0.08)] p-[2px]">
+                  <div className="flex h-full items-center justify-end rounded-full bg-gradient-to-r from-[var(--vh-pink)] to-[#b0a3fa] px-2 transition-all duration-500 shadow-[0_0_10px_rgba(151,135,243,0.4)]" style={{ width: `${Math.max(25, (activeMissionSteps / 4) * 100)}%` }}>
                     <div className="h-2 flex-1 rounded-full bg-white/40" />
                   </div>
                 </div>
@@ -621,9 +596,9 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                       <h2 className="font-['Space_Grotesk'] text-[20px] font-bold uppercase text-white">1. ID Verification</h2>
                       <IdCard className="h-4 w-4 text-[var(--vh-pink)]" />
                     </div>
-                    <div className="-rotate-1 rounded-[16px] border border-[rgba(253,16,94,0.3)] bg-[var(--vh-ice)] p-5 text-[var(--vh-surface-2)] shadow-[8px_8px_0_0_var(--vh-pink)] transition-transform duration-300 hover:-translate-y-1 hover:-rotate-2 hover:shadow-[12px_12px_0_0_var(--vh-pink)]">
+                    <div className="-rotate-1 rounded-[16px] border border-[rgba(151,135,243,0.3)] bg-[var(--vh-ice)] p-5 text-[var(--vh-surface-2)] shadow-[8px_8px_0_0_var(--vh-pink)] transition-transform duration-300 hover:-translate-y-1 hover:-rotate-2 hover:shadow-[12px_12px_0_0_var(--vh-pink)]">
                       <div className="grid gap-4 md:grid-cols-2">
-                        <label className="rounded-[12px] bg-white border border-[rgba(253,16,94,0.2)] p-4 text-[var(--vh-surface-2)] shadow-sm hover:border-[var(--vh-pink)] transition-colors cursor-pointer group">
+                        <label className="rounded-[12px] bg-white border border-[rgba(151,135,243,0.2)] p-4 text-[var(--vh-surface-2)] shadow-sm hover:border-[var(--vh-pink)] transition-colors cursor-pointer group">
                           <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 border-b border-[var(--vh-surface-2)]/10 pb-4 text-center">
                             <div className="h-12 w-12 bg-center bg-no-repeat opacity-80 group-hover:scale-110 transition-transform duration-300" style={{ backgroundImage: "url('/design-guidelines/pre-arrival/Image.png')", backgroundSize: "contain" }} />
                             <div>
@@ -682,13 +657,13 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                       <div className="grid gap-4 md:grid-cols-2">
                         <label className="space-y-2">
                           <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Nationality</span>
-                          <select className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, nationality_type: event.target.value }))} value={editorState.nationality_type}>
+                          <select className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(151,135,243,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, nationality_type: event.target.value }))} value={editorState.nationality_type}>
                             <option value="INDIAN" className="text-slate-900">INDIAN</option>
                           </select>
                         </label>
                         <label className="space-y-2">
                           <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">ID Type</span>
-                          <select className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, id_type: event.target.value }))} value={editorState.id_type}>
+                          <select className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(151,135,243,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, id_type: event.target.value }))} value={editorState.id_type}>
                             {KYC_ID_TYPES.map((idType) => (
                               <option key={idType} value={idType} className="text-slate-900">{idType}</option>
                             ))}
@@ -696,35 +671,35 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                         </label>
                         <label className="space-y-2">
                           <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Full Name</span>
-                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, full_name: event.target.value }))} value={editorState.full_name} placeholder="As per ID" />
+                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(151,135,243,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, full_name: event.target.value }))} value={editorState.full_name} placeholder="As per ID" />
                         </label>
                         <label className="space-y-2">
                           <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Date of Birth</span>
-                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, date_of_birth: event.target.value }))} type="date" value={editorState.date_of_birth} />
+                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(151,135,243,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, date_of_birth: event.target.value }))} type="date" value={editorState.date_of_birth} />
                         </label>
                         <label className="space-y-2">
                           <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">ID Number</span>
-                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, id_number: event.target.value }))} value={editorState.id_number} placeholder="e.g. 1234 5678 9012" />
+                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(151,135,243,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, id_number: event.target.value }))} value={editorState.id_number} placeholder="e.g. 1234 5678 9012" />
                         </label>
                         <label className="space-y-2">
                           <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Contact Number</span>
-                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, contact_number: event.target.value }))} value={editorState.contact_number} placeholder="+91..." />
+                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(151,135,243,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, contact_number: event.target.value }))} value={editorState.contact_number} placeholder="+91..." />
                         </label>
                         <label className="space-y-2">
                           <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Coming From</span>
-                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, coming_from: event.target.value }))} value={editorState.coming_from} placeholder="City, State" />
+                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(151,135,243,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, coming_from: event.target.value }))} value={editorState.coming_from} placeholder="City, State" />
                         </label>
                         <label className="space-y-2">
                           <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Going To</span>
-                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, going_to: event.target.value }))} value={editorState.going_to} placeholder="City, State" />
+                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(151,135,243,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, going_to: event.target.value }))} value={editorState.going_to} placeholder="City, State" />
                         </label>
                         <label className="space-y-2 md:col-span-2">
                           <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Permanent Address</span>
-                          <textarea className="vh-input min-h-[120px] resize-y bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all text-white/90" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, permanent_address: event.target.value }))} value={editorState.permanent_address} placeholder="Full address as shown on ID" />
+                          <textarea className="vh-input min-h-[120px] resize-y bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(151,135,243,0.3)] transition-all text-white/90" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, permanent_address: event.target.value }))} value={editorState.permanent_address} placeholder="Full address as shown on ID" />
                         </label>
                         <label className="space-y-2">
                           <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Purpose</span>
-                          <select className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, purpose: event.target.value }))} value={editorState.purpose}>
+                          <select className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(151,135,243,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, purpose: event.target.value }))} value={editorState.purpose}>
                             {KYC_PURPOSES.map((purpose) => (
                               <option key={purpose} value={purpose} className="text-slate-900">{purpose}</option>
                             ))}
@@ -736,21 +711,17 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
 
                   <section className="space-y-4">
                     <h2 className="font-['Space_Grotesk'] text-[20px] font-bold uppercase text-white">3. House Rules</h2>
-                    <div className="rounded-[24px] border border-[rgba(253,16,94,0.3)] bg-[linear-gradient(145deg,rgba(253,16,94,0.1)_0%,var(--vh-section-a)_100%)] p-6 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] backdrop-blur-sm">
+                    <div className="rounded-[24px] border border-[rgba(151,135,243,0.3)] bg-[linear-gradient(145deg,rgba(151,135,243,0.1)_0%,var(--vh-section-a)_100%)] p-6 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] backdrop-blur-sm">
                       <div className="space-y-4">
-                        <div className="flex items-start gap-3 border-b border-[rgba(253,16,94,0.15)] pb-3">
+                        <div className="flex items-start gap-3 border-b border-[rgba(151,135,243,0.15)] pb-3">
                           <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
                           <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Bring the same government ID to the property for final verification.</p>
                         </div>
-                        <div className="flex items-start gap-3 border-b border-[rgba(253,16,94,0.15)] pb-3">
-                          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
-                          <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Your documents are securely vaulted in AWS S3 and are only accessible by certified property mangers.</p>
-                        </div>
-                        <div className="flex items-start gap-3 border-b border-[rgba(253,16,94,0.15)] pb-3">
+                        <div className="flex items-start gap-3 border-b border-[rgba(151,135,243,0.15)] pb-3">
                           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
                           <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Only Indian nationals above 18 years are supported in this KYC flow.</p>
                         </div>
-                        <div className="flex items-start gap-3 border-b border-[rgba(253,16,94,0.15)] pb-3">
+                        <div className="flex items-start gap-3 border-b border-[rgba(151,135,243,0.15)] pb-3">
                           <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
                           <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Accepted IDs: Aadhaar, Voter ID, Driving Licence, Passport.</p>
                         </div>
@@ -760,7 +731,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                         </div>
                       </div>
 
-                      <label className="mt-6 flex items-start gap-3 rounded-[12px] border border-[rgba(253,16,94,0.3)] bg-[rgba(253,16,94,0.05)] p-4 cursor-pointer hover:bg-[rgba(253,16,94,0.1)] transition-colors">
+                      <label className="mt-6 flex items-start gap-3 rounded-[12px] border border-[rgba(151,135,243,0.3)] bg-[rgba(151,135,243,0.05)] p-4 cursor-pointer hover:bg-[rgba(151,135,243,0.1)] transition-colors">
                         <input checked={editorState.consent_given} className="mt-1 accent-[var(--vh-pink)]" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, consent_given: event.target.checked }))} type="checkbox" />
                         <span className="text-sm leading-7 text-white/80">I confirm that the submitted information is accurate, matches the uploaded ID, and can be used for pre-check-in verification.</span>
                       </label>
@@ -797,7 +768,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                             className={cn(
                               "w-full rounded-[20px] border p-4 text-left transition-all duration-300",
                               activeSlotId === slot.slot_id
-                                ? "border-[var(--vh-pink)] bg-[rgba(253,16,94,0.12)] shadow-[0_0_15px_rgba(253,16,94,0.15)] scale-[1.02]"
+                                ? "border-[var(--vh-pink)] bg-[rgba(151,135,243,0.12)] shadow-[0_0_15px_rgba(151,135,243,0.15)] scale-[1.02]"
                                 : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 cursor-pointer",
                             )}
                             onClick={() => void selectSlot(slot.slot_id)}
@@ -842,11 +813,11 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                     </div>
                   </section>
 
-                  <div className="rounded-[24px] border border-[rgba(253,16,94,0.3)] bg-[var(--vh-panel-strong)] p-6 shadow-[0_0_20px_rgba(253,16,94,0.1)] backdrop-blur-md">
+                  <div className="rounded-[24px] border border-[rgba(151,135,243,0.3)] bg-[var(--vh-panel-strong)] p-6 shadow-[0_0_20px_rgba(151,135,243,0.1)] backdrop-blur-md">
                     <p className="text-xs uppercase tracking-[0.16em] text-[var(--vh-pink)]">Active Slot</p>
                     <h3 className="mt-3 font-['Space_Grotesk'] text-3xl font-bold uppercase tracking-[-0.04em] text-white">{activeSlot?.label || "Select a slot"}</h3>
                     <p className="mt-3 text-sm leading-7 text-white/70">{activeSlot?.guest_name || "Fill the guest details, upload the documents if you have them, and submit the reviewed KYC form."}</p>
-                    <div className="mt-5 rounded-[20px] border border-[rgba(253,16,94,0.2)] bg-[rgba(253,16,94,0.05)] p-4 shadow-inner">
+                    <div className="mt-5 rounded-[20px] border border-[rgba(151,135,243,0.2)] bg-[rgba(151,135,243,0.05)] p-4 shadow-inner">
                       <div className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] ${slotStatusTone(activeSlot?.kyc_status || "NOT_STARTED")}`}>
                         {slotStatusLabel(activeSlot?.kyc_status || "NOT_STARTED")}
                       </div>
@@ -862,33 +833,6 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                   </div>
                 </div>
               </div>
-                </>
-              )}
-
-              {activeTab === "addons" && (
-                <div className="mt-8 rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 md:p-10 shadow-[var(--vh-shadow-lg)] backdrop-blur-md animate-vh-fade-in">
-                   <h2 className="font-['Space_Grotesk'] text-[24px] font-bold uppercase text-white">Pre-Book Your Extras</h2>
-                   <p className="mt-2 text-white/60 max-w-2xl">Select items now to have them ready. They will be added to your final bill to pay at the property.</p>
-                   
-                   <div className="mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                     {catalogItems.length === 0 ? (
-                        <p className="text-white/50 italic col-span-full">No add-ons available at this time.</p>
-                     ) : catalogItems.map(item => (
-                       <div key={item.id} className="rounded-[16px] border border-white/10 p-5 bg-white/5 flex flex-col justify-between hover:border-[var(--vh-cyan)] hover:bg-[rgba(234,239,254,0.05)] transition-all duration-300">
-                         <div>
-                           <h3 className="font-bold text-white text-lg">{item.name}</h3>
-                           <p className="text-sm font-semibold text-[var(--vh-cyan)] mt-1">₹ {item.base_price}</p>
-                         </div>
-                         <div className="mt-6 flex items-center justify-between">
-                            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-[8px] bg-transparent text-white border-white/20 hover:bg-white/10" onClick={() => setAddonQuantities(curr => ({...curr, [item.id]: Math.max(0, (curr[item.id] || 0) - 1)}))}>-</Button>
-                            <span className="font-bold text-white">{addonQuantities[item.id] || 0}</span>
-                            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-[8px] bg-transparent text-white border-white/20 hover:bg-[var(--vh-cyan)] hover:border-[var(--vh-cyan)] transition-colors hover:text-[var(--vh-surface)]" onClick={() => setAddonQuantities(curr => ({...curr, [item.id]: (curr[item.id] || 0) + 1}))}>+</Button>
-                         </div>
-                       </div>
-                     ))}
-                   </div>
-                </div>
-              )}
             </div>
           </div>
         </div>

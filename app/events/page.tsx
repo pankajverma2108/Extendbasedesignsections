@@ -32,10 +32,11 @@ export default async function EventsPage() {
           <p className="inline-block rounded-[4px] bg-gradient-to-r from-[var(--vh-pink)] to-[var(--vh-pink-soft)] px-4 py-2 text-sm font-bold uppercase tracking-[1.4px] text-white">
             Every Night is an Adventure
           </p>
-          <h1 className="mt-8 text-6xl font-bold uppercase leading-none md:text-8xl">
-            Never a
-            <br />
-            Dull Evening.
+          <h1 className="mt-8 leading-none">
+            <span className="vh-retro-3d text-5xl md:text-7xl lg:text-8xl" style={{ display: 'block' }}>Never a</span>
+            <span className="vh-retro-3d text-5xl md:text-7xl lg:text-8xl" style={{ display: 'block', marginTop: '0.15em' }}>
+              Dull <span className="vh-flicker">E</span>v<span className="vh-flicker" style={{ animationDelay: '0.4s' }}>e</span>ning.
+            </span>
           </h1>
           <p className="mx-auto mt-6 max-w-[700px] text-lg italic text-white/85">
             From pub crawls to game nights, meet travelers from around the world and create memories that last.
@@ -58,13 +59,16 @@ export default async function EventsPage() {
 
       <section className="vh-section vh-section-alt">
         <div className="vh-container">
-          <SectionHeading subtitle={eventPageContent.weeklySubtitle} title="Standard Weekly Lineup" />
+          <SectionHeading align="left" subtitle={eventPageContent.weeklySubtitle} title="Standard Weekly Lineup" />
           <Stagger className="grid grid-cols-2 gap-6 md:grid-cols-2 lg:grid-cols-6">
             {weeklyLineup.map((item) => (
               <StaggerItem key={item.day} className="lg:col-span-2">
                 <Card className="w-full p-6">
                   <CardContent className="p-0">
-                    <p className="text-sm font-bold uppercase tracking-[1px]" style={{ color: item.color }}>
+                    <p
+                      className="vh-retro-3d text-base"
+                      style={{ color: item.color, fontSize: '1rem', letterSpacing: '2px' }}
+                    >
                       {item.day}
                     </p>
                     <h3 className="mt-4 text-xl font-bold text-white">{item.event}</h3>

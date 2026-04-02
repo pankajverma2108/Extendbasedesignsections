@@ -8,9 +8,11 @@ export function Footer() {
       <div className="vh-container">
         <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="md:col-span-2">
-            <p className="mb-2 text-2xl font-bold uppercase tracking-[2px] text-[var(--vh-pink)]">
-              {siteMeta.name}
-            </p>
+            <div className="mb-4">
+              <div className="vh-retro-3d text-3xl md:text-5xl border-y-4 border-y-[#bf1e4a] py-2">
+                VIB<span className="vh-flicker">E</span>HOUS<span className="vh-flicker">E</span>
+              </div>
+            </div>
             <p className="mb-4 italic text-white/65">{siteMeta.tagline}</p>
             <div className="space-y-1 text-sm text-white/65">
               {siteMeta.contact.addressLines.map((line) => (

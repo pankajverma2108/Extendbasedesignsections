@@ -7,7 +7,6 @@ import {
   CalendarDays,
   CheckCircle2,
   ChevronRight,
-  Download,
   KeyRound,
   MapPin,
   Sparkles,
@@ -251,7 +250,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
             <div className="grid gap-8 px-4 py-6 md:px-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start">
               <div className="space-y-6">
                 <div className="relative mx-auto max-w-[342px] pt-6 group">
-                  <div className="absolute -right-2 -top-1 rotate-[12deg] rounded-[12px] border-2 border-[var(--vh-surface-2)] bg-[var(--vh-pink)] px-6 py-2 shadow-[0_10px_15px_rgba(0,0,0,0.25)] z-50 transition-transform duration-300 group-hover:rotate-[8deg] group-hover:scale-105">
+                  <div className="absolute -right-2 -top-1 rotate-[12deg] rounded-[12px] border-2 border-[var(--vh-surface-2)] bg-[var(--vh-pink)] px-6 py-2 shadow-[0_10px_15px_rgba(0,0,0,0.25)] z-10 transition-transform duration-300 group-hover:rotate-[8deg] group-hover:scale-105">
                     <span className="font-['Space_Grotesk'] text-sm font-bold uppercase tracking-[0.08em] text-white">You&apos;re In!</span>
                   </div>
 
@@ -443,17 +442,13 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                           : "Payment confirmation was recorded, but the local fallback snapshot is unavailable on this device."}
                       </p>
                       <div className="mt-6 space-y-3">
-                        <Button asChild className="w-full rounded-[12px] bg-[var(--vh-pink)] py-6 h-auto whitespace-normal text-center text-sm md:text-base font-black uppercase tracking-[0.12em] shadow-[0_4px_0_0_var(--vh-border)] hover:translate-y-[2px] hover:shadow-[0_2px_0_0_var(--vh-border)] transition-all duration-200 print:hidden">
-                          <Link href={`/bookings/${encodeURIComponent(ezeeReservationId)}/pre-arrival`} className="flex-col md:flex-row gap-2">
-                            <span>Pre-arrival setup</span>
-                            <ChevronRight className="h-5 w-5" />
+                        <Button asChild className="w-full rounded-[12px] bg-[var(--vh-pink)] py-6 text-base font-black uppercase tracking-[0.12em] shadow-[0_4px_0_0_var(--vh-border)] hover:translate-y-[2px] hover:shadow-[0_2px_0_0_var(--vh-border)] transition-all duration-200">
+                          <Link href={`/bookings/${encodeURIComponent(ezeeReservationId)}/pre-arrival`}>
+                            Complete pre-arrival setup
+                            <ChevronRight className="ml-2 h-5 w-5" />
                           </Link>
                         </Button>
-                        <Button onClick={() => window.print()} className="w-full rounded-[8px] border border-[var(--vh-cyan)]/30 bg-[rgba(234,239,254,0.05)] text-[var(--vh-cyan)] hover:bg-[rgba(234,239,254,0.1)] transition-all duration-200 print:hidden" variant="outline">
-                          <Download className="mr-2 h-4 w-4" />
-                          Download PDF Invoice
-                        </Button>
-                        <Button asChild className="w-full rounded-[8px] border border-white/15 bg-transparent text-white hover:bg-white/8 print:hidden" variant="outline">
+                        <Button asChild className="w-full rounded-[8px] border border-white/15 bg-transparent text-white hover:bg-white/8" variant="outline">
                           <Link href="/bookings">Back to my bookings</Link>
                         </Button>
                       </div>

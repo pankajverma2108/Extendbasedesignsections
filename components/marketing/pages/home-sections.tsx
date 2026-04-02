@@ -177,6 +177,9 @@ function EventsSection({ events }: { events: EventCardProps[] }) {
   return (
     <SectionFrame alt>
       <div className="vh-container">
+        <div className="mb-2 text-center">
+          <span className="vh-retro-3d text-sm" style={{ fontSize: '0.75rem', letterSpacing: '3px', opacity: 0.85 }}>TONIGHT AT VIBEHOUSE</span>
+        </div>
         <SectionHeading title={homePageContent.eventsTitle} />
         <FadeIn className="-mt-4 mb-6 text-center">
           <StickerTag
@@ -410,6 +413,14 @@ function CtaSection({ destinationHref = "/property" }: { destinationHref?: strin
     <SectionFrame alt>
       <div className="vh-container">
         <FadeIn className="mx-auto max-w-[520px] rounded-[12px] border-4 border-white bg-gradient-to-br from-[var(--vh-pink)] via-[var(--vh-pink-soft)] to-[var(--vh-pink)] p-6 shadow-[12px_12px_0px_0px_rgba(255,255,255,0.25)]">
+          <div className="mb-3 text-center">
+            <span
+              className="vh-retro-3d"
+              style={{ fontSize: '0.7rem', letterSpacing: '4px', color: '#fff0c0', opacity: 0.9 }}
+            >
+              V<span className="vh-flicker">I</span>B<span className="vh-flicker" style={{ animationDelay: '0.6s' }}>E</span>HOU<span className="vh-flicker" style={{ animationDelay: '1.2s' }}>S</span>E
+            </span>
+          </div>
           <SectionHeading subtitle={homePageContent.ctaBody} title={homePageContent.ctaTitle} />
           <BookingWidget
             destinationHref={destinationHref}

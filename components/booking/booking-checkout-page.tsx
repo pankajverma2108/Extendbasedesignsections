@@ -7,8 +7,6 @@ import {
   ArrowLeft,
   CreditCard,
   LoaderCircle,
-  Minus,
-  Plus,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
@@ -20,22 +18,18 @@ import {
   createBookingPaymentOrder,
   createGuestBookingOrder,
   failBookingPayment,
-  getStoreCatalog,
-  type StoreCatalogItem,
   verifyBookingPayment,
 } from "@/lib/booking-api";
+import { toast } from "sonner";
 import {
-  buildBookingSignature,
   clearBookingDraft,
   clearPendingBookingOrder,
   type BookingDraft,
   getStoredBookingState,
-  saveBookingDraft,
   saveConfirmedBookingSnapshot,
   savePendingBookingOrder,
 } from "@/lib/booking-session";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
-import { cn } from "@/lib/utils";
 
 import {
   BookingEmptyState,
@@ -78,12 +72,6 @@ declare global {
 
 const RAZORPAY_SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
 
-function isPurchasableCatalogItem(
-  item: StoreCatalogItem,
-): item is StoreCatalogItem & { category: "COMMODITY" | "SERVICE" } {
-  return item.category === "COMMODITY" || item.category === "SERVICE";
-}
-
 function loadRazorpayCheckout(): Promise<void> {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("Razorpay checkout is only available in the browser."));
@@ -111,36 +99,6 @@ function loadRazorpayCheckout(): Promise<void> {
   });
 }
 
-function createDraftWithAddons(
-  draft: BookingDraft,
-  catalogItems: StoreCatalogItem[],
-  quantities: Record<string, number>,
-): BookingDraft {
-  const selectedAddons: BookingDraft["addons"] = catalogItems
-    .filter(isPurchasableCatalogItem)
-    .map((item) => ({
-      productId: item.id,
-      name: item.name,
-      category: item.category,
-      quantity: Math.max(0, quantities[item.id] ?? 0),
-      unitPrice: item.base_price,
-      inStock: item.in_stock,
-    }))
-    .filter((item) => item.quantity > 0);
-
-  return {
-    ...draft,
-    addons: selectedAddons,
-    signature: buildBookingSignature({
-      propertyId: draft.propertyId,
-      checkinDate: draft.checkinDate,
-      checkoutDate: draft.checkoutDate,
-      rooms: draft.rooms.map((room) => ({ roomTypeId: room.roomTypeId, quantity: room.quantity })),
-      addons: selectedAddons.map((addon) => ({ productId: addon.productId, quantity: addon.quantity })),
-    }),
-  };
-}
-
 function toDiagnosticPreview(value: unknown): string {
   try {
     return JSON.stringify(value, null, 2);
@@ -153,9 +111,6 @@ export function BookingCheckoutPage() {
   const router = useRouter();
   const { guest, isAuthenticated, openAuthModal } = useGuestAuth();
   const [draft, setDraft] = useState<BookingDraft | null>(null);
-  const [catalogItems, setCatalogItems] = useState<StoreCatalogItem[]>([]);
-  const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>({});
-  const [isLoadingCatalog, setIsLoadingCatalog] = useState(true);
   const [isPaying, setIsPaying] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [verifyErrorMessage, setVerifyErrorMessage] = useState<string | null>(null);
@@ -199,90 +154,7 @@ export function BookingCheckoutPage() {
     }
 
     setDraft(stored.draft);
-    setAddonQuantities(
-      Object.fromEntries(stored.draft.addons.map((addon) => [addon.productId, addon.quantity])),
-    );
   }, []);
-
-  useEffect(() => {
-    const propertyId = draft?.propertyId;
-    if (!propertyId) {
-      setIsLoadingCatalog(false);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function loadCatalog() {
-      if (!propertyId) {
-        setIsLoadingCatalog(false);
-        return;
-      }
-
-      setIsLoadingCatalog(true);
-
-      try {
-        const catalog = await getStoreCatalog(propertyId);
-        if (cancelled) {
-          return;
-        }
-
-        const filtered = catalog.filter(isPurchasableCatalogItem);
-        setCatalogItems(filtered);
-
-        setAddonQuantities((current) => {
-          const next = { ...current };
-          for (const item of filtered) {
-            if (typeof next[item.id] !== "number") {
-              next[item.id] = 0;
-            }
-          }
-          return next;
-        });
-      } catch {
-        if (!cancelled) {
-          setCatalogItems([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoadingCatalog(false);
-        }
-      }
-    }
-
-    void loadCatalog();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [draft?.propertyId]);
-
-  const updateAddonQuantity = useCallback(
-    (itemId: string, nextQuantity: number) => {
-      const clampedQuantity = Math.max(0, nextQuantity);
-
-      setAddonQuantities((current) => ({
-        ...current,
-        [itemId]: clampedQuantity,
-      }));
-
-      setDraft((currentDraft) => {
-        if (!currentDraft || catalogItems.length === 0) {
-          return currentDraft;
-        }
-
-        const nextQuantities = {
-          ...addonQuantities,
-          [itemId]: clampedQuantity,
-        };
-        const nextDraft = createDraftWithAddons(currentDraft, catalogItems, nextQuantities);
-        saveBookingDraft(nextDraft);
-        return nextDraft;
-      });
-    },
-    [addonQuantities, catalogItems],
-  );
-
   const nights = useMemo(
     () => getNightCount(draft?.checkinDate, draft?.checkoutDate),
     [draft?.checkinDate, draft?.checkoutDate],
@@ -294,13 +166,8 @@ export function BookingCheckoutPage() {
     [draft?.rooms, nights],
   );
 
-  const addonsSubtotal = useMemo(
-    () =>
-      (draft?.addons ?? []).reduce((sum, addon) => sum + addon.unitPrice * addon.quantity, 0),
-    [draft?.addons],
-  );
-
-  const estimatedGrandTotal = roomSubtotal + addonsSubtotal;
+  const taxes = Math.round(roomSubtotal * 0.18);
+  const estimatedGrandTotal = roomSubtotal + taxes;
 
   const handlePayment = useCallback(async () => {
     if (!draft) {
@@ -535,6 +402,7 @@ export function BookingCheckoutPage() {
                 createdAt: Date.now(),
               });
               setFlowStage("confirmed");
+              toast.success("Payment successful! Redirecting to your booking...");
               router.push(`/bookings/${encodeURIComponent(orderSummary.ezee_reservation_id)}?fresh=1`);
               resolve();
             } catch (error) {
@@ -542,6 +410,7 @@ export function BookingCheckoutPage() {
               const message = error instanceof Error ? error.message : "Payment verification failed.";
               setVerifyErrorMessage(message);
               setFlowStage("failed");
+              toast.error(message);
               appendDiagnostic("verify-payment", "error", {
                 error: message,
                 request: response,
@@ -552,6 +421,7 @@ export function BookingCheckoutPage() {
         });
 
         razorpay.on("payment.failed", () => {
+          toast.error("Razorpay reported a payment failure. Please try again.");
           void markFailed("Razorpay reported a payment failure. Please try again.");
         });
 
@@ -559,10 +429,12 @@ export function BookingCheckoutPage() {
       });
     } catch (error) {
       setFlowStage("failed");
+      const errMessage = error instanceof Error ? error.message : "Unable to start the payment flow.";
+      toast.error(errMessage);
       appendDiagnostic("checkout-flow", "error", {
-        error: error instanceof Error ? error.message : "Unable to start the payment flow.",
+        error: errMessage,
       });
-      setErrorMessage(error instanceof Error ? error.message : "Unable to start the payment flow.");
+      setErrorMessage(errMessage);
     } finally {
       setIsPaying(false);
     }
@@ -653,97 +525,11 @@ export function BookingCheckoutPage() {
           </BookingSummaryCard>
 
           <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)]">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <p className="vh-chip w-fit">Optional Add-ons</p>
-                <h2 className="mt-3 font-suez text-3xl uppercase tracking-[-0.04em] text-white">Grab extras before you pay</h2>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-white/70">
-                  These products and services come from the public store catalog. Only purchasable commodity and service items are shown here.
-                </p>
-              </div>
-              {isLoadingCatalog ? (
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                  Loading catalog
-                </div>
-              ) : null}
-            </div>
-
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              {catalogItems.length > 0 ? (
-                catalogItems.map((item, index) => {
-                  const quantity = addonQuantities[item.id] ?? 0;
-                  const tone = index % 3;
-
-                  return (
-                    <div
-                      key={item.id}
-                      className={cn(
-                        "rounded-[24px] border p-5 transition",
-                        tone === 0 && "border-[rgba(255,46,98,0.28)] bg-[rgba(255,46,98,0.08)]",
-                        tone === 1 && "border-[rgba(0,209,255,0.22)] bg-[rgba(0,209,255,0.06)]",
-                        tone === 2 && "border-[rgba(255,204,102,0.24)] bg-[rgba(255,204,102,0.06)]",
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/48">{item.category}</p>
-                          <h3 className="mt-2 text-xl font-semibold text-white">{item.name}</h3>
-                          <p className="mt-2 text-sm text-white/66">
-                            {item.in_stock
-                              ? item.available_stock === null
-                                ? "Available to add"
-                                : `${item.available_stock} in stock`
-                              : "Currently unavailable"}
-                          </p>
-                        </div>
-                        <div className="rounded-full bg-[#0f172a] px-4 py-2 text-sm font-bold text-[var(--vh-amber)]">
-                          {formatCurrency(item.base_price)}
-                        </div>
-                      </div>
-
-                      <div className="mt-5 flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-2 rounded-full border border-white/12 bg-[#0f172a] px-2 py-1">
-                          <button
-                            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0f172a] disabled:cursor-not-allowed disabled:opacity-40"
-                            disabled={quantity <= 0}
-                            onClick={() => updateAddonQuantity(item.id, quantity - 1)}
-                            type="button"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </button>
-                          <span className="w-5 text-center text-sm font-semibold text-white">{quantity}</span>
-                          <button
-                            className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0f172a] disabled:cursor-not-allowed disabled:opacity-40"
-                            disabled={!item.in_stock}
-                            onClick={() => updateAddonQuantity(item.id, quantity + 1)}
-                            type="button"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </button>
-                        </div>
-
-                        <p className="text-sm font-semibold text-white/78">
-                          {quantity > 0 ? formatCurrency(quantity * item.base_price) : "Not added"}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="md:col-span-2 rounded-[20px] border border-dashed border-white/12 bg-white/[0.03] p-5 text-sm text-white/68">
-                  Catalog add-ons are unavailable right now. You can still complete the room booking without extras.
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)]">
             <p className="vh-chip w-fit">Guest Account</p>
             <h2 className="mt-3 font-suez text-3xl uppercase tracking-[-0.04em] text-white">Guest profile used for the booking</h2>
 
             {isAuthenticated ? (
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
                   <p className="text-xs uppercase tracking-[0.16em] text-white/45">Name</p>
                   <p className="mt-2 font-semibold text-white">{guest?.name || "Not available"}</p>
@@ -769,6 +555,25 @@ export function BookingCheckoutPage() {
               </div>
             )}
           </div>
+
+          <div className="rounded-[28px] border border-[rgba(255,204,102,0.24)] bg-[rgba(255,204,102,0.06)] p-6 shadow-[var(--vh-shadow-lg)]">
+            <p className="vh-chip w-fit">Cancellation & Refund Policy</p>
+            <h2 className="mt-3 font-suez text-2xl uppercase tracking-[-0.02em] text-white">Refund rules</h2>
+            <div className="mt-4 space-y-3 text-sm text-white/80">
+              <div className="flex items-center justify-between rounded-[18px] border border-white/10 bg-white/5 p-4 py-3">
+                <span className="font-semibold text-white">Before 7 Days</span>
+                <span className="font-bold text-[var(--vh-amber)]">100% Refund</span>
+              </div>
+              <div className="flex items-center justify-between rounded-[18px] border border-white/10 bg-white/5 p-4 py-3">
+                <span className="font-semibold text-white">4 to 7 Days</span>
+                <span className="font-bold text-[var(--vh-amber)]">50% Refund</span>
+              </div>
+              <div className="flex items-center justify-between rounded-[18px] border border-white/10 bg-[rgba(255,76,48,0.1)] p-4 py-3">
+                <span className="font-semibold text-white">Within 4 Days</span>
+                <span className="font-bold text-[#ff4c30]">No Refund</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <aside className="lg:sticky lg:top-28 lg:self-start">
@@ -790,17 +595,6 @@ export function BookingCheckoutPage() {
                 </div>
               ))}
 
-              {(draft.addons ?? []).map((addon) => (
-                <div key={addon.productId} className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-semibold text-white">{addon.name}</p>
-                    <p className="text-xs text-white/55">
-                      {addon.quantity} x {addon.category.toLowerCase()}
-                    </p>
-                  </div>
-                  <p className="font-semibold text-white">{formatCurrency(addon.unitPrice * addon.quantity)}</p>
-                </div>
-              ))}
             </div>
 
             <div className="mt-4 space-y-3 text-sm text-white/76">
@@ -809,8 +603,8 @@ export function BookingCheckoutPage() {
                 <p className="font-semibold text-white">{formatCurrency(roomSubtotal)}</p>
               </div>
               <div className="flex items-center justify-between">
-                <p>Add-ons subtotal</p>
-                <p className="font-semibold text-white">{formatCurrency(addonsSubtotal)}</p>
+                <p>Taxes (18%)</p>
+                <p className="font-semibold text-white">{formatCurrency(taxes)}</p>
               </div>
               <div className="flex items-center justify-between border-t border-white/10 pt-3 text-base">
                 <p className="font-semibold text-white">Estimated total</p>

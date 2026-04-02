@@ -446,10 +446,10 @@ function MobileStickySummary({
           </div>
           {hasSelection ? (
             <div className="flex items-center gap-2">
-              <Button className="h-10 rounded-[16px] px-4 py-2.5 text-sm" onClick={() => setOpen((value) => !value)} type="button">
-                {open ? "Hide Summary" : "View Summary"}
+              <Button className="h-10 min-w-[100px] rounded-[16px] px-3 py-2.5 text-xs sm:px-4 sm:text-sm" onClick={() => setOpen((value) => !value)} type="button">
+                {open ? "Hide" : "Summary"}
               </Button>
-              <Button className="h-10 rounded-[16px] px-4 py-2.5 text-sm" onClick={onContinue} type="button">
+              <Button className="h-10 min-w-[90px] rounded-[16px] px-3 py-2.5 text-xs font-black sm:px-4 sm:text-sm" onClick={onContinue} type="button">
                 Checkout
               </Button>
             </div>
@@ -603,11 +603,25 @@ function RoomDetailsPopup({
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">Availability</p>
             <p className="mt-2 text-lg font-semibold text-[var(--vh-amber)]">{room.inventoryText}</p>
             <div className="mt-4 flex items-center justify-between">
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold text-white">Rs. {room.basePrice}</span>
-                <span className="text-xs text-white/55">/ night</span>
+              <div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-white">Rs. {room.basePrice}</span>
+                  <span className="text-xs text-white/55">/ night</span>
+                </div>
+                {room.availableCount > 0 && room.availableCount <= 2 && (
+                  <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-[rgba(255,204,102,0.12)] px-2 py-0.5 text-[10px] font-bold text-[var(--vh-amber)]">
+                    ⚡ Only {room.availableCount} left!
+                  </p>
+                )}
               </div>
-              {count === 0 ? (
+              {room.availableCount <= 0 ? (
+                <div className="flex flex-col items-end gap-1">
+                  <span className="inline-flex animate-pulse items-center gap-1.5 rounded-full border border-[rgba(255,76,48,0.4)] bg-[rgba(255,76,48,0.12)] px-3 py-1.5 text-sm font-black uppercase tracking-[0.1em] text-[var(--vh-hot)]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--vh-hot)]" />
+                    SOLD OUT
+                  </span>
+                </div>
+              ) : count === 0 ? (
                 <Button className="h-10 rounded-full px-5" onClick={onIncrement} type="button">
                   Add
                 </Button>
@@ -969,7 +983,7 @@ export function Property({
             <section id="availability" className="scroll-mt-28">
               <div className="space-y-6">
                 <div className="text-left">
-                  <SectionTitle title="Availability" />
+                  <span className="vh-retro-3d" style={{ fontSize: '1.6rem' }}>Availa<span className="vh-flicker">b</span>ility</span>
                   <p className="mt-2 max-w-[640px] text-sm leading-6 text-slate-300">
                     Pick your perch for tonight. We&apos;ll keep the vibe ready.
                   </p>
