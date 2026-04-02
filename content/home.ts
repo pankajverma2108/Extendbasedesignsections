@@ -126,7 +126,7 @@ export const homePageContent = {
   amenitiesTagline: "Good vibes, hot showers, solid Wi-Fi, and zero nonsense.",
   roomsTitle: "Our Rooms",
   roomsSubtitle: "Choose your sanctuary",
-  roomsTagline: "Pick your perch, drop your bag, and settle into the chaos nicely.",
+  roomsTagline: "Pick your perch, drop your bag, and settle into the stay like you own the soundtrack.",
   upsellTitle: "Build Your Stay",
   upsellSubtitle: "Elevate your nights",
   eventsTitle: "Tonight at Vibe House",
@@ -137,7 +137,7 @@ export const homePageContent = {
   energySubtitle: "Snapshots of real moments",
   reviewsTitle: "Guest Stories",
   reviewsSubtitle: "Real stories from real travelers",
-  reviewsTagline: "Receipts from travelers who fully got the assignment.",
+  reviewsTagline: "Receipts from travelers who clocked the vibe and stayed for another round.",
   ctaTitle: "Your Adventure Starts Here",
   ctaBody: "Join the community. Book your stay.",
   heroUrgencyChips: [

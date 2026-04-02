@@ -20,7 +20,7 @@ export default function AboutPage() {
             <p className="vh-kicker inline-block rounded-full border border-white/15 bg-white/6 px-4 py-1.5 text-white">
               About Vibe House
             </p>
-            <h1 className="mt-6 text-5xl font-bold uppercase leading-tight text-white md:text-7xl">
+            <h1 className="vh-retro-3d mt-6 text-[3rem] leading-none md:text-[5.5rem] lg:text-[6.5rem]">
               More than
               <br />
               just a bed.

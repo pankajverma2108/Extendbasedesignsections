@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
@@ -25,7 +26,9 @@ import {
   ShieldCheck,
   Smartphone,
   Snowflake,
+  Shirt,
   Sparkles,
+  UtensilsCrossed,
   Usb,
   Waves,
   Wifi,
@@ -54,6 +57,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StickerTag } from "@/components/shared/sticker-tag";
 
 const amenityIcons = {
   wifi: Wifi,
@@ -192,6 +196,35 @@ function buildPropertyHref(checkIn: string, checkOut: string, propertyId?: strin
   return query ? `/property?${query}` : "/property";
 }
 
+const emptySummaryImage = encodeURI("/design-guidelines/Property Page/calendar.svg");
+
+const bookingEssentials = [
+  {
+    title: "Dinner",
+    originalPrice: "Rs. 385",
+    price: "Rs. 350",
+    note: "per adult - per day",
+    actionLabel: "View menu",
+    icon: UtensilsCrossed,
+  },
+  {
+    title: "Toilet Kit",
+    originalPrice: "Rs. 141.9",
+    price: "Rs. 129",
+    note: "per kit",
+    actionLabel: "Add",
+    icon: Sparkles,
+  },
+  {
+    title: "Bath Towel",
+    originalPrice: "Rs. 141.9",
+    price: "Rs. 129",
+    note: "per towel",
+    actionLabel: "Add",
+    icon: Shirt,
+  },
+] as const;
+
 function iconForLabel(label: string) {
   return roomFeatureIcons[label] ?? Sparkles;
 }
@@ -208,7 +241,7 @@ function SectionTitle({
   title: string;
   className?: string;
 }) {
-  return <h2 className={`text-[28px] font-bold leading-[34px] text-white ${className}`}>{title}</h2>;
+  return <h2 className={`vh-retro-3d text-[1.9rem] leading-none md:text-[2.6rem] ${className}`}>{title}</h2>;
 }
 
 function DateRangePicker({
@@ -335,7 +368,11 @@ function DesktopBookingSummary({
               </div>
             ))
           ) : (
-            <p className="text-white/62">{bookingSummary.note}</p>
+            <div className="space-y-4 rounded-[20px] border border-dashed border-white/10 bg-white/5 p-4 text-center">
+              <Image alt="Empty booking summary" className="mx-auto h-36 w-36 object-contain" height={144} src={emptySummaryImage} width={144} />
+              <p className="text-sm font-semibold text-white">Select a room to unlock the booking summary.</p>
+              <p className="text-xs leading-6 text-white/60">No rooms or add-ons are in the cart yet, so the total stays hidden until you pick something.</p>
+            </div>
           )}
         </div>
 
@@ -356,7 +393,7 @@ function DesktopBookingSummary({
               Continue to checkout
             </button>
           ) : (
-            <Link href={`${propertyHref}#availability`}>Book Now</Link>
+            <Link href={`${propertyHref}#availability`}>View rooms</Link>
           )}
         </Button>
       </div>
@@ -434,6 +471,14 @@ function MobileStickySummary({
                 </div>
               </div>
             </div>
+          </div>
+        ) : !hasSelection ? (
+          <div className="p-4 text-center">
+            <Image alt="Empty booking summary" className="mx-auto h-28 w-28 object-contain" height={112} src={emptySummaryImage} width={112} />
+            <p className="mt-3 text-sm font-semibold text-white">Pick a room to start the summary.</p>
+            <Button asChild className="mt-4 w-full rounded-full">
+              <Link href="#availability">View rooms</Link>
+            </Button>
           </div>
         ) : null}
 
@@ -871,32 +916,12 @@ export function Property({
       <section className="vh-section pt-28 md:pt-32">
         <div className="vh-container">
           <FadeIn className="mb-8 text-center">
-            <p className="vh-kicker inline-flex rounded-full border border-white/15 bg-white/6 px-4 py-1.5 text-white/72">
-              {propertyHero.eyebrow}
-            </p>
-            <h1 className="mt-5 font-suez text-4xl font-normal uppercase tracking-[-0.04em] text-white md:text-6xl">
-              {propertyHero.title}
+            <h1 className="vh-retro-3d text-[2.8rem] md:text-[4.8rem] lg:text-[5.8rem] leading-none">
+              Vibe House Koramangala
             </h1>
-            <p className="mt-2 text-4xl font-bold tracking-[-0.05em] text-white md:text-7xl">
-              {propertyHero.location}
-            </p>
             <p className="mx-auto mt-5 max-w-[760px] text-base leading-7 text-white/78 md:text-lg">
               {propertyHero.blurb}
             </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm text-white/72">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2">
-                <CalendarDays className="h-4 w-4 text-[var(--vh-cyan)]" />
-                {propertyHero.addressName}
-              </span>
-              <Link
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 hover:border-white/30 hover:bg-white/8"
-                href={propertyHero.mapsHref}
-                target="_blank"
-              >
-                View location
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
           </FadeIn>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
@@ -927,8 +952,8 @@ export function Property({
               <div className="flex max-w-4xl flex-col gap-6">
                 <div>
                   <SectionTitle title="About" />
-                  <p className="mt-2 max-w-[640px] text-sm leading-6 text-slate-300">
-                    The lowdown before you toss your bag, claim a bunk, and start settling in.
+                  <p className="mt-3 max-w-[640px] text-[15px] font-medium leading-7 text-white/84 md:text-base">
+                    The lowdown before you toss your bag, claim a bunk, and start settling into the good kind of chaos.
                   </p>
                 </div>
                 <div className="relative w-full">
@@ -956,7 +981,7 @@ export function Property({
             <section id="amenities">
               <div>
                 <SectionTitle title="Amenities" />
-                <p className="mt-2 max-w-[640px] text-sm leading-6 text-slate-300">
+                <p className="mt-3 max-w-[640px] text-[15px] font-medium leading-7 text-white/84 md:text-base">
                   The good stuff that keeps the stay easy, social, and very hard to complain about.
                 </p>
               </div>
@@ -1069,7 +1094,11 @@ export function Property({
                             </div>
 
                             <div className="flex items-center justify-between gap-4">
-                              <p className="text-sm font-semibold text-[var(--vh-amber)]">{room.inventoryText}</p>
+                              {room.availableCount <= 5 ? (
+                                <p className="text-sm font-semibold text-[var(--vh-hot)]">
+                                  Only {room.availableCount} {room.availableCount === 1 ? "bed" : "beds"} available
+                                </p>
+                              ) : null}
                               <button
                                 className="text-sm font-semibold text-[var(--vh-cyan)] hover:text-white"
                                 onClick={() => openRoomPopup(room.slug)}
@@ -1245,6 +1274,50 @@ export function Property({
             selectedCounts={selectedCounts}
             roomCategoryList={roomCategoryList}
           />
+
+          <div className="mt-6 rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)] lg:sticky lg:top-[calc(28rem+1rem)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--vh-pink)]">Add Essentials</p>
+                <h3 className="mt-3 font-suez text-2xl uppercase tracking-[-0.04em] text-white">Little upgrades, fewer complaints</h3>
+              </div>
+              <StickerTag bg="#fef08a" className="px-3 py-1 text-[10px] font-bold not-italic uppercase tracking-[0.12em]" label="Optional" rotate="rotate-[2deg]" text="#0f172a" />
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {bookingEssentials.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <div key={item.title} className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/8 text-[var(--vh-cyan)]">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-white">{item.title}</p>
+                            <p className="text-xs text-white/55 line-through">{item.originalPrice}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-[var(--vh-amber)]">{item.price}</p>
+                            <p className="text-[10px] uppercase tracking-[0.14em] text-white/45">{item.note}</p>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between gap-3">
+                          <p className="text-xs text-white/60">Add while you are booking the room.</p>
+                          <Button className="h-8 rounded-full px-4 text-xs" type="button" variant="outline">
+                            {item.actionLabel}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </section>
 

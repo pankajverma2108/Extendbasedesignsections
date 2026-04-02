@@ -55,7 +55,7 @@ export function HeroCarousel({ images, titleParts }: HeroCarouselProps) {
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+      <div className="absolute bottom-2 left-1/2 z-20 flex -translate-x-1/2 gap-2 md:bottom-4">
         {images.map((image, index) => (
           <button
             key={image}

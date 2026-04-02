@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
@@ -15,13 +16,14 @@ import {
 } from "lucide-react";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
+import { StickerTag } from "@/components/shared/sticker-tag";
 import { Button } from "@/components/ui/button";
 import { propertyHero, propertyGuidelines } from "@/content/rooms";
 import { getConfirmedBookingSnapshot } from "@/lib/booking-session";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { linkGuestBooking, type BookingSlotSummary, type LinkGuestBookingResponse } from "@/lib/booking-api";
 
-import { BookingEmptyState, BookingPageShell, formatCurrency, formatDateLabel } from "./booking-shell";
+import { BookingEmptyState, BookingPageShell, formatCurrency } from "./booking-shell";
 
 const EMPTY_SLOTS: BookingSlotSummary[] = [];
 
@@ -63,40 +65,6 @@ function formatPosterDate(value?: string | null): string {
     day: "2-digit",
     month: "short",
   }).format(date).toUpperCase();
-}
-
-function getArrivalCredential(seed: string, prefix: string, size: number): string {
-  let hash = 0;
-
-  for (let index = 0; index < seed.length; index += 1) {
-    hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
-  }
-
-  return `${prefix}${String(hash % 10 ** size).padStart(size, "0")}`;
-}
-
-function buildQrPattern(seed: string): boolean[] {
-  const cells: boolean[] = [];
-  let hash = 2166136261;
-
-  for (let index = 0; index < seed.length; index += 1) {
-    hash ^= seed.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-
-  for (let index = 0; index < 81; index += 1) {
-    hash = Math.imul(hash ^ (index + 97), 2246822519);
-    const row = Math.floor(index / 9);
-    const col = index % 9;
-    const inCornerFinder =
-      (row < 3 && col < 3) ||
-      (row < 3 && col > 5) ||
-      (row > 5 && col < 3);
-
-    cells.push(inCornerFinder || ((hash >>> 29) & 1) === 1);
-  }
-
-  return cells;
 }
 
 export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: string }) {
@@ -159,9 +127,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
     [slots],
   );
 
-  const accessPasscode = useMemo(() => getArrivalCredential(ezeeReservationId, "#", 6), [ezeeReservationId]);
-  const lockerCode = useMemo(() => getArrivalCredential(`${ezeeReservationId}-locker`, "L-", 3), [ezeeReservationId]);
-  const qrPattern = useMemo(() => buildQrPattern(ezeeReservationId), [ezeeReservationId]);
+  const scannerImage = encodeURI("/design-guidelines/booking summary/Rickrolling_QR_code.png");
 
   if (isRestoringSession || isLoading) {
     return (
@@ -223,10 +189,10 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
 
   return (
     <section className="vh-section min-h-screen bg-[var(--vh-section-b)] pt-24 md:pt-28 animate-vh-fade-in">
-      <div className="vh-container">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8">
+      <div className="mx-auto w-full max-w-[1400px] px-4 md:px-6 lg:px-10">
+        <div className="flex flex-col gap-8">
           <div className="animate-vh-slide-up overflow-hidden rounded-[28px] border border-[rgba(151,135,243,0.14)] bg-[var(--vh-section-a)] shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
-            <div className="flex items-center justify-between border-b border-[rgba(151,135,243,0.1)] px-4 py-4 md:px-6 bg-[rgba(151,135,243,0.03)] backdrop-blur-md">
+            <div className="flex items-center justify-between border-b border-[rgba(151,135,243,0.1)] bg-[rgba(151,135,243,0.03)] px-4 py-4 backdrop-blur-md md:px-6">
               <Button asChild className="h-10 w-10 rounded-[12px] border border-white/10 bg-transparent p-0 text-white shadow-none hover:bg-white/10 hover:border-white/20 transition-all duration-300" variant="ghost">
                 <Link href="/bookings" aria-label="Back to bookings">
                   <ArrowLeft className="h-4 w-4" />
@@ -236,7 +202,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                 <p className="font-['Space_Grotesk'] text-lg font-bold uppercase tracking-[0.08em] text-slate-100">Booking Summary</p>
               </div>
               <Button
-                className="h-10 w-10 rounded-[12px] border border-[rgba(151,135,243,0.3)] bg-[rgba(151,135,243,0.1)] p-0 text-[var(--vh-pink)] shadow-[0_0_10px_rgba(151,135,243,0.1)] hover:bg-[rgba(151,135,243,0.2)] hover:shadow-[0_0_15px_rgba(151,135,243,0.3)] transition-all duration-300"
+                className="rounded-full border border-white/12 bg-white/5 px-4 text-xs font-bold uppercase tracking-[0.14em] text-white/80 hover:bg-white/10"
                 onClick={() => {
                   const shareUrl = `${window.location.origin}/bookings/${encodeURIComponent(ezeeReservationId)}`;
                   void navigator.clipboard.writeText(shareUrl);
@@ -244,11 +210,11 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                 type="button"
                 variant="ghost"
               >
-                <Sparkles className="h-4 w-4" />
+                Copy link
               </Button>
             </div>
 
-            <div className="grid gap-8 px-4 py-6 md:px-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start">
+            <div className="grid gap-8 px-4 py-6 md:px-6 lg:grid-cols-[minmax(0,390px)_minmax(0,1fr)] lg:items-start">
               <div className="space-y-6">
                 <div className="relative mx-auto max-w-[342px] pt-6 group">
                   <div className="absolute -right-2 -top-1 rotate-[12deg] rounded-[12px] border-2 border-[var(--vh-surface-2)] bg-[var(--vh-pink)] px-6 py-2 shadow-[0_10px_15px_rgba(0,0,0,0.25)] z-50 transition-transform duration-300 group-hover:rotate-[8deg] group-hover:scale-105">
@@ -258,6 +224,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                   <div className="-rotate-1 rounded-[16px] border-2 border-[var(--vh-border)] bg-[var(--vh-ice)] p-7 text-[var(--vh-surface-2)] shadow-[8px_8px_0_0_var(--vh-pink)] transition-all duration-300 group-hover:-rotate-2 group-hover:shadow-[12px_12px_0_0_var(--vh-pink)] group-hover:-translate-y-1">
                     <div>
                       <p className="font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-surface)]/70">Confirmation Receipt</p>
+                      <p className="mt-2 break-all text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--vh-surface)]/55">Reservation {ezeeReservationId}</p>
                       <div className="mt-2 font-['Space_Grotesk'] text-4xl lg:text-5xl font-black leading-[0.92] text-[var(--vh-surface)]">
                         <p>{formatPosterDate(booking?.checkin_date ?? snapshotFallback?.checkinDate)}</p>
                         <p>{formatPosterDate(booking?.checkout_date ?? snapshotFallback?.checkoutDate)}</p>
@@ -271,33 +238,22 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                       <p className="text-lg font-bold text-white/80">{roomNumber}</p>
                     </div>
 
-                    <div className="mt-6 space-y-4 border-b-2 border-[rgba(45,39,75,0.15)] pb-4">
-                      <div className="flex items-center gap-3 border-b-2 border-[rgba(45,39,75,0.15)] pb-3">
-                        <KeyRound className="h-5 w-5 text-[var(--vh-surface-2)]/60" />
-                        <p className="font-['Caveat'] text-[30px] leading-none text-[var(--vh-surface-2)]">
-                          Passcode: <span className="font-bold">{accessPasscode}</span>
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 className="h-5 w-5 text-[var(--vh-surface-2)]/60" />
-                        <p className="font-['Caveat'] text-[30px] leading-none text-[var(--vh-surface-2)]">
-                          Locker: <span className="font-bold text-[var(--vh-pink)]">{lockerCode}</span>
-                        </p>
-                      </div>
+                    <div className="mt-6 rounded-[14px] border border-dashed border-[rgba(45,39,75,0.16)] bg-white/55 px-4 py-3 text-sm text-[var(--vh-surface-2)]/78">
+                      Keep this receipt handy. The front desk can verify the stay from the booking ID above.
                     </div>
 
                     <div className="mt-7 flex justify-center">
                       <div className="border-4 border-[var(--vh-surface-2)] bg-white p-3 rounded-xl shadow-sm hover:scale-105 transition-transform duration-300">
-                        <div className="grid grid-cols-9 gap-1 bg-[var(--vh-surface-2)] p-3 rounded-md">
-                          {qrPattern.map((filled, index) => (
-                            <div
-                              key={`${ezeeReservationId}-${index}`}
-                              className={filled ? "h-3 w-3 bg-white rounded-sm" : "h-3 w-3 bg-[var(--vh-surface-2)]"}
-                            />
-                          ))}
-                        </div>
+                        <Image
+                          alt="Rickrolling scanner"
+                          className="h-[220px] w-[220px] rounded-md object-cover"
+                          height={220}
+                          priority={false}
+                          src={scannerImage}
+                          width={220}
+                        />
                         <p className="mt-2 text-center font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--vh-surface-2)]">
-                          Scan for access
+                          Scan for room access
                         </p>
                       </div>
                     </div>
@@ -313,15 +269,9 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center gap-3">
-                  <div className="rounded-[12px] border border-[rgba(151,135,243,0.3)] bg-[rgba(151,135,243,0.1)] px-4 py-2 font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-pink)] shadow-[0_4px_10px_rgba(151,135,243,0.1)]">
-                    Classic
-                  </div>
-                  <div className="rounded-[12px] border border-white/20 bg-[var(--vh-surface-2)] px-4 py-2 font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-white">
-                    Social Meetup
-                  </div>
-                  <div className="rounded-[12px] border border-[var(--vh-cyan)] bg-[rgba(234,239,254,0.1)] px-4 py-2 font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-cyan)] shadow-[0_4px_10px_rgba(234,239,254,0.1)]">
-                    Verified
-                  </div>
+                  <StickerTag bg="#fef08a" className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.12em]" label="Bring the whole gang" rotate="rotate-[-2deg]" text="#0f172a" />
+                  <StickerTag bg="#39ff14" className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.12em]" label="KYC before chaos" rotate="rotate-[1deg]" text="#0f172a" />
+                  <StickerTag bg="#00d1ff" className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.12em]" label="Scan, stay, repeat" rotate="rotate-[-1deg]" text="#0f172a" />
                 </div>
               </div>
 
@@ -461,21 +411,6 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                   </div>
                 </div>
 
-                <div className="grid gap-4 rounded-[24px] border border-white/10 bg-white/5 p-5 md:grid-cols-2">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.16em] text-white/45">Reservation</p>
-                    <p className="mt-2 text-lg font-semibold text-white">{ezeeReservationId}</p>
-                    <p className="mt-1 text-sm text-white/62">Source: {booking?.source || "Direct web booking"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.16em] text-white/45">Stay dates</p>
-                    <p className="mt-2 text-lg font-semibold text-white">
-                      {formatDateLabel(booking?.checkin_date ?? snapshotFallback?.checkinDate)} to{" "}
-                      {formatDateLabel(booking?.checkout_date ?? snapshotFallback?.checkoutDate)}
-                    </p>
-                    <p className="mt-1 text-sm text-white/62">Bring the same ID documents for final on-site verification.</p>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
