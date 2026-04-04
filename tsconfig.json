@@ -22,7 +22,6 @@
         "name": "next"
       }
     ],
-    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -39,6 +38,7 @@
   ],
   "exclude": [
     "node_modules",
+    "guidelines/**/*",
     "guidelines/Vibehouse_backend/**/*",
     "src/app/**/*",
     "src/imports/**/*",
