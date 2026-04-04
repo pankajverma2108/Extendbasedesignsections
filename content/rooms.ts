@@ -26,7 +26,7 @@ export const rooms: RoomCardProps[] = [
     occupancy: "4 Guests",
     image: mixedDormImages[0],
     images: mixedDormImages,
-    badge: { label: "Most Popular", color: "#ff2e62" },
+    badge: { label: "Most Popular", color: "#c62828" },
     features: [
       "Reading lights",
       "Privacy curtains",
@@ -69,11 +69,11 @@ export const rooms: RoomCardProps[] = [
 
 export const propertyHero = {
   eyebrow: "Property",
-  title: "Vibe House",
+  title: "The Daily Social",
   location: "Koramangala",
   blurb:
     "A social stay with clean rooms, practical shared spaces, and an easy Koramangala location for short trips, work stays, and longer city living.",
-  addressName: "Vibe House Koramangala",
+  addressName: "The Daily Social Koramangala",
   address:
     "13/14, Bank Officer Housing Co-operative Society, Bengaluru Urban, Karnataka, India",
   mapsHref: "https://maps.app.goo.gl/jJKJUUKzdmFJGbCG6?g_st=aw",
@@ -82,7 +82,7 @@ export const propertyHero = {
 export const propertyGallery = [
   {
     src: "/images/property/hero-1.jpg",
-    alt: "Vibe House dorm interior",
+    alt: "The Daily Social dorm interior",
   },
   {
     src: "/images/property/hero-2.jpg",
@@ -99,7 +99,7 @@ export const propertyGallery = [
 ];
 
 export const propertyOverview = [
-  "Vibe House Koramangala brings together straightforward comfort and a social, city-friendly atmosphere for guests who want more than a plain overnight stop.",
+  "The Daily Social Koramangala brings together straightforward comfort and a social, city-friendly atmosphere for guests who want more than a plain overnight stop.",
   "The property is set up to feel calm when you need rest and connected when you want common spaces, with room categories that work for solo guests, friends, and flexible stays.",
   "Its location makes it easy to step out for coffee, work meetings, food runs, and evenings in the neighborhood while still returning to a stay that feels organized and welcoming.",
 ];
@@ -120,7 +120,7 @@ export const propertyAmenities = [
 ];
 
 export const locationMap = {
-  title: "Vibe House Koramangala",
+  title: "The Daily Social Koramangala",
   address:
     "13/14, Bank Officer Housing Co-operative Society, Bengaluru Urban, Karnataka, India",
   embedUrl:
@@ -277,6 +277,6 @@ export const roomFaqs = [
   {
     question: "Who do I contact if I have a query?",
     answer:
-      "You can contact Vibe House directly using the listed phone number or email before arrival.",
+      "You can contact The Daily Social directly using the listed phone number or email before arrival.",
   },
 ];

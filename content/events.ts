@@ -11,7 +11,7 @@ export const upcomingEvents: EventCardProps[] = [
       "https://images.unsplash.com/photo-1758179764880-7513421d202a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
     capacity: "50 guests",
     href: "/events",
-    badge: { label: "Tonight", color: "#ff2e62" },
+    badge: { label: "Tonight", color: "#c62828" },
   },
   {
     title: "Old City Pub Crawl",
@@ -41,16 +41,16 @@ export const upcomingEvents: EventCardProps[] = [
 
 export const eventPageContent = {
   upcomingSubtitle: "Packed with possibilities",
-  weeklySubtitle: "Your weekly highlight reel",
-  pastSubtitle: "Moments to remember",
+  weeklySubtitle: "Sundays are for surprises, and we are stacked with them. No cap.",
+  pastSubtitle: "FOMO hitting now?",
 };
 
 export const weeklyLineup = [
-  { day: "Monday", event: "Movie Night", time: "8:00 PM", color: "#ff2e62" },
+  { day: "Monday", event: "Movie Night", time: "8:00 PM", color: "#c62828" },
   { day: "Tuesday", event: "Beer Pong Tournament", time: "9:00 PM", color: "#facc15" },
   { day: "Wednesday", event: "Game Night", time: "7:30 PM", color: "#39ff14" },
   { day: "Thursday", event: "Pub Crawl", time: "8:30 PM", color: "#00d1ff" },
-  { day: "Friday", event: "DJ Night", time: "9:00 PM", color: "#ff2e62" },
+  { day: "Friday", event: "DJ Night", time: "9:00 PM", color: "#c62828" },
   { day: "Saturday", event: "Open Mic", time: "8:00 PM", color: "#39ff14" },
 ];
 

@@ -33,9 +33,9 @@ export default async function EventsPage() {
             Every Night is an Adventure
           </p>
           <h1 className="mt-8 leading-none">
-            <span className="vh-retro-3d text-5xl md:text-7xl lg:text-8xl" style={{ display: 'block' }}>Never a</span>
-            <span className="vh-retro-3d text-5xl md:text-7xl lg:text-8xl" style={{ display: 'block', marginTop: '0.15em' }}>
-              Dull <span className="vh-flicker">E</span>v<span className="vh-flicker" style={{ animationDelay: '0.4s' }}>e</span>ning.
+            <span className="vh-retro-sign-flat text-5xl md:text-7xl lg:text-8xl" style={{ display: "block" }}>Never a</span>
+            <span className="vh-retro-sign-flat text-5xl md:text-7xl lg:text-8xl" style={{ display: "block", marginTop: "0.15em" }}>
+              Dull <span className="vh-flicker-sign">E</span>v<span className="vh-flicker-sign" style={{ animationDelay: "0.35s" }}>e</span>ning.
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-[700px] text-lg italic text-white/85">
@@ -66,8 +66,8 @@ export default async function EventsPage() {
                 <Card className="w-full p-6">
                   <CardContent className="p-0">
                     <p
-                      className="vh-retro-3d text-base"
-                      style={{ color: item.color, fontSize: '1rem', letterSpacing: '2px' }}
+                      className="vh-retro-sign-flat text-base"
+                      style={{ color: item.color, fontSize: "1rem", letterSpacing: "2px" }}
                     >
                       {item.day}
                     </p>
@@ -88,7 +88,7 @@ export default async function EventsPage() {
             {pastEventImages.map((image, index) => (
               <StaggerItem key={image}>
                 <div
-                  className="overflow-hidden rounded-[8px] border-4 border-white shadow-[8px_8px_0px_0px_rgba(255,46,98,0.5)]"
+                  className="overflow-hidden rounded-[8px] border-4 border-white shadow-[8px_8px_0px_0px_rgba(198,40,40,0.5)]"
                   style={{ transform: `rotate(${(index % 3) - 1}deg)` }}
                 >
                   <ImageWithFallback
@@ -103,7 +103,7 @@ export default async function EventsPage() {
           <FadeIn className="mt-10 text-center">
             <a
               className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-md px-6 text-base font-bold uppercase text-white transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-white/30 bg-[var(--vh-pink)] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.18)] hover:-translate-y-0.5"
-              href="https://instagram.com/vibehouse"
+              href="https://instagram.com/thedailysocial"
             >
               Follow on Instagram
             </a>

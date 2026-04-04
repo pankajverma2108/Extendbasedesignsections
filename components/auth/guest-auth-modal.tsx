@@ -156,7 +156,7 @@ export function GuestAuthModal({
         type="button"
       />
 
-      <div className="relative z-10 w-full max-w-[560px] rounded-[24px] border border-white/14 bg-[radial-gradient(110%_84%_at_4%_0%,rgba(0,209,255,0.09),transparent_54%),radial-gradient(120%_100%_at_90%_84%,rgba(255,46,98,0.08),transparent_58%),linear-gradient(170deg,#250F16_0%,#180A12_58%,#130811_100%)] p-4 shadow-[0_26px_70px_rgba(0,0,0,0.45)] md:p-6">
+      <div className="relative z-10 w-full max-w-[560px] rounded-[24px] border border-white/14 bg-[radial-gradient(110%_84%_at_4%_0%,rgba(0,209,255,0.09),transparent_54%),radial-gradient(120%_100%_at_90%_84%,rgba(198,40,40,0.08),transparent_58%),linear-gradient(170deg,#250F16_0%,#180A12_58%,#130811_100%)] p-4 shadow-[0_26px_70px_rgba(0,0,0,0.45)] md:p-6">
         <button
           aria-label="Close"
           className="absolute right-4 top-4 inline-flex h-5 w-5 items-center justify-center text-white/85 hover:text-white"
@@ -299,7 +299,7 @@ export function GuestAuthModal({
           </button>
 
           {(localError || errorMessage) ? (
-            <p className="rounded-lg border border-[#ff2e62]/50 bg-[#ff2e62]/10 px-3 py-2 text-sm text-[#ffd3df]">{localError ?? errorMessage}</p>
+            <p className="rounded-lg border border-[#c62828]/50 bg-[#c62828]/10 px-3 py-2 text-sm text-[#FDECEC]">{localError ?? errorMessage}</p>
           ) : null}
 
           <div className="flex items-center gap-3">

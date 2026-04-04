@@ -12,7 +12,7 @@ export default function EventsPage() {
       price: 'Free for Guests',
       image: 'https://images.unsplash.com/photo-1758179764880-7513421d202a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxuaWdodGNsdWIlMjBuZW9uJTIwbGlnaHRzJTIwcGFydHl8ZW58MXx8fHwxNzczNzI5NTI1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
       badge: 'Tonight',
-      badgeColor: '#ff2e62',
+      badgeColor: '#c62828',
       capacity: '50 guests'
     },
     {
@@ -40,11 +40,11 @@ export default function EventsPage() {
   ];
 
   const weeklyLineup = [
-    { day: 'Monday', event: 'Movie Night', time: '8:00 PM', icon: <Film className="w-6 h-6" />, color: '#ff2e62' },
+    { day: 'Monday', event: 'Movie Night', time: '8:00 PM', icon: <Film className="w-6 h-6" />, color: '#c62828' },
     { day: 'Tuesday', event: 'Beer Pong Tournament', time: '9:00 PM', icon: <Beer className="w-6 h-6" />, color: '#facc15' },
     { day: 'Wednesday', event: 'Game Night', time: '7:30 PM', icon: <Gamepad2 className="w-6 h-6" />, color: '#39ff14' },
     { day: 'Thursday', event: 'Pub Crawl', time: '8:30 PM', icon: <Beer className="w-6 h-6" />, color: '#00d1ff' },
-    { day: 'Friday', event: 'DJ Night', time: '9:00 PM', icon: <Music className="w-6 h-6" />, color: '#ff2e62' },
+    { day: 'Friday', event: 'DJ Night', time: '9:00 PM', icon: <Music className="w-6 h-6" />, color: '#c62828' },
     { day: 'Saturday', event: 'Open Mic', time: '8:00 PM', icon: <Mic className="w-6 h-6" />, color: '#39ff14' },
     { day: 'Sunday', event: 'Chill Sunday', time: '6:00 PM', icon: <Users className="w-6 h-6" />, color: '#facc15' },
   ];
@@ -64,20 +64,20 @@ export default function EventsPage() {
       <nav className="bg-[#0f172a] border-b-2 border-[#1e293b] sticky top-0 z-50">
         <div className="max-w-screen-xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#ff2e62] uppercase tracking-[2px]">
-              Vibe House
+            <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#c62828] uppercase tracking-[2px]">
+              The Daily Social
             </Link>
             <div className="flex gap-6">
-              <Link to="/" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
+              <Link to="/" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#c62828] transition-colors">
                 Home
               </Link>
-              <Link to="/rooms" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
+              <Link to="/rooms" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#c62828] transition-colors">
                 Rooms
               </Link>
-              <Link to="/events" className="font-['Space_Grotesk'] text-[14px] text-[#ff2e62]">
+              <Link to="/events" className="font-['Space_Grotesk'] text-[14px] text-[#c62828]">
                 Events
               </Link>
-              <Link to="/about" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
+              <Link to="/about" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#c62828] transition-colors">
                 About
               </Link>
             </div>
@@ -97,7 +97,7 @@ export default function EventsPage() {
         </div>
         
         <div className="relative z-20 text-center px-6 py-16">
-          <div className="bg-gradient-to-r from-[#ff2e62] to-[#ff6b98] px-4 py-2 inline-block shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.3)] mb-8 rounded-[4px]" style={{ transform: 'rotate(-2deg)' }}>
+          <div className="bg-gradient-to-r from-[#c62828] to-[#8e1b1b] px-4 py-2 inline-block shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.3)] mb-8 rounded-[4px]" style={{ transform: 'rotate(-2deg)' }}>
             <p className="font-['Space_Grotesk'] font-bold text-[14px] text-white text-center tracking-[1.4px] uppercase">
               Every Night is an Adventure
             </p>
@@ -125,8 +125,8 @@ export default function EventsPage() {
                 happening next 7 days
               </p>
             </div>
-            <div className="bg-[#1e293b] border-2 border-[#ff2e62] rounded-[12px] px-4 py-2">
-              <p className="font-['Space_Grotesk'] font-bold text-[12px] text-[#ff2e62] uppercase tracking-[1px]">
+            <div className="bg-[#1e293b] border-2 border-[#c62828] rounded-[12px] px-4 py-2">
+              <p className="font-['Space_Grotesk'] font-bold text-[12px] text-[#c62828] uppercase tracking-[1px]">
                 🔥 {upcomingEvents.length} Events
               </p>
             </div>
@@ -136,7 +136,7 @@ export default function EventsPage() {
             {upcomingEvents.map((event, idx) => (
               <div
                 key={idx}
-                className="bg-[#1e293b] border-2 border-[#334155] rounded-[12px] overflow-hidden shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.2)] hover:border-[#ff2e62] transition-all duration-300 hover:shadow-[0px_25px_30px_-5px_rgba(255,46,98,0.4)] group"
+                className="bg-[#1e293b] border-2 border-[#334155] rounded-[12px] overflow-hidden shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.2)] hover:border-[#c62828] transition-all duration-300 hover:shadow-[0px_25px_30px_-5px_rgba(198,40,40,0.4)] group"
                 style={{ transform: `rotate(${(idx % 2 === 0 ? -1 : 1)}deg)` }}
               >
                 {/* Event Image */}
@@ -170,8 +170,8 @@ export default function EventsPage() {
                 <div className="p-6">
                   <div className="space-y-3 mb-6">
                     <div className="flex items-center gap-3">
-                      <div className="bg-[rgba(255,46,98,0.2)] p-2 rounded-[4px]">
-                        <Calendar className="w-4 h-4 text-[#ff2e62]" />
+                      <div className="bg-[rgba(198,40,40,0.2)] p-2 rounded-[4px]">
+                        <Calendar className="w-4 h-4 text-[#c62828]" />
                       </div>
                       <span className="font-['Space_Grotesk'] text-[14px] text-white">
                         {event.date}
@@ -203,13 +203,13 @@ export default function EventsPage() {
                     </div>
                   </div>
 
-                  <div className="bg-[rgba(255,46,98,0.1)] border-2 border-dashed border-[#ff2e62] rounded-[4px] p-3 mb-6 text-center">
-                    <span className="font-['Space_Grotesk'] font-bold text-[18px] text-[#ff2e62]">
+                  <div className="bg-[rgba(198,40,40,0.1)] border-2 border-dashed border-[#c62828] rounded-[4px] p-3 mb-6 text-center">
+                    <span className="font-['Space_Grotesk'] font-bold text-[18px] text-[#c62828]">
                       {event.price}
                     </span>
                   </div>
 
-                  <button className="w-full bg-[#ff2e62] px-8 py-3 rounded-[4px] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] transition-all">
+                  <button className="w-full bg-[#c62828] px-8 py-3 rounded-[4px] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] transition-all">
                     <span className="font-['Space_Grotesk'] font-bold text-[16px] text-white uppercase">
                       RSVP / Book
                     </span>
@@ -271,7 +271,7 @@ export default function EventsPage() {
             {pastEvents.map((img, idx) => (
               <div
                 key={idx}
-                className="aspect-square rounded-[8px] overflow-hidden border-4 border-white shadow-[8px_8px_0px_0px_rgba(255,46,98,0.5)] hover:shadow-[12px_12px_0px_0px_rgba(255,46,98,0.7)] transition-all cursor-pointer"
+                className="aspect-square rounded-[8px] overflow-hidden border-4 border-white shadow-[8px_8px_0px_0px_rgba(198,40,40,0.5)] hover:shadow-[12px_12px_0px_0px_rgba(198,40,40,0.7)] transition-all cursor-pointer"
                 style={{ transform: `rotate(${(idx % 3 - 1) * 2}deg)` }}
               >
                 <ImageWithFallback
@@ -284,7 +284,7 @@ export default function EventsPage() {
           </div>
 
           <div className="flex justify-center">
-            <button className="bg-gradient-to-r from-[#ff2e62] via-[#ff6b98] to-[#ff2e62] px-10 py-5 rounded-[12px] border-4 border-white shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] hover:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.4)] transition-all flex items-center gap-4" style={{ transform: 'rotate(-2deg)' }}>
+            <button className="bg-gradient-to-r from-[#c62828] via-[#8e1b1b] to-[#c62828] px-10 py-5 rounded-[12px] border-4 border-white shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] hover:shadow-[12px_12px_0px_0px_rgba(255,255,255,0.4)] transition-all flex items-center gap-4" style={{ transform: 'rotate(-2deg)' }}>
               <Instagram className="w-7 h-7 text-white" />
               <div className="text-left">
                 <p className="font-['Space_Grotesk'] font-bold text-[10px] text-white uppercase tracking-[1px] opacity-80">
@@ -302,11 +302,11 @@ export default function EventsPage() {
       {/* Footer */}
       <footer className="bg-[#0f172a] border-t-2 border-[#1e293b] px-6 py-8">
         <div className="max-w-screen-xl mx-auto text-center">
-          <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#ff2e62] uppercase tracking-[2px]">
-            Vibe House
+          <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#c62828] uppercase tracking-[2px]">
+            The Daily Social
           </Link>
           <p className="font-['Space_Grotesk'] text-[12px] text-[rgba(255,255,255,0.4)] mt-4">
-            © 2026 Vibe House. All rights reserved.
+            © 2026 The Daily Social. All rights reserved.
           </p>
         </div>
       </footer>

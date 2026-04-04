@@ -2,14 +2,14 @@
     <div style={{width: 390, paddingLeft: 24, paddingRight: 24, paddingTop: 16, paddingBottom: 16, left: 0, top: 84, position: 'absolute', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 8, display: 'inline-flex'}}>
         <div style={{alignSelf: 'stretch', justifyContent: 'space-between', alignItems: 'center', display: 'inline-flex'}}>
             <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
-                <div style={{width: 129.53, height: 16, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 12, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 16, letterSpacing: 1.20, wordWrap: 'break-word'}}>Mission Progress</div>
+                <div style={{width: 129.53, height: 16, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 12, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 16, letterSpacing: 1.20, wordWrap: 'break-word'}}>Mission Progress</div>
             </div>
             <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
                 <div style={{width: 25.52, height: 16, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#F1F5F9', fontSize: 12, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 16, wordWrap: 'break-word'}}>2 / 4</div>
             </div>
         </div>
-        <div style={{alignSelf: 'stretch', height: 24, position: 'relative', background: 'rgba(255, 46, 98, 0.10)', overflow: 'hidden', borderRadius: 12, outline: '2px rgba(255, 46, 98, 0.30) solid', outlineOffset: '-2px'}}>
-            <div style={{width: 169, height: 20, paddingLeft: 8, paddingRight: 8, left: 2, top: 2, position: 'absolute', background: '#FF2E62', justifyContent: 'flex-end', alignItems: 'center', display: 'inline-flex'}}>
+        <div style={{alignSelf: 'stretch', height: 24, position: 'relative', background: 'rgba(198, 40, 40, 0.10)', overflow: 'hidden', borderRadius: 12, outline: '2px rgba(198, 40, 40, 0.30) solid', outlineOffset: '-2px'}}>
+            <div style={{width: 169, height: 20, paddingLeft: 8, paddingRight: 8, left: 2, top: 2, position: 'absolute', background: '#c62828', justifyContent: 'flex-end', alignItems: 'center', display: 'inline-flex'}}>
                 <div style={{flex: '1 1 0', height: 8, background: 'rgba(255, 255, 255, 0.30)', borderRadius: 12}} />
             </div>
             <div style={{width: 338, height: 20, paddingLeft: 39.02, paddingRight: 39.03, left: 2, top: 2, position: 'absolute', opacity: 0.30, justifyContent: 'flex-start', alignItems: 'center', gap: 78.10, display: 'inline-flex'}}>
@@ -36,7 +36,7 @@
                 </div>
                 <div data-svg-wrapper>
                     <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 18V13.75L14.175 0.6C14.375 0.4 14.6 0.25 14.85 0.15C15.1 0.05 15.35 0 15.6 0C15.8667 0 16.1208 0.05 16.3625 0.15C16.6042 0.25 16.8167 0.4 17 0.6L18.4 2C18.6 2.18333 18.75 2.39583 18.85 2.6375C18.95 2.87917 19 3.13333 19 3.4C19 3.65 18.95 3.9 18.85 4.15C18.75 4.4 18.6 4.625 18.4 4.825L5.25 18H1ZM3 16H4.4L14.225 6.2L13.525 5.475L12.8 4.775L3 14.6V16ZM17 3.425L15.575 2L17 3.425ZM13.525 5.475L12.8 4.775L14.225 6.2L13.525 5.475ZM11 18C12.2333 18 13.375 17.6917 14.425 17.075C15.475 16.4583 16 15.6 16 14.5C16 13.9 15.8417 13.3833 15.525 12.95C15.2083 12.5167 14.7833 12.1417 14.25 11.825L12.775 13.3C13.1583 13.4667 13.4583 13.65 13.675 13.85C13.8917 14.05 14 14.2667 14 14.5C14 14.8833 13.6958 15.2292 13.0875 15.5375C12.4792 15.8458 11.7833 16 11 16C10.7167 16 10.4792 16.0958 10.2875 16.2875C10.0958 16.4792 10 16.7167 10 17C10 17.2833 10.0958 17.5208 10.2875 17.7125C10.4792 17.9042 10.7167 18 11 18ZM1.575 10.35L3.075 8.85C2.74167 8.71667 2.47917 8.57917 2.2875 8.4375C2.09583 8.29583 2 8.15 2 8C2 7.8 2.15 7.6 2.45 7.4C2.75 7.2 3.38333 6.89167 4.35 6.475C5.81667 5.84167 6.79167 5.26667 7.275 4.75C7.75833 4.23333 8 3.65 8 3C8 2.08333 7.63333 1.35417 6.9 0.8125C6.16667 0.270833 5.2 0 4 0C3.25 0 2.57917 0.133333 1.9875 0.4C1.39583 0.666667 0.941667 0.991667 0.625 1.375C0.441667 1.59167 0.366667 1.83333 0.4 2.1C0.433333 2.36667 0.558333 2.58333 0.775 2.75C0.991667 2.93333 1.23333 3.00833 1.5 2.975C1.76667 2.94167 1.99167 2.83333 2.175 2.65C2.40833 2.41667 2.66667 2.25 2.95 2.15C3.23333 2.05 3.58333 2 4 2C4.68333 2 5.1875 2.1 5.5125 2.3C5.8375 2.5 6 2.73333 6 3C6 3.23333 5.85417 3.44583 5.5625 3.6375C5.27083 3.82917 4.6 4.16667 3.55 4.65C2.21667 5.23333 1.29167 5.7625 0.775 6.2375C0.258333 6.7125 0 7.3 0 8C0 8.53333 0.141667 8.9875 0.425 9.3625C0.708333 9.7375 1.09167 10.0667 1.575 10.35Z" fill="#FF2E62"/>
+                    <path d="M1 18V13.75L14.175 0.6C14.375 0.4 14.6 0.25 14.85 0.15C15.1 0.05 15.35 0 15.6 0C15.8667 0 16.1208 0.05 16.3625 0.15C16.6042 0.25 16.8167 0.4 17 0.6L18.4 2C18.6 2.18333 18.75 2.39583 18.85 2.6375C18.95 2.87917 19 3.13333 19 3.4C19 3.65 18.95 3.9 18.85 4.15C18.75 4.4 18.6 4.625 18.4 4.825L5.25 18H1ZM3 16H4.4L14.225 6.2L13.525 5.475L12.8 4.775L3 14.6V16ZM17 3.425L15.575 2L17 3.425ZM13.525 5.475L12.8 4.775L14.225 6.2L13.525 5.475ZM11 18C12.2333 18 13.375 17.6917 14.425 17.075C15.475 16.4583 16 15.6 16 14.5C16 13.9 15.8417 13.3833 15.525 12.95C15.2083 12.5167 14.7833 12.1417 14.25 11.825L12.775 13.3C13.1583 13.4667 13.4583 13.65 13.675 13.85C13.8917 14.05 14 14.2667 14 14.5C14 14.8833 13.6958 15.2292 13.0875 15.5375C12.4792 15.8458 11.7833 16 11 16C10.7167 16 10.4792 16.0958 10.2875 16.2875C10.0958 16.4792 10 16.7167 10 17C10 17.2833 10.0958 17.5208 10.2875 17.7125C10.4792 17.9042 10.7167 18 11 18ZM1.575 10.35L3.075 8.85C2.74167 8.71667 2.47917 8.57917 2.2875 8.4375C2.09583 8.29583 2 8.15 2 8C2 7.8 2.15 7.6 2.45 7.4C2.75 7.2 3.38333 6.89167 4.35 6.475C5.81667 5.84167 6.79167 5.26667 7.275 4.75C7.75833 4.23333 8 3.65 8 3C8 2.08333 7.63333 1.35417 6.9 0.8125C6.16667 0.270833 5.2 0 4 0C3.25 0 2.57917 0.133333 1.9875 0.4C1.39583 0.666667 0.941667 0.991667 0.625 1.375C0.441667 1.59167 0.366667 1.83333 0.4 2.1C0.433333 2.36667 0.558333 2.58333 0.775 2.75C0.991667 2.93333 1.23333 3.00833 1.5 2.975C1.76667 2.94167 1.99167 2.83333 2.175 2.65C2.40833 2.41667 2.66667 2.25 2.95 2.15C3.23333 2.05 3.58333 2 4 2C4.68333 2 5.1875 2.1 5.5125 2.3C5.8375 2.5 6 2.73333 6 3C6 3.23333 5.85417 3.44583 5.5625 3.6375C5.27083 3.82917 4.6 4.16667 3.55 4.65C2.21667 5.23333 1.29167 5.7625 0.775 6.2375C0.258333 6.7125 0 7.3 0 8C0 8.53333 0.141667 8.9875 0.425 9.3625C0.708333 9.7375 1.09167 10.0667 1.575 10.35Z" fill="#c62828"/>
                     </svg>
                 </div>
             </div>
@@ -64,7 +64,7 @@
         <div style={{alignSelf: 'stretch', paddingTop: 10, paddingBottom: 10, justifyContent: 'center', alignItems: 'flex-start', display: 'inline-flex'}}>
             <div data-svg-wrapper>
                 <svg width="26" height="23" viewBox="0 0 26 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0 13.5L2.1375 11.3625L7.5 16.7625V0H25.5V3H10.5V16.7625L15.9 11.3625L18.0375 13.4625L9 22.5L0 13.5Z" fill="#FF2E62"/>
+                <path d="M0 13.5L2.1375 11.3625L7.5 16.7625V0H25.5V3H10.5V16.7625L15.9 11.3625L18.0375 13.4625L9 22.5L0 13.5Z" fill="#c62828"/>
                 </svg>
             </div>
         </div>
@@ -73,7 +73,7 @@
                 <div style={{alignSelf: 'stretch', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#F1F5F9', fontSize: 20, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 28, wordWrap: 'break-word'}}>2. Grab Your Gear</div>
             </div>
             <div style={{alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
-                <div style={{width: 163, padding: 16, position: 'relative', transform: 'rotate(1deg)', transformOrigin: 'top left', background: '#FF2E62', borderRadius: 8, outline: '4px white solid', outlineOffset: '-4px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex'}}>
+                <div style={{width: 163, padding: 16, position: 'relative', transform: 'rotate(1deg)', transformOrigin: 'top left', background: '#c62828', borderRadius: 8, outline: '4px white solid', outlineOffset: '-4px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex'}}>
                     <div style={{width: 165.58, height: 151.82, left: -0.01, top: 0, position: 'absolute', background: 'rgba(255, 255, 255, 0)', boxShadow: '0px 8px 10px -6px rgba(0, 0, 0, 0.10), 0px 20px 25px -5px rgba(0, 0, 0, 0.10)', borderRadius: 8}} />
                     <div style={{paddingBottom: 8, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                         <div data-svg-wrapper>
@@ -89,25 +89,25 @@
                         </div>
                     </div>
                     <div style={{paddingLeft: 16, paddingRight: 16, paddingTop: 4, paddingBottom: 4, background: 'white', borderRadius: 12, flexDirection: 'column', justifyContent: 'center', alignItems: 'center', display: 'flex'}}>
-                        <div style={{width: 23.62, height: 16.40, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 12, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 16, wordWrap: 'break-word'}}>Add</div>
+                        <div style={{width: 23.62, height: 16.40, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 12, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 16, wordWrap: 'break-word'}}>Add</div>
                     </div>
                 </div>
-                <div style={{width: 163, padding: 16, position: 'relative', transform: 'rotate(-1deg)', transformOrigin: 'top left', background: '#0F172A', borderRadius: 8, outline: '4px #FF2E62 solid', outlineOffset: '-4px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex'}}>
+                <div style={{width: 163, padding: 16, position: 'relative', transform: 'rotate(-1deg)', transformOrigin: 'top left', background: '#0F172A', borderRadius: 8, outline: '4px #c62828 solid', outlineOffset: '-4px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex'}}>
                     <div style={{width: 166.87, height: 154.22, left: 0, top: 0, position: 'absolute', background: 'rgba(255, 255, 255, 0)', boxShadow: '0px 8px 10px -6px rgba(0, 0, 0, 0.10), 0px 20px 25px -5px rgba(0, 0, 0, 0.10)', borderRadius: 8}} />
                     <div style={{paddingBottom: 8, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                         <div data-svg-wrapper>
                             <svg width="25" height="33" viewBox="0 0 25 33" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3.82354 32.0389C2.99883 32.0605 2.28513 31.7853 1.68245 31.2134C1.07977 30.6415 0.767638 29.9432 0.746042 29.1185L0.353388 14.1236C0.331792 13.2989 0.606954 12.5852 1.17887 11.9825C1.75079 11.3798 2.44911 11.0677 3.27383 11.0461L4.77331 11.0068L4.69478 8.00788C4.64047 5.93359 5.32516 4.1463 6.74888 2.64602C8.17259 1.14574 9.9216 0.36844 11.9959 0.314123C14.0702 0.259806 15.8575 0.944504 17.3577 2.36822C18.858 3.79193 19.6353 5.54094 19.6896 7.61522L19.7682 10.6142L21.2677 10.5749C22.0924 10.5533 22.8061 10.8285 23.4087 11.4004C24.0114 11.9723 24.3236 12.6707 24.3452 13.4954L24.7378 28.4902C24.7594 29.3149 24.4842 30.0286 23.9123 30.6313C23.3404 31.234 22.6421 31.5461 21.8174 31.5677L3.82354 32.0389ZM3.74501 29.0399L21.7388 28.5688L21.3462 13.5739L3.35236 14.0451L3.74501 29.0399ZM12.6241 24.3059C13.4488 24.2843 14.1472 23.9722 14.7191 23.3695C15.291 22.7668 15.5662 22.0531 15.5446 21.2284C15.523 20.4037 15.2108 19.7054 14.6082 19.1334C14.0055 18.5615 13.2918 18.2864 12.4671 18.3079C11.6424 18.3295 10.944 18.6417 10.3721 19.2444C9.80019 19.847 9.52503 20.5607 9.54663 21.3854C9.56822 22.2102 9.88036 22.9085 10.483 23.4804C11.0857 24.0523 11.7994 24.3275 12.6241 24.3059ZM7.77228 10.9283L16.7692 10.6927L16.6907 7.69375C16.6579 6.44418 16.1928 5.3935 15.2952 4.5417C14.3976 3.68991 13.324 3.28037 12.0744 3.31309C10.8248 3.34581 9.77416 3.81098 8.92236 4.70858C8.07057 5.60619 7.66103 6.67977 7.69375 7.92935L7.77228 10.9283ZM3.74501 29.0399L3.35236 14.0451L3.74501 29.0399Z" fill="#FF2E62"/>
+                            <path d="M3.82354 32.0389C2.99883 32.0605 2.28513 31.7853 1.68245 31.2134C1.07977 30.6415 0.767638 29.9432 0.746042 29.1185L0.353388 14.1236C0.331792 13.2989 0.606954 12.5852 1.17887 11.9825C1.75079 11.3798 2.44911 11.0677 3.27383 11.0461L4.77331 11.0068L4.69478 8.00788C4.64047 5.93359 5.32516 4.1463 6.74888 2.64602C8.17259 1.14574 9.9216 0.36844 11.9959 0.314123C14.0702 0.259806 15.8575 0.944504 17.3577 2.36822C18.858 3.79193 19.6353 5.54094 19.6896 7.61522L19.7682 10.6142L21.2677 10.5749C22.0924 10.5533 22.8061 10.8285 23.4087 11.4004C24.0114 11.9723 24.3236 12.6707 24.3452 13.4954L24.7378 28.4902C24.7594 29.3149 24.4842 30.0286 23.9123 30.6313C23.3404 31.234 22.6421 31.5461 21.8174 31.5677L3.82354 32.0389ZM3.74501 29.0399L21.7388 28.5688L21.3462 13.5739L3.35236 14.0451L3.74501 29.0399ZM12.6241 24.3059C13.4488 24.2843 14.1472 23.9722 14.7191 23.3695C15.291 22.7668 15.5662 22.0531 15.5446 21.2284C15.523 20.4037 15.2108 19.7054 14.6082 19.1334C14.0055 18.5615 13.2918 18.2864 12.4671 18.3079C11.6424 18.3295 10.944 18.6417 10.3721 19.2444C9.80019 19.847 9.52503 20.5607 9.54663 21.3854C9.56822 22.2102 9.88036 22.9085 10.483 23.4804C11.0857 24.0523 11.7994 24.3275 12.6241 24.3059ZM7.77228 10.9283L16.7692 10.6927L16.6907 7.69375C16.6579 6.44418 16.1928 5.3935 15.2952 4.5417C14.3976 3.68991 13.324 3.28037 12.0744 3.31309C10.8248 3.34581 9.77416 3.81098 8.92236 4.70858C8.07057 5.60619 7.66103 6.67977 7.69375 7.92935L7.77228 10.9283ZM3.74501 29.0399L3.35236 14.0451L3.74501 29.0399Z" fill="#c62828"/>
                             </svg>
                         </div>
                     </div>
                     <div style={{width: 89.83, height: 23.33, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'white', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: '900', textTransform: 'uppercase', lineHeight: 20, wordWrap: 'break-word'}}>Secure Lock</div>
                     <div style={{paddingBottom: 12, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                         <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'flex'}}>
-                            <div style={{width: 31.93, height: 15.82, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'rgba(255, 46, 98, 0.80)', fontSize: 10, fontFamily: 'Space Grotesk', fontWeight: '400', lineHeight: 15, wordWrap: 'break-word'}}>$12.00</div>
+                            <div style={{width: 31.93, height: 15.82, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'rgba(198, 40, 40, 0.80)', fontSize: 10, fontFamily: 'Space Grotesk', fontWeight: '400', lineHeight: 15, wordWrap: 'break-word'}}>$12.00</div>
                         </div>
                     </div>
-                    <div style={{paddingLeft: 16, paddingRight: 16, paddingTop: 4, paddingBottom: 4, background: '#FF2E62', borderRadius: 12, flexDirection: 'column', justifyContent: 'center', alignItems: 'center', display: 'flex'}}>
+                    <div style={{paddingLeft: 16, paddingRight: 16, paddingTop: 4, paddingBottom: 4, background: '#c62828', borderRadius: 12, flexDirection: 'column', justifyContent: 'center', alignItems: 'center', display: 'flex'}}>
                         <div style={{width: 23.75, height: 16.61, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'white', fontSize: 12, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 16, wordWrap: 'break-word'}}>Add</div>
                     </div>
                 </div>
@@ -117,7 +117,7 @@
             <div style={{alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                 <div style={{alignSelf: 'stretch', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#F1F5F9', fontSize: 20, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 28, wordWrap: 'break-word'}}>3. Need More Sleep?</div>
             </div>
-            <div style={{alignSelf: 'stretch', padding: 24, position: 'relative', background: 'rgba(255, 46, 98, 0.05)', overflow: 'hidden', borderRadius: 8, outline: '2px rgba(255, 46, 98, 0.40) solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
+            <div style={{alignSelf: 'stretch', padding: 24, position: 'relative', background: 'rgba(198, 40, 40, 0.05)', overflow: 'hidden', borderRadius: 8, outline: '2px rgba(198, 40, 40, 0.40) solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                 <div style={{alignSelf: 'stretch', justifyContent: 'space-between', alignItems: 'center', display: 'inline-flex'}}>
                     <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
                         <div style={{alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
@@ -129,9 +129,9 @@
                     </div>
                     <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 8, display: 'inline-flex'}}>
                         <div style={{alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-end', display: 'flex'}}>
-                            <div style={{width: 43.20, height: 32, textAlign: 'right', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 24, fontFamily: 'Space Grotesk', fontWeight: '900', lineHeight: 32, wordWrap: 'break-word'}}>$25</div>
+                            <div style={{width: 43.20, height: 32, textAlign: 'right', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 24, fontFamily: 'Space Grotesk', fontWeight: '900', lineHeight: 32, wordWrap: 'break-word'}}>$25</div>
                         </div>
-                        <div style={{paddingLeft: 24, paddingRight: 24, paddingTop: 8, paddingBottom: 8, background: '#FF2E62', borderRadius: 4, justifyContent: 'center', alignItems: 'center', display: 'inline-flex'}}>
+                        <div style={{paddingLeft: 24, paddingRight: 24, paddingTop: 8, paddingBottom: 8, background: '#c62828', borderRadius: 4, justifyContent: 'center', alignItems: 'center', display: 'inline-flex'}}>
                             <div style={{width: 37, height: 20, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'white', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 20, wordWrap: 'break-word'}}>Book</div>
                         </div>
                     </div>
@@ -139,7 +139,7 @@
                 <div style={{left: -6.30, top: 56.05, position: 'absolute', transform: 'rotate(12deg)', transformOrigin: 'top left', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                     <div data-svg-wrapper>
                         <svg width="63" height="66" viewBox="0 0 63 66" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16.5876 79.8037C11.11 78.6394 6.19645 76.5045 1.84707 73.399C-2.50231 70.2935 -6.07626 66.5861 -8.87478 62.2768C-11.6733 57.9674 -13.6065 53.1945 -14.6745 47.958C-15.7424 42.7216 -15.6943 37.3645 -14.5299 31.8869C-12.5063 22.3662 -7.68943 14.615 -0.0794357 8.63315C7.53056 2.65131 16.2178 -0.221971 25.9823 0.0133176C23.4363 6.2196 22.4539 12.6049 23.0351 19.1692C23.6164 25.7335 25.7299 31.8226 29.3757 37.4367C33.0214 43.0507 37.7245 47.4581 43.4849 50.6591C49.2453 53.86 55.4781 55.5597 62.1833 55.7581C58.4919 64.788 52.3499 71.5589 43.7574 76.0711C35.1648 80.5832 26.1082 81.8274 16.5876 79.8037ZM18.2509 71.9785C23.9894 73.1983 29.6089 72.8933 35.1095 71.0636C40.6101 69.234 45.2961 66.1065 49.1674 61.6814C43.6702 59.9677 38.6571 57.4197 34.128 54.0375C29.5989 50.6553 25.7682 46.5525 22.6359 41.7292C19.5036 36.9059 17.2973 31.7341 16.0171 26.214C14.7368 20.6938 14.4644 15.0812 15.2 9.37616C9.58281 11.1129 4.83266 14.1415 0.949543 18.4619C-2.93358 22.7823 -5.48501 27.8117 -6.70476 33.5502C-8.57597 42.3535 -7.08533 50.4913 -2.23284 57.9634C2.61964 65.4356 9.44755 70.1073 18.2509 71.9785Z" fill="#FF2E62" fill-opacity="0.05"/>
+                        <path d="M16.5876 79.8037C11.11 78.6394 6.19645 76.5045 1.84707 73.399C-2.50231 70.2935 -6.07626 66.5861 -8.87478 62.2768C-11.6733 57.9674 -13.6065 53.1945 -14.6745 47.958C-15.7424 42.7216 -15.6943 37.3645 -14.5299 31.8869C-12.5063 22.3662 -7.68943 14.615 -0.0794357 8.63315C7.53056 2.65131 16.2178 -0.221971 25.9823 0.0133176C23.4363 6.2196 22.4539 12.6049 23.0351 19.1692C23.6164 25.7335 25.7299 31.8226 29.3757 37.4367C33.0214 43.0507 37.7245 47.4581 43.4849 50.6591C49.2453 53.86 55.4781 55.5597 62.1833 55.7581C58.4919 64.788 52.3499 71.5589 43.7574 76.0711C35.1648 80.5832 26.1082 81.8274 16.5876 79.8037ZM18.2509 71.9785C23.9894 73.1983 29.6089 72.8933 35.1095 71.0636C40.6101 69.234 45.2961 66.1065 49.1674 61.6814C43.6702 59.9677 38.6571 57.4197 34.128 54.0375C29.5989 50.6553 25.7682 46.5525 22.6359 41.7292C19.5036 36.9059 17.2973 31.7341 16.0171 26.214C14.7368 20.6938 14.4644 15.0812 15.2 9.37616C9.58281 11.1129 4.83266 14.1415 0.949543 18.4619C-2.93358 22.7823 -5.48501 27.8117 -6.70476 33.5502C-8.57597 42.3535 -7.08533 50.4913 -2.23284 57.9634C2.61964 65.4356 9.44755 70.1073 18.2509 71.9785Z" fill="#c62828" fill-opacity="0.05"/>
                         </svg>
                     </div>
                 </div>
@@ -157,43 +157,43 @@
                         </svg>
                     </div>
                 </div>
-                <div style={{width: 342, minHeight: 200, padding: 32, left: 0, top: 0, position: 'absolute', background: 'linear-gradient(145deg, rgba(255, 46, 98, 0.10) 0%, #230F14 100%), #230F14', boxShadow: '0px 2px 4px 2px rgba(0, 0, 0, 0.05) inset', outline: '2px rgba(255, 46, 98, 0.20) solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', display: 'inline-flex'}}>
+                <div style={{width: 342, minHeight: 200, padding: 32, left: 0, top: 0, position: 'absolute', background: 'linear-gradient(145deg, rgba(198, 40, 40, 0.10) 0%, #230F14 100%), #230F14', boxShadow: '0px 2px 4px 2px rgba(0, 0, 0, 0.05) inset', outline: '2px rgba(198, 40, 40, 0.20) solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', display: 'inline-flex'}}>
                     <div style={{alignSelf: 'stretch', opacity: 0.80, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 12, display: 'flex'}}>
                         <div style={{alignSelf: 'stretch', justifyContent: 'flex-start', alignItems: 'center', gap: 12, display: 'inline-flex'}}>
                             <div data-svg-wrapper>
                                 <svg width="24" height="17" viewBox="0 0 24 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 17C11.3 17 10.7083 16.7583 10.225 16.275C9.74167 15.7917 9.5 15.2 9.5 14.5C9.5 13.8 9.74167 13.2083 10.225 12.725C10.7083 12.2417 11.3 12 12 12C12.7 12 13.2917 12.2417 13.775 12.725C14.2583 13.2083 14.5 13.8 14.5 14.5C14.5 15.2 14.2583 15.7917 13.775 16.275C13.2917 16.7583 12.7 17 12 17ZM6.35 11.35L4.25 9.2C5.23333 8.21667 6.3875 7.4375 7.7125 6.8625C9.0375 6.2875 10.4667 6 12 6C13.5333 6 14.9625 6.29167 16.2875 6.875C17.6125 7.45833 18.7667 8.25 19.75 9.25L17.65 11.35C16.9167 10.6167 16.0667 10.0417 15.1 9.625C14.1333 9.20833 13.1 9 12 9C10.9 9 9.86667 9.20833 8.9 9.625C7.93333 10.0417 7.08333 10.6167 6.35 11.35ZM2.1 7.1L0 5C1.53333 3.43333 3.325 2.20833 5.375 1.325C7.425 0.441667 9.63333 0 12 0C14.3667 0 16.575 0.441667 18.625 1.325C20.675 2.20833 22.4667 3.43333 24 5L21.9 7.1C20.6167 5.81667 19.1292 4.8125 17.4375 4.0875C15.7458 3.3625 13.9333 3 12 3C10.0667 3 8.25417 3.3625 6.5625 4.0875C4.87083 4.8125 3.38333 5.81667 2.1 7.1Z" fill="#FF2E62"/>
+                                <path d="M12 17C11.3 17 10.7083 16.7583 10.225 16.275C9.74167 15.7917 9.5 15.2 9.5 14.5C9.5 13.8 9.74167 13.2083 10.225 12.725C10.7083 12.2417 11.3 12 12 12C12.7 12 13.2917 12.2417 13.775 12.725C14.2583 13.2083 14.5 13.8 14.5 14.5C14.5 15.2 14.2583 15.7917 13.775 16.275C13.2917 16.7583 12.7 17 12 17ZM6.35 11.35L4.25 9.2C5.23333 8.21667 6.3875 7.4375 7.7125 6.8625C9.0375 6.2875 10.4667 6 12 6C13.5333 6 14.9625 6.29167 16.2875 6.875C17.6125 7.45833 18.7667 8.25 19.75 9.25L17.65 11.35C16.9167 10.6167 16.0667 10.0417 15.1 9.625C14.1333 9.20833 13.1 9 12 9C10.9 9 9.86667 9.20833 8.9 9.625C7.93333 10.0417 7.08333 10.6167 6.35 11.35ZM2.1 7.1L0 5C1.53333 3.43333 3.325 2.20833 5.375 1.325C7.425 0.441667 9.63333 0 12 0C14.3667 0 16.575 0.441667 18.625 1.325C20.675 2.20833 22.4667 3.43333 24 5L21.9 7.1C20.6167 5.81667 19.1292 4.8125 17.4375 4.0875C15.7458 3.3625 13.9333 3 12 3C10.0667 3 8.25417 3.3625 6.5625 4.0875C4.87083 4.8125 3.38333 5.81667 2.1 7.1Z" fill="#c62828"/>
                                 </svg>
                             </div>
-                            <div style={{flex: '1 1 0', paddingBottom: 4, borderBottom: '1px rgba(255, 46, 98, 0.30) solid', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
+                            <div style={{flex: '1 1 0', paddingBottom: 4, borderBottom: '1px rgba(198, 40, 40, 0.30) solid', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
                                 <div style={{width: 167.11, height: 20, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#F1F5F9', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: '500', textTransform: 'uppercase', lineHeight: 20, wordWrap: 'break-word'}}>Network: StreetArt_Hub</div>
                             </div>
                         </div>
                         <div style={{alignSelf: 'stretch', justifyContent: 'flex-start', alignItems: 'center', gap: 12, display: 'inline-flex'}}>
                             <div data-svg-wrapper>
                                 <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M18.4 20.6L11.8 14H0.6V11H8.8L0 2.2L1.4 0.8L19.8 19.2L18.4 20.6ZM17.45 14L16.6 13.15V11H18.1V14H17.45ZM19.1 14V11H20.6V14H19.1ZM15.6 12.15L14.45 11H15.6V12.15ZM16.6 10V8.7C16.6 8.05 16.4083 7.55417 16.025 7.2125C15.6417 6.87083 15.1833 6.7 14.65 6.7H13.1C12.1667 6.7 11.375 6.375 10.725 5.725C10.075 5.075 9.75 4.28333 9.75 3.35C9.75 2.41667 10.075 1.625 10.725 0.975C11.375 0.325 12.1667 0 13.1 0V1.5C12.6 1.5 12.1667 1.675 11.8 2.025C11.4333 2.375 11.25 2.81667 11.25 3.35C11.25 3.88333 11.4333 4.325 11.8 4.675C12.1667 5.025 12.6 5.2 13.1 5.2H14.65C15.5833 5.2 16.3917 5.5 17.075 6.1C17.7583 6.7 18.1 7.45 18.1 8.35V10H16.6ZM19.1 10V7.75C19.1 6.65 18.7167 5.7 17.95 4.9C17.1833 4.1 16.2333 3.7 15.1 3.7V2.2C15.6 2.2 16.0333 2.01667 16.4 1.65C16.7667 1.28333 16.95 0.85 16.95 0.35H18.45C18.45 0.833333 18.3583 1.27083 18.175 1.6625C17.9917 2.05417 17.75 2.41667 17.45 2.75C18.3833 3.18333 19.1417 3.85 19.725 4.75C20.3083 5.65 20.6 6.65 20.6 7.75V10H19.1Z" fill="#FF2E62"/>
+                                <path d="M18.4 20.6L11.8 14H0.6V11H8.8L0 2.2L1.4 0.8L19.8 19.2L18.4 20.6ZM17.45 14L16.6 13.15V11H18.1V14H17.45ZM19.1 14V11H20.6V14H19.1ZM15.6 12.15L14.45 11H15.6V12.15ZM16.6 10V8.7C16.6 8.05 16.4083 7.55417 16.025 7.2125C15.6417 6.87083 15.1833 6.7 14.65 6.7H13.1C12.1667 6.7 11.375 6.375 10.725 5.725C10.075 5.075 9.75 4.28333 9.75 3.35C9.75 2.41667 10.075 1.625 10.725 0.975C11.375 0.325 12.1667 0 13.1 0V1.5C12.6 1.5 12.1667 1.675 11.8 2.025C11.4333 2.375 11.25 2.81667 11.25 3.35C11.25 3.88333 11.4333 4.325 11.8 4.675C12.1667 5.025 12.6 5.2 13.1 5.2H14.65C15.5833 5.2 16.3917 5.5 17.075 6.1C17.7583 6.7 18.1 7.45 18.1 8.35V10H16.6ZM19.1 10V7.75C19.1 6.65 18.7167 5.7 17.95 4.9C17.1833 4.1 16.2333 3.7 15.1 3.7V2.2C15.6 2.2 16.0333 2.01667 16.4 1.65C16.7667 1.28333 16.95 0.85 16.95 0.35H18.45C18.45 0.833333 18.3583 1.27083 18.175 1.6625C17.9917 2.05417 17.75 2.41667 17.45 2.75C18.3833 3.18333 19.1417 3.85 19.725 4.75C20.3083 5.65 20.6 6.65 20.6 7.75V10H19.1Z" fill="#c62828"/>
                                 </svg>
                             </div>
-                            <div style={{flex: '1 1 0', paddingBottom: 4, borderBottom: '1px rgba(255, 46, 98, 0.30) solid', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
+                            <div style={{flex: '1 1 0', paddingBottom: 4, borderBottom: '1px rgba(198, 40, 40, 0.30) solid', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
                                 <div style={{width: 120.27, height: 20, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#F1F5F9', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: '500', textTransform: 'uppercase', lineHeight: 20, wordWrap: 'break-word'}}>No smoking inside!</div>
                             </div>
                         </div>
                         <div style={{alignSelf: 'stretch', justifyContent: 'flex-start', alignItems: 'center', gap: 12, display: 'inline-flex'}}>
                             <div data-svg-wrapper>
                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M18.4 19.8L15.375 16.775C14.9583 17.0417 14.5167 17.2708 14.05 17.4625C13.5833 17.6542 13.1 17.8083 12.6 17.925V15.875C12.8333 15.7917 13.0625 15.7083 13.2875 15.625C13.5125 15.5417 13.725 15.4417 13.925 15.325L10.6 12V17.2L5.6 12.2H1.6V6.2H4.8L0 1.4L1.4 0L19.8 18.4L18.4 19.8ZM18.2 14L16.75 12.55C17.0333 12.0333 17.2458 11.4917 17.3875 10.925C17.5292 10.3583 17.6 9.775 17.6 9.175C17.6 7.60833 17.1417 6.20833 16.225 4.975C15.3083 3.74167 14.1 2.90833 12.6 2.475V0.425C14.6667 0.891667 16.35 1.9375 17.65 3.5625C18.95 5.1875 19.6 7.05833 19.6 9.175C19.6 10.0583 19.4792 10.9083 19.2375 11.725C18.9958 12.5417 18.65 13.3 18.2 14ZM14.85 10.65L12.6 8.4V5.15C13.3833 5.51667 13.9958 6.06667 14.4375 6.8C14.8792 7.53333 15.1 8.33333 15.1 9.2C15.1 9.45 15.0792 9.69583 15.0375 9.9375C14.9958 10.1792 14.9333 10.4167 14.85 10.65ZM10.6 6.4L8 3.8L10.6 1.2V6.4ZM8.6 12.35V10L6.8 8.2H3.6V10.2H6.45L8.6 12.35Z" fill="#FF2E62"/>
+                                <path d="M18.4 19.8L15.375 16.775C14.9583 17.0417 14.5167 17.2708 14.05 17.4625C13.5833 17.6542 13.1 17.8083 12.6 17.925V15.875C12.8333 15.7917 13.0625 15.7083 13.2875 15.625C13.5125 15.5417 13.725 15.4417 13.925 15.325L10.6 12V17.2L5.6 12.2H1.6V6.2H4.8L0 1.4L1.4 0L19.8 18.4L18.4 19.8ZM18.2 14L16.75 12.55C17.0333 12.0333 17.2458 11.4917 17.3875 10.925C17.5292 10.3583 17.6 9.775 17.6 9.175C17.6 7.60833 17.1417 6.20833 16.225 4.975C15.3083 3.74167 14.1 2.90833 12.6 2.475V0.425C14.6667 0.891667 16.35 1.9375 17.65 3.5625C18.95 5.1875 19.6 7.05833 19.6 9.175C19.6 10.0583 19.4792 10.9083 19.2375 11.725C18.9958 12.5417 18.65 13.3 18.2 14ZM14.85 10.65L12.6 8.4V5.15C13.3833 5.51667 13.9958 6.06667 14.4375 6.8C14.8792 7.53333 15.1 8.33333 15.1 9.2C15.1 9.45 15.0792 9.69583 15.0375 9.9375C14.9958 10.1792 14.9333 10.4167 14.85 10.65ZM10.6 6.4L8 3.8L10.6 1.2V6.4ZM8.6 12.35V10L6.8 8.2H3.6V10.2H6.45L8.6 12.35Z" fill="#c62828"/>
                                 </svg>
                             </div>
-                            <div style={{flex: '1 1 0', paddingBottom: 4, borderBottom: '1px rgba(255, 46, 98, 0.30) solid', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
+                            <div style={{flex: '1 1 0', paddingBottom: 4, borderBottom: '1px rgba(198, 40, 40, 0.30) solid', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
                                 <div style={{width: 155.56, height: 20, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#F1F5F9', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: '500', textTransform: 'uppercase', lineHeight: 20, wordWrap: 'break-word'}}>Quiet hours after 10PM</div>
                             </div>
                         </div>
                     </div>
                     <div style={{width: 278, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'flex'}}>
                         <div style={{paddingTop: 32, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'flex'}}>
-                            <div style={{paddingLeft: 32, paddingRight: 32, paddingTop: 8, paddingBottom: 8, outline: '2px #FF2E62 solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', display: 'flex'}}>
-                                <div style={{width: 168.30, height: 24, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 16, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 24, wordWrap: 'break-word'}}>Download PDF Guide</div>
+                            <div style={{paddingLeft: 32, paddingRight: 32, paddingTop: 8, paddingBottom: 8, outline: '2px #c62828 solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', display: 'flex'}}>
+                                <div style={{width: 168.30, height: 24, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 16, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 24, wordWrap: 'break-word'}}>Download PDF Guide</div>
                             </div>
                         </div>
                     </div>
@@ -201,7 +201,7 @@
             </div>
         </div>
         <div style={{alignSelf: 'stretch', paddingTop: 32, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 24, display: 'flex'}}>
-            <div style={{alignSelf: 'stretch', paddingTop: 20, paddingBottom: 20, background: '#FF2E62', boxShadow: '0px 8px 0px #9A1C3B', borderRadius: 8, justifyContent: 'center', alignItems: 'center', display: 'inline-flex'}}>
+            <div style={{alignSelf: 'stretch', paddingTop: 20, paddingBottom: 20, background: '#c62828', boxShadow: '0px 8px 0px #9A1C3B', borderRadius: 8, justifyContent: 'center', alignItems: 'center', display: 'inline-flex'}}>
                 <div style={{width: 149.45, height: 28, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'white', fontSize: 20, fontFamily: 'Space Grotesk', fontWeight: '900', textTransform: 'uppercase', lineHeight: 28, letterSpacing: 2, wordWrap: 'break-word'}}>Finish Setup</div>
             </div>
             <div style={{alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'flex'}}>
@@ -212,22 +212,22 @@
     <div style={{left: 297, top: 967, position: 'absolute', opacity: 0.20, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
         <div data-svg-wrapper>
             <svg width="77" height="72" viewBox="0 0 77 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1.75013 39.9339C0.5834 38.7672 3.77417e-05 37.3529 3.7236e-05 35.6912C3.67302e-05 34.0295 0.583399 32.6153 1.75013 31.4486L31.4486 1.75011C32.6153 0.583383 34.0296 1.91968e-05 35.6913 1.93654e-05C37.353 1.9534e-05 38.7672 0.583382 39.9339 1.75011L58.8667 20.6829L50.3814 20.6829L35.6913 5.99275L5.99277 35.6912L35.6913 65.3897L50.4344 50.6466L58.9197 50.6466L39.9339 69.6324C38.7672 70.7991 37.353 71.3825 35.6913 71.3825C34.0296 71.3825 32.6153 70.7991 31.4486 69.6324L1.75013 39.9339ZM22.9633 35.6912L31.979 26.6756L70.9052 26.6756C71.7537 26.6756 72.5492 26.8347 73.2917 27.1529C74.0341 27.4711 74.6705 27.8954 75.2009 28.4257C75.7666 28.9914 76.1997 29.6366 76.5002 30.3614C76.8007 31.0862 76.951 31.8729 76.951 32.7214L76.8979 38.7141C76.8626 39.5273 76.6946 40.2963 76.3941 41.0211C76.0936 41.7458 75.6782 42.3734 75.1478 42.9037C74.6175 43.4341 73.9988 43.8583 73.2917 44.1765C72.5846 44.4947 71.8068 44.6538 70.9582 44.6538L31.979 44.7069L22.9633 35.6912ZM70.9582 38.7141L70.9582 32.7744L70.9582 38.7141ZM31.4486 35.6912L34.4185 38.6611L59.0258 38.6611V35.6912L58.9728 32.6684L34.4715 32.6684L31.4486 35.6912ZM59.0258 35.6912L58.9728 32.6684L59.0258 35.6912V38.6611V35.6912Z" fill="#FF2E62"/>
+            <path d="M1.75013 39.9339C0.5834 38.7672 3.77417e-05 37.3529 3.7236e-05 35.6912C3.67302e-05 34.0295 0.583399 32.6153 1.75013 31.4486L31.4486 1.75011C32.6153 0.583383 34.0296 1.91968e-05 35.6913 1.93654e-05C37.353 1.9534e-05 38.7672 0.583382 39.9339 1.75011L58.8667 20.6829L50.3814 20.6829L35.6913 5.99275L5.99277 35.6912L35.6913 65.3897L50.4344 50.6466L58.9197 50.6466L39.9339 69.6324C38.7672 70.7991 37.353 71.3825 35.6913 71.3825C34.0296 71.3825 32.6153 70.7991 31.4486 69.6324L1.75013 39.9339ZM22.9633 35.6912L31.979 26.6756L70.9052 26.6756C71.7537 26.6756 72.5492 26.8347 73.2917 27.1529C74.0341 27.4711 74.6705 27.8954 75.2009 28.4257C75.7666 28.9914 76.1997 29.6366 76.5002 30.3614C76.8007 31.0862 76.951 31.8729 76.951 32.7214L76.8979 38.7141C76.8626 39.5273 76.6946 40.2963 76.3941 41.0211C76.0936 41.7458 75.6782 42.3734 75.1478 42.9037C74.6175 43.4341 73.9988 43.8583 73.2917 44.1765C72.5846 44.4947 71.8068 44.6538 70.9582 44.6538L31.979 44.7069L22.9633 35.6912ZM70.9582 38.7141L70.9582 32.7744L70.9582 38.7141ZM31.4486 35.6912L34.4185 38.6611L59.0258 38.6611V35.6912L58.9728 32.6684L34.4715 32.6684L31.4486 35.6912ZM59.0258 35.6912L58.9728 32.6684L59.0258 35.6912V38.6611V35.6912Z" fill="#c62828"/>
             </svg>
         </div>
     </div>
     <div style={{width: 390, padding: 24, left: 0, top: 0, position: 'absolute', background: 'rgba(35, 15, 20, 0.90)', backdropFilter: 'blur(6px)', justifyContent: 'space-between', alignItems: 'center', display: 'inline-flex'}}>
         <div data-svg-wrapper>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4.78125 11.25L11.7812 18.25L10 20L0 10L10 0L11.7812 1.75L4.78125 8.75H20V11.25H4.78125Z" fill="#FF2E62"/>
+            <path d="M4.78125 11.25L11.7812 18.25L10 20L0 10L10 0L11.7812 1.75L4.78125 8.75H20V11.25H4.78125Z" fill="#c62828"/>
             </svg>
         </div>
         <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
-            <div style={{width: 133.78, height: 32, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#F1F5F9', fontSize: 24, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 32, wordWrap: 'break-word', textShadow: '2px 2px 0px rgba(255, 46, 98, 1.00)'}}>Pre-Arrival</div>
+            <div style={{width: 133.78, height: 32, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#F1F5F9', fontSize: 24, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 32, wordWrap: 'break-word', textShadow: '2px 2px 0px rgba(198, 40, 40, 1.00)'}}>Pre-Arrival</div>
         </div>
         <div data-svg-wrapper>
             <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.25 18.75H13.75V11.25H11.25V18.75ZM12.5 8.75C12.8542 8.75 13.151 8.63021 13.3906 8.39062C13.6302 8.15104 13.75 7.85417 13.75 7.5C13.75 7.14583 13.6302 6.84896 13.3906 6.60938C13.151 6.36979 12.8542 6.25 12.5 6.25C12.1458 6.25 11.849 6.36979 11.6094 6.60938C11.3698 6.84896 11.25 7.14583 11.25 7.5C11.25 7.85417 11.3698 8.15104 11.6094 8.39062C11.849 8.63021 12.1458 8.75 12.5 8.75ZM12.5 25C10.7708 25 9.14583 24.6719 7.625 24.0156C6.10417 23.3594 4.78125 22.4688 3.65625 21.3438C2.53125 20.2188 1.64062 18.8958 0.984375 17.375C0.328125 15.8542 0 14.2292 0 12.5C0 10.7708 0.328125 9.14583 0.984375 7.625C1.64062 6.10417 2.53125 4.78125 3.65625 3.65625C4.78125 2.53125 6.10417 1.64062 7.625 0.984375C9.14583 0.328125 10.7708 0 12.5 0C14.2292 0 15.8542 0.328125 17.375 0.984375C18.8958 1.64062 20.2188 2.53125 21.3438 3.65625C22.4688 4.78125 23.3594 6.10417 24.0156 7.625C24.6719 9.14583 25 10.7708 25 12.5C25 14.2292 24.6719 15.8542 24.0156 17.375C23.3594 18.8958 22.4688 20.2188 21.3438 21.3438C20.2188 22.4688 18.8958 23.3594 17.375 24.0156C15.8542 24.6719 14.2292 25 12.5 25ZM12.5 22.5C15.2917 22.5 17.6562 21.5312 19.5938 19.5938C21.5312 17.6562 22.5 15.2917 22.5 12.5C22.5 9.70833 21.5312 7.34375 19.5938 5.40625C17.6562 3.46875 15.2917 2.5 12.5 2.5C9.70833 2.5 7.34375 3.46875 5.40625 5.40625C3.46875 7.34375 2.5 9.70833 2.5 12.5C2.5 15.2917 3.46875 17.6562 5.40625 19.5938C7.34375 21.5312 9.70833 22.5 12.5 22.5Z" fill="#FF2E62"/>
+            <path d="M11.25 18.75H13.75V11.25H11.25V18.75ZM12.5 8.75C12.8542 8.75 13.151 8.63021 13.3906 8.39062C13.6302 8.15104 13.75 7.85417 13.75 7.5C13.75 7.14583 13.6302 6.84896 13.3906 6.60938C13.151 6.36979 12.8542 6.25 12.5 6.25C12.1458 6.25 11.849 6.36979 11.6094 6.60938C11.3698 6.84896 11.25 7.14583 11.25 7.5C11.25 7.85417 11.3698 8.15104 11.6094 8.39062C11.849 8.63021 12.1458 8.75 12.5 8.75ZM12.5 25C10.7708 25 9.14583 24.6719 7.625 24.0156C6.10417 23.3594 4.78125 22.4688 3.65625 21.3438C2.53125 20.2188 1.64062 18.8958 0.984375 17.375C0.328125 15.8542 0 14.2292 0 12.5C0 10.7708 0.328125 9.14583 0.984375 7.625C1.64062 6.10417 2.53125 4.78125 3.65625 3.65625C4.78125 2.53125 6.10417 1.64062 7.625 0.984375C9.14583 0.328125 10.7708 0 12.5 0C14.2292 0 15.8542 0.328125 17.375 0.984375C18.8958 1.64062 20.2188 2.53125 21.3438 3.65625C22.4688 4.78125 23.3594 6.10417 24.0156 7.625C24.6719 9.14583 25 10.7708 25 12.5C25 14.2292 24.6719 15.8542 24.0156 17.375C23.3594 18.8958 22.4688 20.2188 21.3438 21.3438C20.2188 22.4688 18.8958 23.3594 17.375 24.0156C15.8542 24.6719 14.2292 25 12.5 25ZM12.5 22.5C15.2917 22.5 17.6562 21.5312 19.5938 19.5938C21.5312 17.6562 22.5 15.2917 22.5 12.5C22.5 9.70833 21.5312 7.34375 19.5938 5.40625C17.6562 3.46875 15.2917 2.5 12.5 2.5C9.70833 2.5 7.34375 3.46875 5.40625 5.40625C3.46875 7.34375 2.5 9.70833 2.5 12.5C2.5 15.2917 3.46875 17.6562 5.40625 19.5938C7.34375 21.5312 9.70833 22.5 12.5 22.5Z" fill="#c62828"/>
             </svg>
         </div>
     </div>
@@ -236,7 +236,7 @@
 
 Text Styles:
 // Mission Progress
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 12;
  fontFamily: 'Space Grotesk';
  fontWeight: '700';
@@ -340,7 +340,7 @@ color: 'rgba(255;
  wordWrap: 'break-word'
 ---
 // Add
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 12;
  fontFamily: 'Space Grotesk';
  fontWeight: '700';
@@ -403,7 +403,7 @@ color: '#94A3B8';
  wordWrap: 'break-word'
 ---
 // $25
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 24;
  fontFamily: 'Space Grotesk';
  fontWeight: '900';
@@ -456,7 +456,7 @@ color: '#F1F5F9';
  wordWrap: 'break-word'
 ---
 // Download PDF Guide
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 16;
  fontFamily: 'Space Grotesk';
  fontWeight: '700';

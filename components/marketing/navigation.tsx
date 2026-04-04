@@ -16,9 +16,10 @@ export function Navigation() {
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { guest, isAuthenticated, openAuthModal, signOut } = useGuestAuth();
+  const { guest, isAuthenticated, isRestoringSession, openAuthModal, signOut } = useGuestAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
+  const shouldShowSignedInState = isAuthenticated || isRestoringSession;
 
   useEffect(() => {
     let lastY = window.scrollY;
@@ -79,7 +80,7 @@ export function Navigation() {
               <Link href="/" className="flex items-center px-2 py-1">
                 <Image
                   alt={siteMeta.name}
-                  className="h-auto w-[110px] object-contain opacity-95"
+                  className="h-auto w-[138px] object-contain opacity-95"
                   height={180}
                   priority
                   src="/logo/logo_design_whiteOnRed.jpg-Photoroom.png"
@@ -115,7 +116,7 @@ export function Navigation() {
                 Policies
               </Link>
               <div className="relative" ref={profileMenuRef}>
-                {!isAuthenticated ? (
+                {!shouldShowSignedInState ? (
                   <button
                     className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[var(--vh-pink)] px-4 py-2 text-sm font-semibold text-white shadow-[0px_-1px_0px_0px_#FFFFFF40_inset,_0px_1px_0px_0px_#FFFFFF40_inset] transition hover:bg-[var(--vh-pink-soft)]"
                     onClick={() => openAuthModal("signin")}
@@ -125,12 +126,13 @@ export function Navigation() {
                   </button>
                 ) : (
                   <button
-                    className="inline-flex items-center gap-2 rounded-full border border-[var(--vh-pink)]/45 bg-[rgba(35,15,20,0.82)] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[rgba(255,46,98,0.16)]"
+                    className="inline-flex items-center gap-2 rounded-full border border-[var(--vh-pink)]/45 bg-[rgba(35,15,20,0.82)] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[rgba(198,40,40,0.16)]"
+                    disabled={isRestoringSession && !isAuthenticated}
                     onClick={() => setIsProfileMenuOpen((value) => !value)}
                     type="button"
                   >
                     <CircleUserRound className="h-5 w-5" />
-                    <span>{guest?.name.split(" ")[0] ?? "Profile"}</span>
+                    <span>{isRestoringSession && !isAuthenticated ? "Profile" : guest?.name.split(" ")[0] ?? "Profile"}</span>
                   </button>
                 )}
 
@@ -178,7 +180,7 @@ export function Navigation() {
             <Link href="/" className="flex items-center px-2 py-1">
               <Image
                 alt={siteMeta.name}
-                className="h-auto w-[94px] object-contain opacity-95"
+                className="h-auto w-[114px] object-contain opacity-95"
                 height={160}
                 priority
                 src="/logo/logo_design_whiteOnRed.jpg-Photoroom.png"
@@ -194,7 +196,7 @@ export function Navigation() {
                 Book Now
               </Link>
               <MobileStaggeredMenu
-                isAuthenticated={isAuthenticated}
+                isAuthenticated={shouldShowSignedInState}
                 items={navItems}
                 onOpenSignIn={() => openAuthModal("signin")}
               />

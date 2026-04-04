@@ -131,7 +131,7 @@ export default function Home() {
       <section className="events section section-dark" data-node-id="38:24" id="tonight">
         <div className="section-heading">
           <p className="section-kicker">Don&apos;t miss the energy</p>
-          <h2>Tonight at Vibe House</h2>
+          <h2>Tonight at The Daily Social</h2>
         </div>
 
         <div className="events-grid">
@@ -226,7 +226,7 @@ export default function Home() {
 
       <footer className="footer section">
         <div>
-          <p className="section-kicker">Vibehouse / vhdsgn</p>
+          <p className="section-kicker">The Daily Social / vhdsgn</p>
           <h2>Sleep inside the scene.</h2>
         </div>
         <a className="primary-button" href="#spaces">

@@ -564,7 +564,7 @@ stores the submission for on-site manual verification.
 ```bash
 curl -s -X POST http://localhost:8080/guest/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"arjun@vibehouse.in","password":"Vibe@2026!"}' | jq '.access_token'
+  -d '{"email":"arjun@thedailysocial.in","password":"Vibe@2026!"}' | jq '.access_token'
 ```
 
 Save token as `ARJUN_TOKEN`.
@@ -666,8 +666,8 @@ All guests share password: **`Vibe@2026!`**
 
 | Email | Role | ERI |
 |---|---|---|
-| `arjun@vibehouse.in` | PRIMARY | `EZEE-BND-2026-001`, `EZEE-BND-2026-002` |
-| `neha@vibehouse.in` | SECONDARY | `EZEE-BND-2026-001` |
+| `arjun@thedailysocial.in` | PRIMARY | `EZEE-BND-2026-001`, `EZEE-BND-2026-002` |
+| `neha@thedailysocial.in` | SECONDARY | `EZEE-BND-2026-001` |
 | `samir@gmail.com` | PRIMARY | `EZEE-BND-2026-003` |
 
 > Note: Seeded guests already have `booking_guest_access` rows. Call `POST /guest/booking/link`

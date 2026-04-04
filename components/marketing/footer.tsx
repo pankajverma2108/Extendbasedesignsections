@@ -9,8 +9,8 @@ export function Footer() {
         <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="md:col-span-2">
             <div className="mb-4">
-              <div className="vh-retro-3d border-y-4 border-y-[#bf1e4a] py-2 text-3xl md:text-5xl" style={{ transform: "rotate(-2deg) skewX(-4deg)" }}>
-                VIBEHOUSE
+              <div className="vh-retro-sign-flat py-2 text-2xl md:text-4xl">
+                THE D<span className="vh-flicker">A</span>ILY SO<span className="vh-flicker" style={{ animationDelay: "0.6s" }}>C</span>IA<span className="vh-flicker" style={{ animationDelay: "1.2s" }}>L</span>
               </div>
             </div>
             <p className="mb-4 italic text-white/65">{siteMeta.tagline}</p>
@@ -66,7 +66,7 @@ export function Footer() {
         </div>
 
         <div className="border-t-2 border-[var(--vh-border)] pt-6 text-center text-xs text-white/45">
-          (c) 2026 {siteMeta.name}. All rights reserved.
+          &copy; 2026 {siteMeta.name}. All rights reserved.
         </div>
       </div>
     </footer>

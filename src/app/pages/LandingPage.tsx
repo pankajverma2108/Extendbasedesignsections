@@ -1,7 +1,6 @@
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { Calendar, Users, ArrowRight, Star, Wifi, Coffee, Lock, Zap, Wind, Utensils, Droplet, MapPin, CheckCircle2, Shield, Snowflake, Clock, Package, Instagram } from 'lucide-react';
 import { useState, useCallback, useEffect } from 'react';
-import { Link } from 'react-router';
 import Navigation from '../components/Navigation';
 import useEmblaCarousel from 'embla-carousel-react';
 import StarBorder from '../components/StarBorder';
@@ -53,7 +52,7 @@ export default function LandingPage() {
               <div key={idx} className="flex-[0_0_100%] min-w-0 relative">
                 <ImageWithFallback
                   src={img}
-                  alt={`Vibe House ${idx + 1}`}
+                  alt={`The Daily Social ${idx + 1}`}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-[rgba(35,15,20,0.7)] to-[rgba(35,15,20,0.9)]" />
@@ -69,7 +68,7 @@ export default function LandingPage() {
               key={idx}
               onClick={() => emblaApi?.scrollTo(idx)}
               className={`w-2 h-2 rounded-full transition-all ${
-                idx === selectedIndex ? 'bg-[#ff2e62] w-8' : 'bg-white/50'
+                idx === selectedIndex ? 'bg-[#c62828] w-8' : 'bg-white/50'
               }`}
               aria-label={`Go to slide ${idx + 1}`}
             />
@@ -86,8 +85,8 @@ export default function LandingPage() {
               </span>
               {' '}
               <span className="inline-block relative">
-                <span className="absolute inset-0 blur-xl bg-[#ff2e62] opacity-50"></span>
-                <span className="relative bg-gradient-to-r from-[#ff2e62] via-[#ff6b98] to-[#ff2e62] bg-clip-text text-transparent animate-pulse">
+                <span className="absolute inset-0 blur-xl bg-[#c62828] opacity-50"></span>
+                <span className="relative bg-gradient-to-r from-[#c62828] via-[#8e1b1b] to-[#c62828] bg-clip-text text-transparent animate-pulse">
                   MIX
                 </span>
               </span>
@@ -99,7 +98,7 @@ export default function LandingPage() {
           </div>
 
           {/* Primary Booking Widget */}
-          <div id="hero-booking-widget" className="bg-white p-5 md:p-6 rounded-[8px] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] max-w-[420px] md:max-w-[520px] w-full border-2 border-[#ff2e62]">
+          <div id="hero-booking-widget" className="bg-white p-5 md:p-6 rounded-[8px] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] max-w-[420px] md:max-w-[520px] w-full border-2 border-[#c62828]">
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
@@ -110,7 +109,7 @@ export default function LandingPage() {
                     type="date"
                     value={checkIn}
                     onChange={(e) => setCheckIn(e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-[#cbd5e1] rounded-[4px] font-['Space_Grotesk'] text-[14px] focus:border-[#ff2e62] focus:outline-none"
+                    className="w-full px-3 py-2 border-2 border-[#cbd5e1] rounded-[4px] font-['Space_Grotesk'] text-[14px] focus:border-[#c62828] focus:outline-none"
                   />
                 </div>
                 <div className="text-center">
@@ -121,11 +120,11 @@ export default function LandingPage() {
                     type="date"
                     value={checkOut}
                     onChange={(e) => setCheckOut(e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-[#cbd5e1] rounded-[4px] font-['Space_Grotesk'] text-[14px] focus:border-[#ff2e62] focus:outline-none"
+                    className="w-full px-3 py-2 border-2 border-[#cbd5e1] rounded-[4px] font-['Space_Grotesk'] text-[14px] focus:border-[#c62828] focus:outline-none"
                   />
                 </div>
               </div>
-              <button className="w-full bg-[#ff2e62] px-8 md:px-10 py-3 md:py-4 rounded-[2px] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] transition-all">
+              <button className="w-full bg-[#c62828] px-8 md:px-10 py-3 md:py-4 rounded-[2px] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] transition-all">
                 <span className="font-['Space_Grotesk'] font-bold text-[16px] md:text-[18px] text-white uppercase leading-[28px]">
                   Book Now
                 </span>
@@ -147,10 +146,10 @@ export default function LandingPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-screen-lg mx-auto">
           {[
             { icon: <Droplet className="w-6 md:w-8 h-6 md:h-8" />, label: 'Clean Rooms', color: '#00d1ff' },
-            { icon: <Shield className="w-6 md:w-8 h-6 md:h-8" />, label: 'Safe & Secure', color: '#ff2e62' },
+            { icon: <Shield className="w-6 md:w-8 h-6 md:h-8" />, label: 'Safe & Secure', color: '#c62828' },
             { icon: <Snowflake className="w-6 md:w-8 h-6 md:h-8" />, label: 'AC Dorms', color: '#39ff14' },
             { icon: <Clock className="w-6 md:w-8 h-6 md:h-8" />, label: '24/7 Reception', color: '#facc15' },
-            { icon: <Lock className="w-6 md:w-8 h-6 md:h-8" />, label: 'Secure Lockers', color: '#ff2e62' },
+            { icon: <Lock className="w-6 md:w-8 h-6 md:h-8" />, label: 'Secure Lockers', color: '#c62828' },
             { icon: <CheckCircle2 className="w-6 md:w-8 h-6 md:h-8" />, label: '7-Day Cancel', color: '#39ff14' },
           ].map((item, idx) => (
             <StarBorder
@@ -183,11 +182,11 @@ export default function LandingPage() {
         <div className="flex flex-wrap gap-3 justify-center max-w-screen-lg mx-auto">
           {[
             { icon: <Wifi className="w-5 h-5" />, label: 'Fast Wi-Fi', color: '#00d1ff' },
-            { icon: <Droplet className="w-5 h-5" />, label: 'Hot Showers', color: '#ff2e62' },
+            { icon: <Droplet className="w-5 h-5" />, label: 'Hot Showers', color: '#c62828' },
             { icon: <Coffee className="w-5 h-5" />, label: 'Co-working', color: '#facc15' },
             { icon: <Package className="w-5 h-5" />, label: 'Laundry', color: '#39ff14' },
             { icon: <Wind className="w-5 h-5" />, label: 'AC', color: '#00d1ff' },
-            { icon: <Utensils className="w-5 h-5" />, label: 'Kitchen', color: '#ff2e62' },
+            { icon: <Utensils className="w-5 h-5" />, label: 'Kitchen', color: '#c62828' },
             { icon: <MapPin className="w-5 h-5" />, label: 'Central Location', color: '#facc15' },
             { icon: <Lock className="w-5 h-5" />, label: 'Lockers', color: '#39ff14' },
           ].map((amenity, idx) => (
@@ -222,7 +221,7 @@ export default function LandingPage() {
               capacity: '4 Guests',
               image: 'https://images.unsplash.com/photo-1694151569569-8288e3118519?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
               badge: 'Most Popular',
-              badgeColor: '#ff2e62',
+              badgeColor: '#c62828',
               badgeTextColor: '#ffffff'
             },
             {
@@ -246,7 +245,7 @@ export default function LandingPage() {
           ].map((room, idx) => (
             <div
               key={idx}
-              className="bg-[#1e293b] border-2 border-[#334155] rounded-[8px] overflow-hidden shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] hover:border-[#ff2e62] transition-all relative"
+              className="bg-[#1e293b] border-2 border-[#334155] rounded-[8px] overflow-hidden shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] hover:border-[#c62828] transition-all relative"
               style={{ transform: `rotate(${idx % 2 === 0 ? -0.5 : 0.5}deg)` }}
             >
               {room.badge && (
@@ -279,16 +278,16 @@ export default function LandingPage() {
                     <p className="font-['Space_Grotesk'] text-[12px] text-[rgba(255,255,255,0.6)] uppercase mb-1">
                       Starting from
                     </p>
-                    <p className="font-['Space_Grotesk'] font-bold text-[24px] text-[#ff2e62]">
+                    <p className="font-['Space_Grotesk'] font-bold text-[24px] text-[#c62828]">
                       {room.price}
                     </p>
                   </div>
-                  <Link
-                    to="/rooms"
+                  <a
+                    href="/rooms"
                     className="bg-[rgba(255,255,255,0.1)] border-2 border-[rgba(255,255,255,0.3)] px-4 py-2 rounded-[4px] font-['Space_Grotesk'] font-bold text-[12px] text-white uppercase hover:bg-[rgba(255,255,255,0.2)] transition-colors"
                   >
                     View Details
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>
@@ -296,10 +295,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. Tonight at Vibe House */}
+      {/* 5. Tonight at The Daily Social */}
       <section id="events-tonight" className="px-4 md:px-6 py-10 md:py-12 bg-[rgba(255,255,255,0.02)]">
         <h2 className="font-['Space_Grotesk'] font-bold text-[24px] md:text-[30px] text-white tracking-[-1.5px] uppercase leading-[30px] md:leading-[36px] text-center mb-2">
-          Tonight at Vibe House
+          Tonight at The Daily Social
         </h2>
         <p className="font-['Playfair_Display'] text-[14px] text-[rgba(255,255,255,0.8)] text-center mb-8 italic">
           next 48 hours
@@ -307,7 +306,7 @@ export default function LandingPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-screen-lg mx-auto">
           {[
-            { title: 'Pub Crawl', time: 'Tonight 9PM', location: 'Meet at Lobby', color: '#ff2e62', badge: 'Popular' },
+            { title: 'Pub Crawl', time: 'Tonight 9PM', location: 'Meet at Lobby', color: '#c62828', badge: 'Popular' },
             { title: 'Game Night', time: 'Today 7PM', location: 'Common Area', color: '#00d1ff', badge: 'Free' },
             { title: 'Local Music', time: 'Tomorrow 8PM', location: 'Rooftop', color: '#39ff14', badge: 'Live' },
           ].map((event, idx) => (
@@ -352,10 +351,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 6. The Vibe House Experience */}
+      {/* 6. The Daily Social Experience */}
       <section id="vibe-experience" className="px-4 md:px-6 py-10 md:py-12">
         <h2 className="font-['Space_Grotesk'] font-bold text-[24px] md:text-[30px] text-white tracking-[-1.5px] uppercase leading-[30px] md:leading-[36px] text-center mb-2">
-          The Vibe House Experience
+          The Daily Social Experience
         </h2>
         <p className="font-['Playfair_Display'] text-[14px] text-[rgba(255,255,255,0.8)] text-center mb-8 italic">
           why travelers choose us
@@ -363,11 +362,11 @@ export default function LandingPage() {
 
         <div className="max-w-screen-md mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* High Energy Community */}
-          <div className="bg-gradient-to-br from-[#ff2e62] to-[#ff6b98] p-6 rounded-[8px] border-2 border-white shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]" style={{ transform: 'rotate(-1deg)' }}>
+          <div className="bg-gradient-to-br from-[#c62828] to-[#8e1b1b] p-6 rounded-[8px] border-2 border-white shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]" style={{ transform: 'rotate(-1deg)' }}>
             <div className="bg-[rgba(255,255,255,0.2)] backdrop-blur-sm rounded-[4px] p-5">
               <div className="flex items-center gap-3 mb-4">
                 <div className="bg-white rounded-full p-2">
-                  <Zap className="w-6 h-6 text-[#ff2e62]" />
+                  <Zap className="w-6 h-6 text-[#c62828]" />
                 </div>
                 <h3 className="font-['Space_Grotesk'] font-bold text-[18px] md:text-[20px] text-white uppercase">
                   High Energy
@@ -399,7 +398,7 @@ export default function LandingPage() {
       </section>
 
       {/* 7. Guest Energy - Social Media */}
-      <section id="guest-energy" className="px-4 md:px-6 py-10 md:py-12 bg-[rgba(255,255,255,0.02)]">
+      <section id="guest-energy" className="px-4 md:px-6 py-10 md:py-12 bg-[#171112]">
         <h2 className="font-['Space_Grotesk'] font-bold text-[24px] md:text-[30px] text-white tracking-[-1.5px] uppercase leading-[30px] md:leading-[36px] text-center mb-2">
           The Energy
         </h2>
@@ -416,7 +415,7 @@ export default function LandingPage() {
           ].map((img, idx) => (
             <div
               key={idx}
-              className="aspect-square rounded-[4px] overflow-hidden border-4 border-white shadow-[8px_8px_0px_0px_#ff2e62] hover:shadow-[12px_12px_0px_0px_#ff2e62] transition-all cursor-pointer"
+              className="aspect-square rounded-[4px] overflow-hidden border-4 border-white shadow-[8px_8px_0px_0px_#c62828] hover:shadow-[12px_12px_0px_0px_#c62828] transition-all cursor-pointer"
               style={{ transform: `rotate(${(idx % 2 === 0 ? -2 : 2)}deg)` }}
             >
               <ImageWithFallback
@@ -429,17 +428,17 @@ export default function LandingPage() {
         </div>
 
         <div className="flex justify-center">
-          <button className="bg-gradient-to-r from-[#ff2e62] to-[#ff6b98] px-8 py-4 rounded-[12px] border-2 border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] flex items-center gap-3 hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)] transition-all">
+          <button className="bg-gradient-to-r from-[#c62828] to-[#8e1b1b] px-8 py-4 rounded-[12px] border-2 border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] flex items-center gap-3 hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)] transition-all">
             <Instagram className="w-6 h-6 text-white" />
             <span className="font-['Space_Grotesk'] font-bold text-[18px] text-white uppercase">
-              @VibeHouse
+              @thedailysocial
             </span>
           </button>
         </div>
       </section>
 
       {/* 8. Social Proof - Guest Reviews */}
-      <section id="guest-reviews" className="px-4 md:px-6 py-10 md:py-12">
+      <section id="guest-reviews" className="px-4 md:px-6 py-10 md:py-12 bg-[#1d1718]">
         <h2 className="font-['Space_Grotesk'] font-bold text-[24px] md:text-[30px] text-white tracking-[-1.5px] uppercase leading-[30px] md:leading-[36px] text-center mb-2">
           Guest Stories
         </h2>
@@ -473,7 +472,7 @@ export default function LandingPage() {
           ].map((review, idx) => (
             <div
               key={idx}
-              className="bg-[#1e293b] border-2 border-[#334155] rounded-[8px] p-5 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] hover:border-[#ff2e62] transition-all"
+              className="bg-[#1e293b] border-2 border-[#334155] rounded-[8px] p-5 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] hover:border-[#c62828] transition-all"
               style={{ transform: `rotate(${idx % 2 === 0 ? -0.5 : 0.5}deg)` }}
             >
               <div className="flex items-center gap-4 mb-4">
@@ -514,7 +513,7 @@ export default function LandingPage() {
 
       {/* 9. Final CTA - Secondary Booking Widget */}
       <section id="final-cta" className="px-4 md:px-6 py-10 md:py-12 bg-[rgba(255,255,255,0.02)]">
-        <div className="bg-gradient-to-br from-[#ff2e62] via-[#ff6b98] to-[#ff2e62] p-6 md:p-8 rounded-[12px] border-4 border-white shadow-[12px_12px_0px_0px_rgba(255,255,255,0.3)] max-w-[500px] mx-auto" style={{ transform: 'rotate(-1deg)' }}>
+        <div className="bg-gradient-to-br from-[#c62828] via-[#8e1b1b] to-[#c62828] p-6 md:p-8 rounded-[12px] border-4 border-white shadow-[12px_12px_0px_0px_rgba(255,255,255,0.3)] max-w-[500px] mx-auto" style={{ transform: 'rotate(-1deg)' }}>
           <h2 className="font-['Space_Grotesk'] font-bold text-[28px] md:text-[36px] text-white tracking-[-1.8px] uppercase leading-[34px] md:leading-[40px] text-center mb-3">
             Your Adventure Starts Here
           </h2>
@@ -527,14 +526,14 @@ export default function LandingPage() {
             <div className="grid grid-cols-2 gap-3 mb-4">
               <input
                 type="date"
-                className="px-3 py-2 border-2 border-[#cbd5e1] rounded-[4px] font-['Space_Grotesk'] text-[14px] focus:border-[#ff2e62] focus:outline-none"
+                className="px-3 py-2 border-2 border-[#cbd5e1] rounded-[4px] font-['Space_Grotesk'] text-[14px] focus:border-[#c62828] focus:outline-none"
               />
               <input
                 type="date"
-                className="px-3 py-2 border-2 border-[#cbd5e1] rounded-[4px] font-['Space_Grotesk'] text-[14px] focus:border-[#ff2e62] focus:outline-none"
+                className="px-3 py-2 border-2 border-[#cbd5e1] rounded-[4px] font-['Space_Grotesk'] text-[14px] focus:border-[#c62828] focus:outline-none"
               />
             </div>
-            <button className="w-full bg-[#ff2e62] px-8 py-4 rounded-[4px] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] transition-all">
+            <button className="w-full bg-[#c62828] px-8 py-4 rounded-[4px] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] transition-all">
               <span className="font-['Space_Grotesk'] font-bold text-[16px] md:text-[18px] text-white uppercase leading-[28px] flex items-center justify-center gap-2">
                 Book Now
                 <ArrowRight className="w-5 h-5" />
@@ -556,14 +555,14 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
             {/* Brand */}
             <div>
-              <h3 className="font-['Space_Grotesk'] font-bold text-[20px] text-[#ff2e62] uppercase tracking-[2px] mb-2">
-                Vibe House
+              <h3 className="font-['Space_Grotesk'] font-bold text-[20px] text-[#c62828] uppercase tracking-[2px] mb-2">
+                The Daily Social
               </h3>
               <p className="font-['Playfair_Display'] text-[14px] text-[rgba(255,255,255,0.6)] italic mb-4">
                 Stay. Mix. Repeat.
               </p>
               <div className="flex gap-4">
-                <Instagram className="w-6 h-6 text-[rgba(255,255,255,0.6)] hover:text-[#ff2e62] transition-colors cursor-pointer" />
+                <Instagram className="w-6 h-6 text-[rgba(255,255,255,0.6)] hover:text-[#c62828] transition-colors cursor-pointer" />
               </div>
             </div>
 
@@ -580,7 +579,7 @@ export default function LandingPage() {
                   +91 98765 43210
                 </p>
                 <p className="font-['Space_Grotesk'] text-[rgba(255,255,255,0.6)]">
-                  hello@vibehouse.com
+                  hello@thedailysocial.com
                 </p>
               </div>
             </div>
@@ -591,16 +590,16 @@ export default function LandingPage() {
                 Legal
               </h4>
               <ul className="space-y-2">
-                <li><Link to="/policies/terms" className="font-['Space_Grotesk'] text-[14px] text-[rgba(255,255,255,0.6)] hover:text-white transition-colors">Terms & Conditions</Link></li>
-                <li><Link to="/policies/privacy" className="font-['Space_Grotesk'] text-[14px] text-[rgba(255,255,255,0.6)] hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/policies/refund" className="font-['Space_Grotesk'] text-[14px] text-[rgba(255,255,255,0.6)] hover:text-white transition-colors">Cancellation Policy</Link></li>
+                <li><a href="/policies/terms" className="font-['Space_Grotesk'] text-[14px] text-[rgba(255,255,255,0.6)] hover:text-white transition-colors">Terms & Conditions</a></li>
+                <li><a href="/policies/privacy" className="font-['Space_Grotesk'] text-[14px] text-[rgba(255,255,255,0.6)] hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="/policies/refund" className="font-['Space_Grotesk'] text-[14px] text-[rgba(255,255,255,0.6)] hover:text-white transition-colors">Cancellation Policy</a></li>
               </ul>
             </div>
           </div>
 
           <div className="border-t-2 border-[#1e293b] pt-6 text-center">
             <p className="font-['Space_Grotesk'] text-[12px] text-[rgba(255,255,255,0.4)]">
-              © 2026 Vibe House. All rights reserved.
+              © 2026 The Daily Social. All rights reserved.
             </p>
           </div>
         </div>

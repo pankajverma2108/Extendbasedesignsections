@@ -223,7 +223,7 @@ export function BookingWidget({
             aria-disabled={validationMessage.length > 0}
             asChild
             className={cn(
-              "mt-3.5 flex h-12 w-full rounded-[16px] text-base shadow-[0_16px_38px_rgba(255,46,98,0.28)]",
+              "mt-3.5 flex h-12 w-full rounded-[12px] border border-white/5 bg-[var(--vh-pink)] text-base font-black uppercase tracking-[0.02em] shadow-[0_10px_24px_rgba(198,40,40,0.28)]",
               validationMessage.length > 0 && "pointer-events-none bg-slate-500 shadow-none hover:translate-y-0",
             )}
           >

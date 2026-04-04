@@ -355,7 +355,7 @@ export default function BookingsPage() {
             </button>
             <button onClick={() => setBookingFilter("previous")} type="button">
               <StickerTag
-                bg={bookingFilter === "previous" ? "#ff2e62" : "#fef08a"}
+                bg={bookingFilter === "previous" ? "#c62828" : "#fef08a"}
                 className="px-4 py-2 text-sm font-bold not-italic uppercase tracking-[0.08em]"
                 label={`Previous bookings (${previousBookings.length})`}
                 rotate="rotate-[2deg]"

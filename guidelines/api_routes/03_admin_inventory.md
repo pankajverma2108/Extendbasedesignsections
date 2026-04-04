@@ -313,7 +313,7 @@ Returns all BORROWABLE inventory items with their stock levels AND active checko
         "guest": {
           "id": "guest-arjun-001",
           "name": "Arjun Mehta",
-          "email": "arjun@vibehouse.in",
+          "email": "arjun@thedailysocial.in",
           "phone": "+919000000001"
         },
         "booking": {
@@ -357,7 +357,7 @@ Returns guests who have active bookings, filtered by name/email/phone. Used for 
   {
     "id": "guest-arjun-001",
     "name": "Arjun Mehta",
-    "email": "arjun@vibehouse.in",
+    "email": "arjun@thedailysocial.in",
     "phone": "+919000000001",
     "bookings": [
       {

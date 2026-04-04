@@ -55,7 +55,7 @@ Creates a pending booking on behalf of a walk-in guest. If the guest doesn't exi
   "guest_id": "uuid",
   "guest_name": "Rahul Sharma",
   "property_id": "prop-bandra-001",
-  "property_name": "Vibe House Bandra",
+  "property_name": "The Daily Social Bandra",
   "checkin_date": "2026-03-25",
   "checkout_date": "2026-03-28",
   "no_of_nights": 3,
@@ -151,7 +151,7 @@ Lists all bookings with pagination. Scoped to admin's property (owners see all p
   "bookings": [
     {
       "ezee_reservation_id": "VH-BANDRA-M1ABC-XY12",
-      "property": { "id": "prop-bandra-001", "name": "Vibe House Bandra" },
+      "property": { "id": "prop-bandra-001", "name": "The Daily Social Bandra" },
       "guest": { "id": "uuid", "name": "Rahul Sharma", "email": "rahul@example.com", "phone": "+919876543210" },
       "room_type_name": "Queen Size Room x1",
       "room_number": null,
@@ -197,7 +197,7 @@ Returns full booking detail including guests, KYC slots, all payments, and addon
 ```json
 {
   "ezee_reservation_id": "VH-BANDRA-M1ABC-XY12",
-  "property": { "id": "prop-bandra-001", "name": "Vibe House Bandra", "city": "Mumbai" },
+  "property": { "id": "prop-bandra-001", "name": "The Daily Social Bandra", "city": "Mumbai" },
   "booker": { "id": "uuid", "name": "Rahul Sharma", "email": "rahul@example.com", "phone": "+919876543210" },
   "booker_email": "rahul@example.com",
   "booker_phone": "+919876543210",

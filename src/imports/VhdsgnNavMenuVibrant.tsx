@@ -46,7 +46,7 @@ function Header() {
 function Background1() {
   return (
     <div className="absolute bg-white content-stretch flex flex-col items-start left-[257.77px] px-[8px] py-[4px] rounded-[12px] top-0" data-name="Background">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[10px] tracking-[1px] uppercase w-[24.225px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[10px] tracking-[1px] uppercase w-[24.225px]">
         <p className="leading-[15px]">New</p>
       </div>
     </div>
@@ -111,7 +111,7 @@ function OverlayBorder() {
 
 function Background() {
   return (
-    <div className="bg-[#ff2e62] relative rounded-[4px] shrink-0 w-full" data-name="Background">
+    <div className="bg-[#c62828] relative rounded-[4px] shrink-0 w-full" data-name="Background">
       <div className="content-stretch flex flex-col items-start p-[4px] relative w-full">
         <div className="absolute bg-[rgba(255,255,255,0)] inset-0 rounded-[4px] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]" data-name="Overlay+Shadow" />
         <OverlayBorder />
@@ -318,7 +318,7 @@ function Container16() {
     <div className="h-[12px] relative shrink-0 w-full" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 121 12">
         <g id="Container">
-          <path d={svgPaths.p13e03480} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p13e03480} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -484,7 +484,7 @@ function Container22() {
     <div className="h-[17px] relative shrink-0 w-[22px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 22 17">
         <g id="Container">
-          <path d={svgPaths.p3163ad80} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p3163ad80} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>

@@ -8,7 +8,7 @@ export default function AboutPage() {
       icon: <Users className="w-10 h-10" />,
       title: 'Community',
       description: 'Meet travelers from around the world. Daily events and activities bring people together.',
-      color: '#ff2e62'
+      color: '#c62828'
     },
     {
       icon: <Sparkles className="w-10 h-10" />,
@@ -36,20 +36,20 @@ export default function AboutPage() {
       <nav className="bg-[#0f172a] border-b-2 border-[#1e293b] sticky top-0 z-50">
         <div className="max-w-screen-xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#ff2e62] uppercase tracking-[2px]">
-              Vibe House
+            <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#c62828] uppercase tracking-[2px]">
+              The Daily Social
             </Link>
             <div className="flex gap-6">
-              <Link to="/" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
+              <Link to="/" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#c62828] transition-colors">
                 Home
               </Link>
-              <Link to="/rooms" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
+              <Link to="/rooms" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#c62828] transition-colors">
                 Rooms
               </Link>
-              <Link to="/events" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
+              <Link to="/events" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#c62828] transition-colors">
                 Events
               </Link>
-              <Link to="/about" className="font-['Space_Grotesk'] text-[14px] text-[#ff2e62]">
+              <Link to="/about" className="font-['Space_Grotesk'] text-[14px] text-[#c62828]">
                 About
               </Link>
             </div>
@@ -62,9 +62,9 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Text Content */}
           <div className="order-2 lg:order-1">
-            <div className="bg-[#ff2e62] px-3 py-1 inline-block shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] mb-6">
+            <div className="bg-[#c62828] px-3 py-1 inline-block shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] mb-6">
               <p className="font-['Space_Grotesk'] font-bold text-[12px] text-white tracking-[1.2px] uppercase">
-                About Vibe House
+                About The Daily Social
               </p>
             </div>
             
@@ -77,7 +77,7 @@ export default function AboutPage() {
             </p>
 
             <p className="font-['Space_Grotesk'] text-[16px] text-[rgba(255,255,255,0.9)] leading-[24px] mb-4">
-              Vibe House started with a simple idea: travel should bring people together. Not just to share a room, but to share experiences, stories, and lifelong friendships.
+              The Daily Social started with a simple idea: travel should bring people together. Not just to share a room, but to share experiences, stories, and lifelong friendships.
             </p>
 
             <p className="font-['Space_Grotesk'] text-[16px] text-[rgba(255,255,255,0.9)] leading-[24px]">
@@ -87,10 +87,10 @@ export default function AboutPage() {
 
           {/* Image */}
           <div className="order-1 lg:order-2">
-            <div className="rounded-[12px] overflow-hidden border-4 border-white shadow-[12px_12px_0px_0px_rgba(255,46,98,0.5)]" style={{ transform: 'rotate(2deg)' }}>
+            <div className="rounded-[12px] overflow-hidden border-4 border-white shadow-[12px_12px_0px_0px_rgba(198,40,40,0.5)]" style={{ transform: 'rotate(2deg)' }}>
               <ImageWithFallback
                 src="https://images.unsplash.com/photo-1501566953613-d93d5cb0be93?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxob3N0ZWwlMjBleHRlcmlvciUyMGJ1aWxkaW5nJTIwY29sb3JmdWx8ZW58MXx8fHwxNzczNzI5NTI1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                alt="Vibe House Building"
+                alt="The Daily Social Building"
                 className="w-full aspect-[4/3] object-cover"
               />
             </div>
@@ -98,11 +98,11 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* The Vibe House Story */}
+      {/* The Daily Social Story */}
       <section className="px-6 py-16 bg-[rgba(255,255,255,0.05)]">
         <div className="max-w-screen-lg mx-auto">
           <h2 className="font-['Space_Grotesk'] font-bold text-[36px] text-white tracking-[-1.8px] uppercase leading-[40px] text-center mb-3">
-            The Vibe House Story
+            The Daily Social Story
           </h2>
           <p className="font-['Liberation_Serif'] text-[16px] text-[rgba(255,255,255,0.7)] text-center mb-12 italic">
             how we got here
@@ -112,14 +112,14 @@ export default function AboutPage() {
             {/* Z-Pattern 1 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div>
-                <h3 className="font-['Space_Grotesk'] font-bold text-[24px] text-[#ff2e62] uppercase mb-4">
+                <h3 className="font-['Space_Grotesk'] font-bold text-[24px] text-[#c62828] uppercase mb-4">
                   Built by Travelers, for Travelers
                 </h3>
                 <p className="font-['Space_Grotesk'] text-[16px] text-[rgba(255,255,255,0.9)] leading-[24px]">
-                  Our founders met in a dingy hostel in Goa in 2018. The vibe was amazing, but the facilities? Not so much. They dreamed of creating spaces that balanced high energy with high standards. Two years later, Vibe House Mumbai opened its doors.
+                  Our founders met in a dingy hostel in Goa in 2018. The vibe was amazing, but the facilities? Not so much. They dreamed of creating spaces that balanced high energy with high standards. Two years later, The Daily Social Mumbai opened its doors.
                 </p>
               </div>
-              <div className="rounded-[8px] overflow-hidden border-4 border-[#ff2e62] shadow-[8px_8px_0px_0px_rgba(255,46,98,0.3)]" style={{ transform: 'rotate(-1deg)' }}>
+              <div className="rounded-[8px] overflow-hidden border-4 border-[#c62828] shadow-[8px_8px_0px_0px_rgba(198,40,40,0.3)]" style={{ transform: 'rotate(-1deg)' }}>
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1681747971522-2d7a04c78321?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiYWNrcGFja2VycyUyMGxhdWdoaW5nJTIwdG9nZXRoZXIlMjBob3N0ZWx8ZW58MXx8fHwxNzczNzI0Njc0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
                   alt="Community"
@@ -142,7 +142,7 @@ export default function AboutPage() {
                   Safety is Non-Negotiable
                 </h3>
                 <p className="font-['Space_Grotesk'] text-[16px] text-[rgba(255,255,255,0.9)] leading-[24px]">
-                  We believe safety and fun go hand-in-hand. That's why every Vibe House has 24/7 security, female-only dorms, secure lockers, and zero-tolerance harassment policies. You can let loose knowing we've got your back.
+                  We believe safety and fun go hand-in-hand. That's why every The Daily Social has 24/7 security, female-only dorms, secure lockers, and zero-tolerance harassment policies. You can let loose knowing we've got your back.
                 </p>
               </div>
             </div>
@@ -205,24 +205,24 @@ export default function AboutPage() {
       </section>
 
       {/* Booking CTA */}
-      <section className="px-6 py-16 bg-gradient-to-br from-[#ff2e62] via-[#ff6b98] to-[#ff2e62]">
+      <section className="px-6 py-16 bg-gradient-to-br from-[#c62828] via-[#8e1b1b] to-[#c62828]">
         <div className="max-w-screen-md mx-auto text-center">
           <h2 className="font-['Space_Grotesk'] font-bold text-[48px] md:text-[60px] text-white tracking-[-2.5px] uppercase leading-[48px] md:leading-[58px] mb-6">
             Ready to Find<br />Your Vibe?
           </h2>
           
           <p className="font-['Liberation_Serif'] text-[18px] text-white italic mb-10 leading-[28px]">
-            Join thousands of travelers who've made Vibe House their home away from home.
+            Join thousands of travelers who've made The Daily Social their home away from home.
           </p>
 
           <Link
             to="/rooms"
             className="inline-flex items-center gap-3 bg-white px-12 py-5 rounded-[4px] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,0.4)] transition-all"
           >
-            <span className="font-['Space_Grotesk'] font-bold text-[20px] text-[#ff2e62] uppercase">
+            <span className="font-['Space_Grotesk'] font-bold text-[20px] text-[#c62828] uppercase">
               Search Availability
             </span>
-            <ArrowRight className="w-6 h-6 text-[#ff2e62]" />
+            <ArrowRight className="w-6 h-6 text-[#c62828]" />
           </Link>
 
           <div className="mt-8 flex items-center justify-center gap-8 flex-wrap">
@@ -248,14 +248,14 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             {/* Brand */}
             <div className="md:col-span-2">
-              <Link to="/" className="font-['Space_Grotesk'] font-bold text-[24px] text-[#ff2e62] uppercase tracking-[2px] mb-4 inline-block">
-                Vibe House
+              <Link to="/" className="font-['Space_Grotesk'] font-bold text-[24px] text-[#c62828] uppercase tracking-[2px] mb-4 inline-block">
+                The Daily Social
               </Link>
               <p className="font-['Liberation_Serif'] text-[14px] text-[rgba(255,255,255,0.6)] italic mb-4">
                 Stay. Mix. Repeat.
               </p>
               <div className="flex gap-4">
-                <a href="#" className="text-[rgba(255,255,255,0.6)] hover:text-[#ff2e62] transition-colors">
+                <a href="#" className="text-[rgba(255,255,255,0.6)] hover:text-[#c62828] transition-colors">
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                   </svg>
@@ -292,7 +292,7 @@ export default function AboutPage() {
 
           <div className="border-t-2 border-[#1e293b] pt-6 text-center">
             <p className="font-['Space_Grotesk'] text-[12px] text-[rgba(255,255,255,0.4)]">
-              © 2026 Vibe House. All rights reserved.
+              © 2026 The Daily Social. All rights reserved.
             </p>
           </div>
         </div>

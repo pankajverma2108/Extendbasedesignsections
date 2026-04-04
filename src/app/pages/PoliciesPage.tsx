@@ -50,7 +50,7 @@ export default function PoliciesPage() {
           id: 'security',
           title: 'Security & Safety',
           content: [
-            'Use of personal lockers is mandatory for storing valuables. Vibe House is not responsible for lost or stolen items.',
+            'Use of personal lockers is mandatory for storing valuables. The Daily Social is not responsible for lost or stolen items.',
             'CCTV cameras are installed in all common areas for guest safety (not in dorms or bathrooms).',
             '24/7 reception and security staff are available for any concerns or emergencies.',
             'Report any safety concerns immediately to the front desk.',
@@ -147,7 +147,7 @@ export default function PoliciesPage() {
           id: 'acceptance',
           title: 'Acceptance of Terms',
           content: [
-            'By making a booking at Vibe House, you agree to these Terms & Conditions.',
+            'By making a booking at The Daily Social, you agree to these Terms & Conditions.',
             'These terms apply to all guests, visitors, and users of our services.',
             'We reserve the right to modify these terms at any time. Updates will be posted on our website.',
             'Continued use of our services after changes constitutes acceptance of the new terms.',
@@ -167,7 +167,7 @@ export default function PoliciesPage() {
           id: 'liability',
           title: 'Limitation of Liability',
           content: [
-            'Vibe House is not responsible for loss, theft, or damage to personal belongings.',
+            'The Daily Social is not responsible for loss, theft, or damage to personal belongings.',
             'Use of hostel facilities (gym, pool, common areas) is at your own risk.',
             'We are not liable for injuries, accidents, or health issues during your stay unless caused by our negligence.',
             'Travel insurance is strongly recommended for all guests.',
@@ -177,7 +177,7 @@ export default function PoliciesPage() {
           id: 'intellectual-property',
           title: 'Intellectual Property',
           content: [
-            'All content on our website (text, images, logos, branding) is owned by Vibe House and protected by copyright.',
+            'All content on our website (text, images, logos, branding) is owned by The Daily Social and protected by copyright.',
             'Unauthorized use, reproduction, or distribution of our content is prohibited.',
             'Guest photos taken during events may be used for marketing purposes unless you opt-out.',
           ],
@@ -188,7 +188,7 @@ export default function PoliciesPage() {
           content: [
             'These terms are governed by the laws of India.',
             'Disputes will be resolved through arbitration in Mumbai, Maharashtra.',
-            'By booking with Vibe House, you consent to the jurisdiction of Mumbai courts.',
+            'By booking with The Daily Social, you consent to the jurisdiction of Mumbai courts.',
           ],
         },
       ],
@@ -203,20 +203,20 @@ export default function PoliciesPage() {
       <nav className="bg-[#0f172a] border-b-2 border-[#1e293b] sticky top-0 z-50">
         <div className="max-w-screen-xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#ff2e62] uppercase tracking-[2px]">
-              Vibe House
+            <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#c62828] uppercase tracking-[2px]">
+              The Daily Social
             </Link>
             <div className="flex gap-6">
-              <Link to="/" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
+              <Link to="/" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#c62828] transition-colors">
                 Home
               </Link>
-              <Link to="/rooms" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
+              <Link to="/rooms" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#c62828] transition-colors">
                 Rooms
               </Link>
-              <Link to="/events" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
+              <Link to="/events" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#c62828] transition-colors">
                 Events
               </Link>
-              <Link to="/about" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#ff2e62] transition-colors">
+              <Link to="/about" className="font-['Space_Grotesk'] text-[14px] text-white hover:text-[#c62828] transition-colors">
                 About
               </Link>
             </div>
@@ -256,8 +256,8 @@ export default function PoliciesPage() {
                     }}
                     className={`flex items-center gap-2 px-3 py-2 rounded-[4px] font-['Space_Grotesk'] text-[14px] transition-colors ${
                       activeSection === section.id
-                        ? 'bg-[#ff2e62] text-white'
-                        : 'text-[rgba(255,255,255,0.7)] hover:bg-[rgba(255,46,98,0.1)] hover:text-white'
+                        ? 'bg-[#c62828] text-white'
+                        : 'text-[rgba(255,255,255,0.7)] hover:bg-[rgba(198,40,40,0.1)] hover:text-white'
                     }`}
                   >
                     <ChevronRight className="w-4 h-4 flex-shrink-0" />
@@ -278,7 +278,7 @@ export default function PoliciesPage() {
                       to={`/policies/${key}`}
                       className={`block px-3 py-2 rounded-[4px] font-['Space_Grotesk'] text-[12px] transition-colors ${
                         type === key
-                          ? 'bg-[rgba(255,46,98,0.2)] text-[#ff2e62]'
+                          ? 'bg-[rgba(198,40,40,0.2)] text-[#c62828]'
                           : 'text-[rgba(255,255,255,0.6)] hover:text-white'
                       }`}
                     >
@@ -294,7 +294,7 @@ export default function PoliciesPage() {
           <div className="lg:hidden mb-8">
             <div className="bg-[#1e293b] border-2 border-[#334155] rounded-[8px] p-4">
               <select
-                className="w-full bg-transparent font-['Space_Grotesk'] text-[14px] text-white border-2 border-[#334155] rounded-[4px] px-3 py-2 focus:border-[#ff2e62] focus:outline-none"
+                className="w-full bg-transparent font-['Space_Grotesk'] text-[14px] text-white border-2 border-[#334155] rounded-[4px] px-3 py-2 focus:border-[#c62828] focus:outline-none"
                 onChange={(e) => {
                   const sectionId = e.target.value;
                   document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
@@ -340,7 +340,7 @@ export default function PoliciesPage() {
       {/* Contact Support Block */}
       <section className="px-6 py-16 bg-[rgba(255,255,255,0.05)]">
         <div className="max-w-screen-md mx-auto">
-          <div className="bg-gradient-to-br from-[#ff2e62] to-[#ff6b98] border-4 border-white rounded-[12px] p-8 text-center shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]" style={{ transform: 'rotate(-1deg)' }}>
+          <div className="bg-gradient-to-br from-[#c62828] to-[#8e1b1b] border-4 border-white rounded-[12px] p-8 text-center shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]" style={{ transform: 'rotate(-1deg)' }}>
             <h3 className="font-['Space_Grotesk'] font-bold text-[24px] text-white uppercase mb-3">
               Have Questions About Our Policies?
             </h3>
@@ -349,11 +349,11 @@ export default function PoliciesPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:hello@vibehouse.com"
+                href="mailto:hello@thedailysocial.com"
                 className="inline-flex items-center gap-2 bg-white px-6 py-3 rounded-[4px] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all"
               >
-                <Mail className="w-5 h-5 text-[#ff2e62]" />
-                <span className="font-['Space_Grotesk'] font-bold text-[14px] text-[#ff2e62] uppercase">
+                <Mail className="w-5 h-5 text-[#c62828]" />
+                <span className="font-['Space_Grotesk'] font-bold text-[14px] text-[#c62828] uppercase">
                   Email Us
                 </span>
               </a>
@@ -362,7 +362,7 @@ export default function PoliciesPage() {
                 className="inline-flex items-center gap-2 bg-white px-6 py-3 rounded-[4px] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] transition-all"
               >
                 <MessageCircle className="w-5 h-5 text-[#39ff14]" />
-                <span className="font-['Space_Grotesk'] font-bold text-[14px] text-[#ff2e62] uppercase">
+                <span className="font-['Space_Grotesk'] font-bold text-[14px] text-[#c62828] uppercase">
                   WhatsApp
                 </span>
               </a>
@@ -374,11 +374,11 @@ export default function PoliciesPage() {
       {/* Footer */}
       <footer className="bg-[#0f172a] border-t-2 border-[#1e293b] px-6 py-8">
         <div className="max-w-screen-xl mx-auto text-center">
-          <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#ff2e62] uppercase tracking-[2px]">
-            Vibe House
+          <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#c62828] uppercase tracking-[2px]">
+            The Daily Social
           </Link>
           <p className="font-['Space_Grotesk'] text-[12px] text-[rgba(255,255,255,0.4)] mt-4">
-            © 2026 Vibe House. All rights reserved.
+            © 2026 The Daily Social. All rights reserved.
           </p>
         </div>
       </footer>

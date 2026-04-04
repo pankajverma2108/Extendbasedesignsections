@@ -120,7 +120,7 @@ export function BookingSummaryCard({
               <div
                 className={cn(
                   "rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.16em]",
-                  tone === "ticket" ? "border border-[#0f172a]/20 bg-[#ff2e62] text-white" : "bg-[rgba(255,46,98,0.16)] text-[var(--vh-pink)]",
+                  tone === "ticket" ? "border border-[#0f172a]/20 bg-[#c62828] text-white" : "bg-[rgba(198,40,40,0.16)] text-[var(--vh-pink)]",
                 )}
               >
                 {status.replaceAll("_", " ")}

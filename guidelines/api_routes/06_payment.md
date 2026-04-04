@@ -42,7 +42,7 @@ Creates a Razorpay order for the guest's PENDING addon cart.
   "payment_id": "ec68a973-...",
   "order_id": "f852744f-...",
   "guest": {
-    "email": "arjun@vibehouse.in"
+    "email": "arjun@thedailysocial.in"
   }
 }
 ```
@@ -273,7 +273,7 @@ Each log includes: `razorpay_order_id`, `amount`, `order_id`, and item details.
 ### Step 1: Login as guest
 ```
 POST /guest/auth/login
-{ "email": "arjun@vibehouse.in", "password": "Vibe@2026!" }
+{ "email": "arjun@thedailysocial.in", "password": "Vibe@2026!" }
 → copy access_token
 ```
 

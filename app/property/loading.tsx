@@ -5,9 +5,6 @@ export default function Loading() {
     <section className="vh-section min-h-screen pt-28 md:pt-32">
       <div className="mx-auto w-full max-w-[1400px] px-4 md:px-6 lg:px-10">
         <div className="space-y-6">
-          <div className="h-1 overflow-hidden rounded-full bg-white/10">
-            <div className="h-full w-1/3 animate-pulse rounded-full bg-[linear-gradient(90deg,#ff2e62,#00d1ff)]" />
-          </div>
           <Skeleton className="h-14 w-full max-w-4xl rounded-[18px] bg-white/10" />
           <Skeleton className="h-6 w-full max-w-2xl rounded-full bg-white/8" />
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px]">

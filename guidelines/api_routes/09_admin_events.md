@@ -40,7 +40,7 @@ Creates a new event for the admin's property.
 | `contact_link` | string | | 500 | WhatsApp link or URL for RSVP / booking |
 | `poster_url` | string | | 500 | S3 URL from the upload-poster endpoint |
 | `badge_label` | string | | 30 | Badge text, e.g. `"Tonight"`, `"Sold Out"` |
-| `badge_color` | string | | 10 | Badge hex colour, e.g. `"#ff2e62"` |
+| `badge_color` | string | | 10 | Badge hex colour, e.g. `"#c62828"` |
 
 #### Body (JSON)
 ```json
@@ -55,7 +55,7 @@ Creates a new event for the admin's property.
   "contact_link": "https://wa.me/919876543210",
   "poster_url": "https://vibehouse-kyc-documents.s3.ap-south-1.amazonaws.com/events/prop-bandra-001/a1b2c3d4.jpg",
   "badge_label": "Tonight",
-  "badge_color": "#ff2e62"
+  "badge_color": "#c62828"
 }
 ```
 
@@ -74,7 +74,7 @@ Creates a new event for the admin's property.
   "contact_link": "https://wa.me/919876543210",
   "poster_url": "https://vibehouse-kyc-documents.s3.ap-south-1.amazonaws.com/events/prop-bandra-001/a1b2c3d4.jpg",
   "badge_label": "Tonight",
-  "badge_color": "#ff2e62",
+  "badge_color": "#c62828",
   "is_active": true,
   "created_by": "a1b2c3d4-...",
   "created_at": "2026-03-23T10:00:00.000Z",
@@ -113,7 +113,7 @@ Returns all events for the admin's property (both active and hidden), sorted by 
     "contact_link": "https://wa.me/919876543210",
     "poster_url": "https://...",
     "badge_label": "Tonight",
-    "badge_color": "#ff2e62",
+    "badge_color": "#c62828",
     "is_active": true,
     "created_by": "a1b2c3d4-...",
     "created_at": "2026-03-23T10:00:00.000Z",

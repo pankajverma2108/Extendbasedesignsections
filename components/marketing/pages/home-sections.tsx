@@ -1,20 +1,29 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import type { EventCardProps, RoomCardProps } from "@/content/types";
 import {
+  Bed,
   BedDouble,
+  Briefcase,
   CalendarCheck,
-  Clock3,
+  Cross,
   Coffee,
   Droplets,
+  LampDesk,
+  Laptop,
   Lock,
   LockKeyhole,
   MapPin,
+  Moon,
+  Music,
   ShieldCheck,
   Shirt,
   Snowflake,
   Sparkles,
+  Sunset,
   UtensilsCrossed,
+  Users,
   Wifi,
 } from "lucide-react";
 
@@ -25,7 +34,6 @@ import {
   homePageContent,
   homeSectionOrder,
   type HomeSectionId,
-  testimonials,
   upsellBentoItems,
 } from "@/content/home";
 import { BookingWidget } from "@/components/marketing/widgets/booking-widget";
@@ -36,7 +44,8 @@ import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { FadeIn, FloatCard, Stagger, StaggerItem } from "@/components/shared/motion";
 import { StickerTag } from "@/components/shared/sticker-tag";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+
+const TestimonialsMarquee = dynamic(() => import("@/components/testimonials-with-marquee"));
 
 type SectionFrameProps = {
   alt?: boolean;
@@ -56,20 +65,28 @@ const amenityIconMap = {
   utensils: UtensilsCrossed,
   "map-pin": MapPin,
   lock: Lock,
+  bed: Bed,
+  moon: Moon,
+  music: Music,
+  laptop: Laptop,
+  sunset: Sunset,
+  users: Users,
+  lamp: LampDesk,
+  briefcase: Briefcase,
+  cross: Cross,
   sparkles: Sparkles,
   "shield-check": ShieldCheck,
   "bed-double": BedDouble,
-  "clock-3": Clock3,
   "lock-keyhole": LockKeyhole,
   "calendar-check": CalendarCheck,
 } as const;
 
 const sectionHeaderStickers = {
   amenities: { label: "Live better, stay better", bg: "#00d1ff", text: "#0f172a", rotate: "rotate-[-2deg]" },
-  rooms: { label: "Your sanctuary", bg: "#ff2e62", text: "#ffffff", rotate: "rotate-[2deg]" },
+  rooms: { label: "Your sanctuary", bg: "#c62828", text: "#ffffff", rotate: "rotate-[2deg]" },
   upsell: { label: "Elevate your nights", bg: "#facc15", text: "#0f172a", rotate: "rotate-[-2deg]" },
   events: { label: "Agenda", bg: "#39ff14", text: "#0f172a", rotate: "rotate-[2deg]" },
-  experience: { label: "We're unforgettable", bg: "#ff2e62", text: "#ffffff", rotate: "rotate-[-1deg]" },
+  experience: { label: "We're unforgettable", bg: "#c62828", text: "#ffffff", rotate: "rotate-[-1deg]" },
   energy: { label: "Reel moments", bg: "#00d1ff", text: "#0f172a", rotate: "rotate-[1deg]" },
 } as const;
 
@@ -139,6 +156,12 @@ function AmenitiesSection() {
 
 function RoomsSection({ rooms }: { rooms: RoomCardProps[] }) {
   const roomItems = rooms.length > 0 ? rooms : homePageContent.homeRooms;
+  const roomGridClass =
+    roomItems.length <= 1
+      ? "grid grid-cols-1 gap-6 md:max-w-[420px] md:mx-auto"
+      : roomItems.length === 2
+      ? "grid grid-cols-1 gap-6 md:grid-cols-2 md:max-w-[920px] md:mx-auto"
+      : "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3";
 
   return (
     <SectionFrame>
@@ -153,7 +176,7 @@ function RoomsSection({ rooms }: { rooms: RoomCardProps[] }) {
             text={sectionHeaderStickers.rooms.text}
           />
         </FadeIn>
-        <Stagger className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <Stagger className={roomGridClass}>
           {roomItems.map((room) => (
             <StaggerItem key={room.title}>
               <RoomCard {...room} />
@@ -177,9 +200,6 @@ function EventsSection({ events }: { events: EventCardProps[] }) {
   return (
     <SectionFrame alt>
       <div className="vh-container">
-        <div className="mb-2 text-center">
-          <span className="vh-retro-3d text-sm" style={{ fontSize: '0.75rem', letterSpacing: '3px', opacity: 0.85 }}>TONIGHT AT VIBEHOUSE</span>
-        </div>
         <SectionHeading title={homePageContent.eventsTitle} />
         <FadeIn className="-mt-4 mb-6 text-center">
           <StickerTag
@@ -204,7 +224,7 @@ function EventsSection({ events }: { events: EventCardProps[] }) {
 
 function UpsellSection() {
   const toneStyles = {
-    pink: { border: "#ff2e62", accent: "#ff2e62", sticker: "#FEF08A", text: "#0f172a" },
+    pink: { border: "#c62828", accent: "#c62828", sticker: "#FEF08A", text: "#0f172a" },
     blue: { border: "#00d1ff", accent: "#00d1ff", sticker: "#00d1ff", text: "#0f172a" },
     green: { border: "#39ff14", accent: "#39ff14", sticker: "#39ff14", text: "#0f172a" },
   } as const;
@@ -282,7 +302,7 @@ function ExperienceSection() {
                 className="rounded-[8px] border-2 p-6 shadow-[8px_8px_0px_0px_rgba(255,255,255,0.18)]"
                 style={{
                   background: index === 0
-                    ? "linear-gradient(135deg, #ff2e62, #ff6b98)"
+                    ? "linear-gradient(135deg, #c62828, #8e1b1b)"
                     : index === 1
                     ? "linear-gradient(135deg, #39ff14, #6fff47)"
                     : index === 2
@@ -306,7 +326,7 @@ function ExperienceSection() {
 
 function EnergySection() {
   return (
-    <SectionFrame alt>
+    <SectionFrame>
       <div className="vh-container">
         <SectionHeading title={homePageContent.energyTitle} />
         <FadeIn className="-mt-4 mb-6 text-center">
@@ -322,7 +342,7 @@ function EnergySection() {
           {guestEnergyImages.map((image, index) => (
             <StaggerItem key={image}>
               <FloatCard
-                className="overflow-hidden rounded-[4px] border-4 border-white shadow-[8px_8px_0px_0px_#ff2e62]"
+                className="overflow-hidden rounded-[4px] border-4 border-white shadow-[8px_8px_0px_0px_#c62828]"
                 style={{ rotate: `${index % 2 === 0 ? -2 : 2}deg` }}
               >
                 <ImageWithFallback
@@ -336,8 +356,8 @@ function EnergySection() {
         </Stagger>
         <FadeIn className="text-center">
           <Button asChild size="lg">
-            <Link href="https://instagram.com/vibehouse" rel="noreferrer" target="_blank">
-              @VibeHouse
+            <Link href="https://instagram.com/thedailysocial" rel="noreferrer" target="_blank">
+              @TheDailySocial
             </Link>
           </Button>
         </FadeIn>
@@ -347,63 +367,9 @@ function EnergySection() {
 }
 
 function ReviewsSection() {
-  function platformBadge(platform: string) {
-    if (platform === "Booking.com") {
-      return "bg-[#003580] text-white";
-    }
-
-    if (platform === "MakeMyTrip") {
-      return "bg-[#e74f30] text-white";
-    }
-
-    if (platform === "Agoda") {
-      return "bg-[#6f2dbd] text-white";
-    }
-
-    if (platform === "Google") {
-      return "bg-[#1a73e8] text-white";
-    }
-
-    if (platform === "Tripadvisor") {
-      return "bg-[#34e0a1] text-[#0f172a]";
-    }
-
-    return "bg-[#1f4da3] text-white";
-  }
-
   return (
-    <SectionFrame>
-      <div className="vh-container">
-        <SectionHeading subtitle={homePageContent.reviewsSubtitle} tagline={homePageContent.reviewsTagline} title={homePageContent.reviewsTitle} />
-        <Stagger className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {testimonials.map((review, index) => (
-            <StaggerItem key={review.name}>
-              <FloatCard style={{ rotate: `${index % 2 === 0 ? -0.5 : 0.5}deg` }}>
-                <Card className="hover:border-[var(--vh-pink)]">
-                  <CardContent className="p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-lg font-bold text-white">{review.name}</p>
-                      {review.logo ? (
-                        <span className="inline-flex items-center rounded-full bg-white/90 px-2.5 py-1">
-                          <ImageWithFallback alt={review.platform} className="h-4 w-auto object-contain" src={review.logo} />
-                        </span>
-                      ) : (
-                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] ${platformBadge(review.platform)}`}>
-                          {review.platform}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-white/60">{review.country}</p>
-                    <p className="mt-4 text-sm italic leading-6 text-white/85">
-                      &ldquo;{review.review}&rdquo;
-                    </p>
-                  </CardContent>
-                </Card>
-              </FloatCard>
-            </StaggerItem>
-          ))}
-        </Stagger>
-      </div>
+    <SectionFrame alt>
+      <TestimonialsMarquee />
     </SectionFrame>
   );
 }
@@ -418,7 +384,7 @@ function CtaSection({ destinationHref = "/property" }: { destinationHref?: strin
               className="vh-retro-3d"
               style={{ fontSize: '0.7rem', letterSpacing: '4px', color: '#fff0c0', opacity: 0.9 }}
             >
-              V<span className="vh-flicker">I</span>B<span className="vh-flicker" style={{ animationDelay: '0.6s' }}>E</span>HOU<span className="vh-flicker" style={{ animationDelay: '1.2s' }}>S</span>E
+              THE D<span className="vh-flicker">A</span>ILY SO<span className="vh-flicker" style={{ animationDelay: '0.6s' }}>C</span>IA<span className="vh-flicker" style={{ animationDelay: '1.2s' }}>L</span>
             </span>
           </div>
           <SectionHeading subtitle={homePageContent.ctaBody} title={homePageContent.ctaTitle} />

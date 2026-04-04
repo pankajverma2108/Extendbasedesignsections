@@ -14,6 +14,7 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { StickerTag } from "@/components/shared/sticker-tag";
@@ -73,6 +74,16 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
   const [snapshotFallback, setSnapshotFallback] = useState(() => getConfirmedBookingSnapshot(ezeeReservationId));
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!errorMessage) {
+      return;
+    }
+
+    toast.error("Booking details unavailable", {
+      description: errorMessage,
+    });
+  }, [errorMessage]);
 
   useEffect(() => {
     if (isRestoringSession) {
@@ -182,7 +193,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
 
   const booking = bookingDetail?.booking;
   const roomSummary = booking?.room_type_name ?? snapshotFallback?.roomSummary ?? "Room details pending";
-  const propertyName = snapshotFallback?.propertyName ?? "Vibe House";
+  const propertyName = snapshotFallback?.propertyName ?? "The Daily Social";
   const roomNumber = booking?.room_number || "Assigned at check-in";
   const totalGuests = slots.length || booking?.no_of_guests || 1;
   const amountPaid = snapshotFallback?.amountPaid ?? 0;
@@ -206,6 +217,9 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                 onClick={() => {
                   const shareUrl = `${window.location.origin}/bookings/${encodeURIComponent(ezeeReservationId)}`;
                   void navigator.clipboard.writeText(shareUrl);
+                  toast.success("Booking link copied", {
+                    description: "Share it with your travel crew.",
+                  });
                 }}
                 type="button"
                 variant="ghost"

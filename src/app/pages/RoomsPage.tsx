@@ -14,7 +14,7 @@ export default function RoomsPage() {
       features: ['Reading lights', 'Privacy curtains', 'USB charging ports', 'Individual lockers'],
       image: 'https://images.unsplash.com/photo-1758632031161-b6d7e913c2b9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxob3N0ZWwlMjBidW5rJTIwYmVkcyUyMGludGVyaW9yJTIwY2xlYW58ZW58MXx8fHwxNzczNzI5NTIzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
       badge: 'Most Popular',
-      badgeColor: '#ff2e62'
+      badgeColor: '#c62828'
     },
     {
       title: '4-Bed Female Dorm',
@@ -57,7 +57,7 @@ export default function RoomsPage() {
         </div>
         
         <div className="relative z-20 text-center px-6 py-16">
-          <div className="bg-[#ff2e62] px-3 py-1 inline-block shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] mb-6">
+          <div className="bg-[#c62828] px-3 py-1 inline-block shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] mb-6">
             <p className="font-['Space_Grotesk'] font-bold text-[12px] text-white text-center tracking-[1.2px] uppercase leading-[16px]">
               Choose Your Vibe
             </p>
@@ -79,7 +79,7 @@ export default function RoomsPage() {
           {roomCategories.map((room, idx) => (
             <div
               key={idx}
-              className="bg-[#1e293b] border-2 border-[#334155] rounded-[8px] overflow-hidden shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] hover:border-[#ff2e62] transition-all duration-300 hover:shadow-[0px_25px_30px_-5px_rgba(255,46,98,0.3)]"
+              className="bg-[#1e293b] border-2 border-[#334155] rounded-[8px] overflow-hidden shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] hover:border-[#c62828] transition-all duration-300 hover:shadow-[0px_25px_30px_-5px_rgba(198,40,40,0.3)]"
               style={{ transform: `rotate(${(idx % 2 === 0 ? -0.5 : 0.5)}deg)` }}
             >
               {/* Image Carousel */}
@@ -120,12 +120,12 @@ export default function RoomsPage() {
                 </div>
 
                 {/* Price Block */}
-                <div className="bg-[rgba(255,46,98,0.1)] border-2 border-dashed border-[#ff2e62] rounded-[4px] p-4 mb-6">
+                <div className="bg-[rgba(198,40,40,0.1)] border-2 border-dashed border-[#c62828] rounded-[4px] p-4 mb-6">
                   <p className="font-['Space_Grotesk'] text-[12px] text-[rgba(255,255,255,0.6)] uppercase tracking-[1px] mb-1">
                     Starting from
                   </p>
                   <div className="flex items-baseline gap-2">
-                    <span className="font-['Space_Grotesk'] font-bold text-[32px] text-[#ff2e62]">
+                    <span className="font-['Space_Grotesk'] font-bold text-[32px] text-[#c62828]">
                       {room.price}
                     </span>
                     <span className="font-['Space_Grotesk'] text-[14px] text-[rgba(255,255,255,0.6)]">
@@ -135,7 +135,7 @@ export default function RoomsPage() {
                 </div>
 
                 {/* CTA Button */}
-                <button className="w-full bg-[#ff2e62] px-10 py-4 rounded-[2px] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] transition-all group">
+                <button className="w-full bg-[#c62828] px-10 py-4 rounded-[2px] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] transition-all group">
                   <span className="font-['Space_Grotesk'] font-bold text-[18px] text-white uppercase leading-[28px] flex items-center justify-center gap-2">
                     Check Dates
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -161,7 +161,7 @@ export default function RoomsPage() {
             {[
               { icon: <Wifi className="w-8 h-8" />, label: 'Free Fast Wi-Fi', color: '#00d1ff' },
               { icon: <Snowflake className="w-8 h-8" />, label: 'AC in All Rooms', color: '#39ff14' },
-              { icon: <Lock className="w-8 h-8" />, label: 'Secure Lockers', color: '#ff2e62' },
+              { icon: <Lock className="w-8 h-8" />, label: 'Secure Lockers', color: '#c62828' },
               { icon: <Droplet className="w-8 h-8" />, label: 'Fresh Linen Daily', color: '#facc15' },
             ].map((item, idx) => (
               <div
@@ -226,13 +226,13 @@ export default function RoomsPage() {
                   >
                     <button
                       onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                      className="w-full px-5 py-4 flex items-center justify-between hover:bg-[rgba(255,46,98,0.1)] transition-colors"
+                      className="w-full px-5 py-4 flex items-center justify-between hover:bg-[rgba(198,40,40,0.1)] transition-colors"
                     >
                       <span className="font-['Space_Grotesk'] font-bold text-[14px] text-white text-left">
                         {faq.q}
                       </span>
                       <ChevronDown
-                        className={`w-5 h-5 text-[#ff2e62] transition-transform ${
+                        className={`w-5 h-5 text-[#c62828] transition-transform ${
                           openFaq === idx ? 'rotate-180' : ''
                         }`}
                       />
@@ -261,7 +261,7 @@ export default function RoomsPage() {
                   </p>
                   <a
                     href="tel:+919876543210"
-                    className="font-['Space_Grotesk'] text-[18px] text-[#00d1ff] hover:text-[#ff2e62] transition-colors"
+                    className="font-['Space_Grotesk'] text-[18px] text-[#00d1ff] hover:text-[#c62828] transition-colors"
                   >
                     +91 98765 43210
                   </a>
@@ -272,10 +272,10 @@ export default function RoomsPage() {
                     Email
                   </p>
                   <a
-                    href="mailto:hello@vibehouse.com"
-                    className="font-['Space_Grotesk'] text-[18px] text-[#00d1ff] hover:text-[#ff2e62] transition-colors"
+                    href="mailto:hello@thedailysocial.com"
+                    className="font-['Space_Grotesk'] text-[18px] text-[#00d1ff] hover:text-[#c62828] transition-colors"
                   >
-                    hello@vibehouse.com
+                    hello@thedailysocial.com
                   </a>
                 </div>
 
@@ -291,7 +291,7 @@ export default function RoomsPage() {
                 </div>
 
                 <div className="pt-4 border-t-2 border-[#334155]">
-                  <div className="bg-[rgba(255,46,98,0.1)] border-2 border-dashed border-[#ff2e62] rounded-[4px] p-4">
+                  <div className="bg-[rgba(198,40,40,0.1)] border-2 border-dashed border-[#c62828] rounded-[4px] p-4">
                     <p className="font-['Space_Grotesk'] text-[12px] text-white text-center">
                       📍 <span className="font-bold">5 mins walk</span> from Metro Station
                     </p>
@@ -306,11 +306,11 @@ export default function RoomsPage() {
       {/* Footer */}
       <footer className="bg-[#0f172a] border-t-2 border-[#1e293b] px-6 py-8">
         <div className="max-w-screen-xl mx-auto text-center">
-          <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#ff2e62] uppercase tracking-[2px]">
-            Vibe House
+          <Link to="/" className="font-['Space_Grotesk'] font-bold text-[20px] text-[#c62828] uppercase tracking-[2px]">
+            The Daily Social
           </Link>
           <p className="font-['Space_Grotesk'] text-[12px] text-[rgba(255,255,255,0.4)] mt-4">
-            © 2026 Vibe House. All rights reserved.
+            © 2026 The Daily Social. All rights reserved.
           </p>
         </div>
       </footer>

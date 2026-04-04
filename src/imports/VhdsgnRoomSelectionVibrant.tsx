@@ -8,7 +8,7 @@ import imgSinglePrivateRoom from "figma:asset/07fefc0d92e726f962e7a8c21545a20382
 function ParagraphVerticalBorder() {
   return (
     <div className="relative shrink-0" data-name="Paragraph+VerticalBorder">
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.2)] border-r border-solid inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.2)] border-r border-solid inset-0 pointer-events-none" />
       <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold items-start pl-[16px] pr-[31.06px] relative text-[#f1f5f9]">
         <div className="flex flex-col h-[15px] justify-center leading-[0] opacity-60 relative shrink-0 text-[10px] uppercase w-[44.53px]">
           <p className="leading-[15px]">Check-in</p>
@@ -36,7 +36,7 @@ function Container1() {
 
 function Button() {
   return (
-    <div className="bg-[#ff2e62] relative shrink-0" data-name="Button">
+    <div className="bg-[#c62828] relative shrink-0" data-name="Button">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex gap-[33.57px] items-center pl-[53.58px] pr-[32px] py-[12px] relative">
         <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[48px] justify-center leading-[24px] relative shrink-0 text-[16px] text-center text-white uppercase w-[61.13px]">
           <p className="mb-0">Change</p>
@@ -51,7 +51,7 @@ function Button() {
 function BackgroundBorder() {
   return (
     <div className="bg-[#0f172a] relative self-stretch shrink-0" data-name="Background+Border">
-      <div aria-hidden="true" className="absolute border-2 border-[#ff2e62] border-solid inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-2 border-[#c62828] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex gap-[16px] h-full items-center p-[10px] relative">
           <div className="absolute bg-[rgba(255,255,255,0)] inset-[0_0.48px_0_0] shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.25)]" data-name="Overlay+Shadow" />
@@ -76,7 +76,7 @@ function Container4() {
     <div className="relative shrink-0 size-[20px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 20">
         <g id="Container">
-          <path d={svgPaths.p21bb7900} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p21bb7900} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -116,7 +116,7 @@ function Container5() {
 
 function Button1() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex flex-col items-center justify-center p-[8px] relative rounded-[4px] shrink-0" data-name="Button">
+    <div className="bg-[#c62828] content-stretch flex flex-col items-center justify-center p-[8px] relative rounded-[4px] shrink-0" data-name="Button">
       <Container5 />
     </div>
   );
@@ -136,7 +136,7 @@ function Container2() {
 function Header() {
   return (
     <div className="backdrop-blur-[6px] bg-[rgba(35,15,20,0.8)] relative shrink-0 w-full z-[3]" data-name="Header">
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.2)] border-b border-solid inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.2)] border-b border-solid inset-0 pointer-events-none" />
       <div className="content-stretch flex flex-col items-start pb-[17px] pt-[16px] px-[16px] relative w-full">
         <Container2 />
       </div>
@@ -149,7 +149,7 @@ function Container6() {
     <div className="h-[17px] relative shrink-0 w-[22px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 22 17">
         <g id="Container">
-          <path d={svgPaths.p3163ad80} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p3163ad80} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -159,7 +159,7 @@ function Container6() {
 function Container7() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[10px] tracking-[-0.5px] uppercase w-[38.33px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[10px] tracking-[-0.5px] uppercase w-[38.33px]">
         <p className="leading-[15px]">Explore</p>
       </div>
     </div>
@@ -279,7 +279,7 @@ function Link3() {
 function Nav() {
   return (
     <div className="absolute bg-[#230f14] bottom-0 content-stretch flex gap-[53.2px] h-[80px] items-center left-0 pl-[42.59px] pr-[42.63px] pt-px right-0 z-[2]" data-name="Nav">
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.2)] border-solid border-t inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.2)] border-solid border-t inset-0 pointer-events-none" />
       <Link />
       <Link1 />
       <Link2 />
@@ -301,7 +301,7 @@ function Container15() {
 
 function Button2() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex flex-col items-center justify-center pl-[27.751px] pr-[27.747px] py-[12px] relative" data-name="Button">
+    <div className="bg-[#c62828] content-stretch flex flex-col items-center justify-center pl-[27.751px] pr-[27.747px] py-[12px] relative" data-name="Button">
       <div className="flex items-center justify-center relative shrink-0 w-[54.552px]" style={{ "--transform-inner-width": "1185", "--transform-inner-height": "42" } as React.CSSProperties}>
         <div className="flex-none skew-x-12">
           <Container15 />
@@ -315,7 +315,7 @@ function Container16() {
   return (
     <div className="relative" data-name="Container">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex items-start justify-center relative">
-        <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[20px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[14px] text-center tracking-[1.4px] uppercase w-[55.47px]">
+        <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[20px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[14px] text-center tracking-[1.4px] uppercase w-[55.47px]">
           <p className="leading-[20px]">Dorms</p>
         </div>
       </div>
@@ -325,8 +325,8 @@ function Container16() {
 
 function Button3() {
   return (
-    <div className="bg-[rgba(255,46,98,0.1)] content-stretch flex flex-col items-center justify-center pl-[31.876px] pr-[31.873px] py-[22px] relative" data-name="Button">
-      <div aria-hidden="true" className="absolute border-2 border-[#ff2e62] border-solid inset-0 pointer-events-none" />
+    <div className="bg-[rgba(198,40,40,0.1)] content-stretch flex flex-col items-center justify-center pl-[31.876px] pr-[31.873px] py-[22px] relative" data-name="Button">
+      <div aria-hidden="true" className="absolute border-2 border-[#c62828] border-solid inset-0 pointer-events-none" />
       <div className="flex items-center justify-center relative shrink-0 w-[59.721px]" style={{ "--transform-inner-width": "1185", "--transform-inner-height": "21" } as React.CSSProperties}>
         <div className="flex-none skew-x-12">
           <Container16 />
@@ -340,7 +340,7 @@ function Container17() {
   return (
     <div className="relative" data-name="Container">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex items-start justify-center relative">
-        <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[20px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[14px] text-center tracking-[1.4px] uppercase w-[72.67px]">
+        <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[20px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[14px] text-center tracking-[1.4px] uppercase w-[72.67px]">
           <p className="leading-[20px]">Privates</p>
         </div>
       </div>
@@ -350,8 +350,8 @@ function Container17() {
 
 function Button4() {
   return (
-    <div className="bg-[rgba(255,46,98,0.1)] content-stretch flex flex-col items-center justify-center pl-[31.876px] pr-[31.873px] py-[22px] relative" data-name="Button">
-      <div aria-hidden="true" className="absolute border-2 border-[#ff2e62] border-solid inset-0 pointer-events-none" />
+    <div className="bg-[rgba(198,40,40,0.1)] content-stretch flex flex-col items-center justify-center pl-[31.876px] pr-[31.873px] py-[22px] relative" data-name="Button">
+      <div aria-hidden="true" className="absolute border-2 border-[#c62828] border-solid inset-0 pointer-events-none" />
       <div className="flex items-center justify-center relative shrink-0 w-[76.921px]" style={{ "--transform-inner-width": "1185", "--transform-inner-height": "21" } as React.CSSProperties}>
         <div className="flex-none skew-x-12">
           <Container17 />
@@ -400,7 +400,7 @@ function Background() {
   return (
     <div className="bg-[#334155] content-stretch flex flex-col items-start justify-center overflow-clip relative shrink-0 w-full" data-name="Background">
       <DormRoomInterior />
-      <div className="absolute bg-[rgba(255,46,98,0.2)] inset-0 mix-blend-multiply" data-name="Overlay" />
+      <div className="absolute bg-[rgba(198,40,40,0.2)] inset-0 mix-blend-multiply" data-name="Overlay" />
     </div>
   );
 }
@@ -408,7 +408,7 @@ function Background() {
 function Heading1() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 3">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[20px] tracking-[-1px] uppercase w-full">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#c62828] text-[20px] tracking-[-1px] uppercase w-full">
         <p className="leading-[28px]">Mixed 8-Bed Dorm</p>
       </div>
     </div>
@@ -450,7 +450,7 @@ function Container21() {
 function Container24() {
   return (
     <div className="content-stretch flex flex-col items-end relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[12px] text-right uppercase w-[75.472px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[12px] text-right uppercase w-[75.472px]">
         <p className="leading-[16px]">3 Slots left</p>
       </div>
     </div>
@@ -485,7 +485,7 @@ function Container19() {
 
 function BackgroundShadow() {
   return (
-    <div className="bg-[#1e293b] relative shadow-[8px_8px_0px_0px_rgba(255,46,98,0.3)] shrink-0 w-full" data-name="Background+Shadow">
+    <div className="bg-[#1e293b] relative shadow-[8px_8px_0px_0px_rgba(198,40,40,0.3)] shrink-0 w-full" data-name="Background+Shadow">
       <div className="content-stretch flex flex-col gap-[16.002px] items-start pb-[48px] pt-[16px] px-[16px] relative w-full">
         <Background />
         <Container19 />
@@ -496,7 +496,7 @@ function BackgroundShadow() {
 
 function Background1() {
   return (
-    <div className="absolute bg-[#ff2e62] content-stretch flex flex-col items-start left-[-16px] px-[12px] py-[4px] top-[-15.99px]" data-name="Background">
+    <div className="absolute bg-[#c62828] content-stretch flex flex-col items-start left-[-16px] px-[12px] py-[4px] top-[-15.99px]" data-name="Background">
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[12px] text-white uppercase w-[51.058px]">
         <p className="leading-[16px]">Hot Pick</p>
       </div>
@@ -530,7 +530,7 @@ function Background2() {
   return (
     <div className="bg-[#334155] content-stretch flex flex-col items-start justify-center overflow-clip relative shrink-0 w-full" data-name="Background">
       <FemaleDormRoom />
-      <div className="absolute bg-[rgba(255,46,98,0.1)] inset-0 mix-blend-screen" data-name="Overlay" />
+      <div className="absolute bg-[rgba(198,40,40,0.1)] inset-0 mix-blend-screen" data-name="Overlay" />
     </div>
   );
 }
@@ -538,7 +538,7 @@ function Background2() {
 function Heading2() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 3">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[20px] tracking-[-1px] uppercase w-full">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#c62828] text-[20px] tracking-[-1px] uppercase w-full">
         <p className="leading-[28px]">Female 6-Bed</p>
       </div>
     </div>
@@ -580,7 +580,7 @@ function Container27() {
 function Container30() {
   return (
     <div className="content-stretch flex flex-col items-end relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[12px] text-right uppercase w-[76.686px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[12px] text-right uppercase w-[76.686px]">
         <p className="leading-[16px]">Selling Fast</p>
       </div>
     </div>
@@ -619,7 +619,7 @@ function Container25() {
 
 function BackgroundShadow1() {
   return (
-    <div className="bg-[#1e293b] relative shadow-[8px_8px_0px_0px_rgba(255,46,98,0.3)] shrink-0 w-full" data-name="Background+Shadow">
+    <div className="bg-[#1e293b] relative shadow-[8px_8px_0px_0px_rgba(198,40,40,0.3)] shrink-0 w-full" data-name="Background+Shadow">
       <div className="content-stretch flex flex-col gap-[15.995px] items-start pb-[48px] pt-[16px] px-[16px] relative w-full">
         <Background2 />
         <Container25 />
@@ -631,7 +631,7 @@ function BackgroundShadow1() {
 function RoomCard1() {
   return (
     <div className="content-stretch flex flex-col items-start relative w-full" data-name="Room Card 2">
-      <div className="absolute bg-[rgba(255,46,98,0.3)] inset-[16px_-16px_-15.99px_15.99px]" data-name="Overlay" />
+      <div className="absolute bg-[rgba(198,40,40,0.3)] inset-[16px_-16px_-15.99px_15.99px]" data-name="Overlay" />
       <BackgroundShadow1 />
     </div>
   );
@@ -655,7 +655,7 @@ function Background3() {
     <div className="bg-[#334155] content-stretch flex flex-col items-start justify-center overflow-clip relative shrink-0 w-full" data-name="Background">
       <PrivateRoom />
       <div className="absolute inset-[8px]" data-name="Border">
-        <div aria-hidden="true" className="absolute border-8 border-[rgba(255,46,98,0.4)] border-solid inset-0 pointer-events-none" />
+        <div aria-hidden="true" className="absolute border-8 border-[rgba(198,40,40,0.4)] border-solid inset-0 pointer-events-none" />
       </div>
     </div>
   );
@@ -664,7 +664,7 @@ function Background3() {
 function Heading3() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 3">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[20px] tracking-[-1px] uppercase w-full">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#c62828] text-[20px] tracking-[-1px] uppercase w-full">
         <p className="leading-[28px]">Standard Private</p>
       </div>
     </div>
@@ -741,7 +741,7 @@ function Container31() {
 
 function RoomCard2() {
   return (
-    <div className="bg-[#1e293b] relative shadow-[8px_8px_0px_0px_rgba(255,46,98,0.3)] w-full" data-name="Room Card 3">
+    <div className="bg-[#1e293b] relative shadow-[8px_8px_0px_0px_rgba(198,40,40,0.3)] w-full" data-name="Room Card 3">
       <div className="content-stretch flex flex-col gap-[16.001px] items-start pb-[48px] pt-[16px] px-[16px] relative w-full">
         <Background3 />
         <Container31 />
@@ -765,7 +765,7 @@ function DeluxeEnsuiteRoom() {
 
 function Background5() {
   return (
-    <div className="absolute bg-[#ff2e62] bottom-0 content-stretch flex flex-col items-start p-[8px] right-0" data-name="Background">
+    <div className="absolute bg-[#c62828] bottom-0 content-stretch flex flex-col items-start p-[8px] right-0" data-name="Background">
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[12px] text-white w-[56.169px]">
         <p className="leading-[16px]">SOLD OUT</p>
       </div>
@@ -785,7 +785,7 @@ function Background4() {
 function Heading4() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 3">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[20px] tracking-[-1px] uppercase w-full">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#c62828] text-[20px] tracking-[-1px] uppercase w-full">
         <p className="leading-[28px]">Deluxe Ensuite</p>
       </div>
     </div>
@@ -843,7 +843,7 @@ function Container37() {
 
 function RoomCard3() {
   return (
-    <div className="bg-[#1e293b] relative shadow-[8px_8px_0px_0px_rgba(255,46,98,0.3)] w-full" data-name="Room Card 4">
+    <div className="bg-[#1e293b] relative shadow-[8px_8px_0px_0px_rgba(198,40,40,0.3)] w-full" data-name="Room Card 4">
       <div className="content-stretch flex flex-col gap-[16.002px] items-start pb-[48px] pt-[16px] px-[16px] relative w-full">
         <Background4 />
         <Container37 />
@@ -876,7 +876,7 @@ function Background6() {
 function Heading5() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 3">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[20px] tracking-[-1px] uppercase w-full">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#c62828] text-[20px] tracking-[-1px] uppercase w-full">
         <p className="leading-[28px]">Solo Pod</p>
       </div>
     </div>
@@ -918,7 +918,7 @@ function Container43() {
 function Container46() {
   return (
     <div className="content-stretch flex flex-col items-end relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[12px] text-right uppercase w-[35.092px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[12px] text-right uppercase w-[35.092px]">
         <p className="leading-[16px]">1 left</p>
       </div>
     </div>
@@ -957,7 +957,7 @@ function Container41() {
 
 function BackgroundShadow2() {
   return (
-    <div className="bg-[#1e293b] relative shadow-[8px_8px_0px_0px_rgba(255,46,98,0.3)] shrink-0 w-full" data-name="Background+Shadow">
+    <div className="bg-[#1e293b] relative shadow-[8px_8px_0px_0px_rgba(198,40,40,0.3)] shrink-0 w-full" data-name="Background+Shadow">
       <div className="content-stretch flex flex-col gap-[15.995px] items-start pb-[48px] pt-[16px] px-[16px] relative w-full">
         <Background6 />
         <Container41 />
@@ -971,7 +971,7 @@ function RoomCard4() {
     <div className="content-stretch flex flex-col items-start relative w-full" data-name="Room Card 5">
       <div className="absolute flex inset-[-8.53px_-21.14px_-8.52px_-21.13px] items-center justify-center">
         <div className="-skew-x-3 flex-none h-[409.059px] rotate-3 w-[358.004px]">
-          <div className="bg-[#ff2e62] opacity-5 size-full" data-name="Background" />
+          <div className="bg-[#c62828] opacity-5 size-full" data-name="Background" />
         </div>
       </div>
       <BackgroundShadow2 />

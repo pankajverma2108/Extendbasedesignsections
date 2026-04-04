@@ -86,8 +86,8 @@
   --vh-section-b: #230f14;
   --vh-border: #56304d;
   --vh-hot: #ff4c30;
-  --vh-pink: #ff2e62;
-  --vh-pink-soft: #ff6b98;
+  --vh-pink: #c62828;
+  --vh-pink-soft: #8e1b1b;
   --vh-cyan: #00d1ff;
   --vh-ice: #f3eee6;
   --vh-lime: #79f72c;
@@ -125,13 +125,13 @@ body {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #ff2e62 0%, #ff6b98 100%);
+  background: linear-gradient(180deg, #c62828 0%, #8e1b1b 100%);
   border: 2px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #ff3f70 0%, #ff7ea6 100%);
+  background: linear-gradient(180deg, #b82020 0%, #6f1616 100%);
 }
 
 .vh-rating-marquee {
@@ -184,8 +184,8 @@ body {
 }
 
 .vh-calendar-dark.rdp-root {
-  --rdp-accent-color: #ff2e62;
-  --rdp-accent-background-color: #ff2e62;
+  --rdp-accent-color: #c62828;
+  --rdp-accent-background-color: #c62828;
   --rdp-day_button-border-radius: 0;
   --rdp-day_button-border: 1px solid rgba(51, 69, 103, 0.58);
   --rdp-selected-border: 1px solid transparent;
@@ -199,7 +199,7 @@ body {
   --rdp-nav-height: 38px;
   color: #ffffff;
   background:
-    radial-gradient(110% 92% at 12% 0%, rgba(255, 46, 98, 0.1) 0%, rgba(255, 46, 98, 0) 50%),
+    radial-gradient(110% 92% at 12% 0%, rgba(198, 40, 40, 0.1) 0%, rgba(198, 40, 40, 0) 50%),
     radial-gradient(120% 100% at 84% 16%, rgba(0, 209, 255, 0.11) 0%, rgba(0, 209, 255, 0) 54%),
     linear-gradient(180deg, #0b1430 0%, #091329 100%);
 }
@@ -216,7 +216,7 @@ body {
 }
 
 .vh-calendar-dark .rdp-caption_label {
-  color: #ff2e62;
+  color: #c62828;
   font-weight: 800;
   letter-spacing: 0.04em;
 }
@@ -231,13 +231,13 @@ body {
 .vh-calendar-dark .rdp-button_previous,
 .vh-calendar-dark .rdp-button_next {
   border-radius: 999px;
-  color: #ff2e62;
+  color: #c62828;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .vh-calendar-dark .rdp-chevron {
-  fill: #ff2e62;
+  fill: #c62828;
 }
 
 .vh-calendar-dark .rdp-month_grid {
@@ -257,7 +257,7 @@ body {
 }
 
 .vh-calendar-dark .rdp-day_button:hover:not(:disabled) {
-  background: rgba(255, 46, 98, 0.24);
+  background: rgba(198, 40, 40, 0.24);
 }
 
 .vh-calendar-dark .rdp-range_middle .rdp-day_button {
@@ -267,8 +267,8 @@ body {
 .vh-calendar-dark .rdp-selected .rdp-day_button,
 .vh-calendar-dark .rdp-range_start .rdp-day_button,
 .vh-calendar-dark .rdp-range_end .rdp-day_button {
-  background: #ff2e62;
-  border-color: #ff2e62;
+  background: #c62828;
+  border-color: #c62828;
 }
 
 .vh-calendar-dark .rdp-disabled {

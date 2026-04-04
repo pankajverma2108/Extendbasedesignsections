@@ -45,7 +45,7 @@ export function HeroCarousel({ images, titleParts }: HeroCarouselProps) {
           {images.map((image, index) => (
             <div key={image} className="relative min-w-0 flex-[0_0_100%]">
               <ImageWithFallback
-                alt={`Vibe House hero ${index + 1}`}
+                alt={`The Daily Social hero ${index + 1}`}
                 className="h-full w-full object-cover"
                 src={image}
               />
@@ -72,7 +72,7 @@ export function HeroCarousel({ images, titleParts }: HeroCarouselProps) {
 
       <div className="relative z-10 flex h-full flex-col items-center justify-start px-4 pb-28 pt-32 md:justify-center md:pb-24 md:pt-36">
         <div className="mb-12 mt-16 max-w-[1000px] px-4 md:mt-0">
-          <h1 className="text-center text-[48px] font-bold uppercase leading-[50px] md:text-[80px] md:leading-[80px] lg:text-[96px] lg:leading-[100px]">
+          <h1 className="vh-title text-center text-[52px] uppercase leading-[0.92] md:text-[88px] lg:text-[108px]">
             <span className="bg-gradient-to-r from-white via-slate-100 to-white bg-clip-text text-transparent">
               {titleParts[0]}
             </span>{" "}

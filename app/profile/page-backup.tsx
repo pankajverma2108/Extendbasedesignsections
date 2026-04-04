@@ -98,7 +98,7 @@ export default function ProfilePage() {
   return (
     <section className="vh-section pb-14">
       <div className="vh-container">
-        <div className="mx-auto max-w-[860px] rounded-[12px] border border-[#ff2e62]/20 bg-[rgba(35,15,20,0.94)] p-5 md:p-7">
+        <div className="mx-auto max-w-[860px] rounded-[12px] border border-[#c62828]/20 bg-[rgba(35,15,20,0.94)] p-5 md:p-7">
           <div className="mb-5 flex items-center justify-between">
             <button
               className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-[var(--vh-pink)]"
@@ -118,7 +118,7 @@ export default function ProfilePage() {
               </button>
             ) : (
               <button
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-[#ff2e62]"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-[#c62828]"
                 onClick={startEdit}
                 type="button"
               >
@@ -127,13 +127,13 @@ export default function ProfilePage() {
             )}
           </div>
 
-          <div className="rounded-[10px] border border-[#ff2e62]/30 bg-[#300917] p-5">
-            <div className="h-1 rounded-full bg-[linear-gradient(90deg,#00F0FF_0%,#FF2E62_50%,#39FF14_100%)]" />
+          <div className="rounded-[10px] border border-[#c62828]/30 bg-[#300917] p-5">
+            <div className="h-1 rounded-full bg-[linear-gradient(90deg,#00F0FF_0%,#c62828_50%,#39FF14_100%)]" />
             <div className="mt-5 flex flex-col items-center">
               <div className="relative">
                 <Image
                   alt={guest.name}
-                  className="h-28 w-28 rounded-[12px] border-4 border-[#ff2e62] object-cover"
+                  className="h-28 w-28 rounded-[12px] border-4 border-[#c62828] object-cover"
                   height={112}
                   src="/images/property/property-3.jpg"
                   width={112}
@@ -141,19 +141,19 @@ export default function ProfilePage() {
                 <span className="absolute -bottom-1 -right-1 inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#230F14] bg-[#00F0FF] text-xs">✦</span>
               </div>
               <h2 className="mt-4 text-4xl font-bold text-[#F1F5F9]">{guest.name}</h2>
-              <p className="mt-1 text-sm font-semibold uppercase tracking-[0.28em] text-[#FF2E62]">Global Nomad</p>
+              <p className="mt-1 text-sm font-semibold uppercase tracking-[0.28em] text-[#c62828]">Global Nomad</p>
               <p className="mt-2 text-xs text-[#94A3B8]">ID: {guest.id.slice(0, 14).toUpperCase()}</p>
 
               <div className="mt-5 grid w-full max-w-[520px] grid-cols-3 gap-3">
                 <StatCard label="Visits" tone="text-[#00F0FF]" value={visits} />
                 <StatCard label="Rating" tone="text-[#39FF14]" value="4.9" />
-                <StatCard label="Points" tone="text-[#FF2E62]" value="12k" />
+                <StatCard label="Points" tone="text-[#c62828]" value="12k" />
               </div>
             </div>
           </div>
 
           <div className="mt-5 flex justify-center">
-            <div className="rotate-[-2deg] rounded-[12px] border-2 border-[#ff2e62]/40 bg-[#1E293B] px-6 py-2 text-lg text-[#CBD5E1]" style={{ fontFamily: "Caveat" }}>
+            <div className="rotate-[-2deg] rounded-[12px] border-2 border-[#c62828]/40 bg-[#1E293B] px-6 py-2 text-lg text-[#CBD5E1]" style={{ fontFamily: "Caveat" }}>
               Member since Autumn 2021
             </div>
           </div>
@@ -161,7 +161,7 @@ export default function ProfilePage() {
           <div className="mt-8">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-3xl font-bold uppercase text-[#F1F5F9] md:text-[34px]">Past Adventures</h3>
-              <span className="rounded-[2px] bg-[#ff2e62]/20 px-2 py-1 text-[11px] font-bold uppercase text-[#FF2E62]">View all</span>
+              <span className="rounded-[2px] bg-[#c62828]/20 px-2 py-1 text-[11px] font-bold uppercase text-[#c62828]">View all</span>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -180,7 +180,7 @@ export default function ProfilePage() {
               Always asks for extra pillows. Loves local coffee recommendations. Prefers sunrise views over sunset.
             </p>
             <div className="mt-4 flex justify-end">
-              <StickerTag bg="#FF2E62" className="font-bold uppercase not-italic" label="Top Guest" rotate="rotate-[10deg]" text="#FFFFFF" />
+              <StickerTag bg="#c62828" className="font-bold uppercase not-italic" label="Top Guest" rotate="rotate-[10deg]" text="#FFFFFF" />
             </div>
           </div>
 
@@ -217,7 +217,7 @@ export default function ProfilePage() {
 
           <div className="mt-6 flex justify-center md:justify-end">
             <button
-              className="inline-flex items-center gap-2 rounded-[10px] border border-[#ff2e62]/50 bg-[#ff2e62]/10 px-4 py-2 text-sm font-semibold text-[#ffd0de]"
+              className="inline-flex items-center gap-2 rounded-[10px] border border-[#c62828]/50 bg-[#c62828]/10 px-4 py-2 text-sm font-semibold text-[#ffd0de]"
               onClick={signOut}
               type="button"
             >
@@ -233,7 +233,7 @@ export default function ProfilePage() {
 
 function StatCard({ value, label, tone }: { value: string; label: string; tone: string }) {
   return (
-    <div className="rounded-[4px] border border-[#ff2e62]/15 bg-[rgba(35,15,20,0.5)] px-3 py-3 text-center">
+    <div className="rounded-[4px] border border-[#c62828]/15 bg-[rgba(35,15,20,0.5)] px-3 py-3 text-center">
       <p className={`text-3xl font-bold ${tone}`}>{value}</p>
       <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#94A3B8]">{label}</p>
     </div>

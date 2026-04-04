@@ -195,7 +195,7 @@ export default function ProfilePage() {
 
           <div className="space-y-8 px-4 py-6 md:px-6">
             {/* Section: Profile Hero Card */}
-            <article className="relative overflow-visible rounded-xl border border-[var(--vh-pink)]/25 bg-[rgba(255,46,98,0.06)] px-5 py-6">
+            <article className="relative overflow-visible rounded-xl border border-[var(--vh-pink)]/25 bg-[rgba(198,40,40,0.06)] px-5 py-6">
               <div className="pointer-events-none absolute right-[1px] left-[1px] top-[1px] h-[5px] rounded-t-[10px] bg-gradient-to-r from-[var(--vh-cyan)] via-[var(--vh-pink)] to-[var(--vh-lime)]" />
               <div className="absolute -top-3 right-0 z-30">
                 <StickerTag
@@ -229,7 +229,7 @@ export default function ProfilePage() {
 
             {/* Section: Member Since Tag */}
             <div className="relative flex items-center justify-center">
-              <div className="vh-rot-3 relative inline-flex items-center gap-2 rounded-xl bg-[#1E293B] px-5 py-2 text-sm text-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.05)] outline-2 outline-[rgba(255,46,98,0.40)] -outline-offset-2">
+              <div className="vh-rot-3 relative inline-flex items-center gap-2 rounded-xl bg-[#1E293B] px-5 py-2 text-sm text-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.05)] outline-2 outline-[rgba(198,40,40,0.40)] -outline-offset-2">
                 <Crown className="h-4 w-4 text-[var(--vh-pink)]" />
                 <span className="font-['Caveat'] text-lg">{memberSinceText}</span>
               </div>
@@ -265,7 +265,7 @@ export default function ProfilePage() {
               <div className="absolute -top-2 right-0 z-10">
                 <StickerTag
                   label="Top Guest"
-                  bg="#FF2E62"
+                  bg="#c62828"
                   text="#FFFFFF"
                   rotate="rotate-[10deg]"
                   className="rounded-[3px] border-2 border-[var(--vh-surface-2)] px-2 py-1 text-[9px] font-bold not-italic uppercase shadow-[0_3px_8px_rgba(0,0,0,0.22)]"
@@ -415,7 +415,7 @@ export default function ProfilePage() {
                 </div>
 
                 {error ? (
-                  <div className="mt-3 rounded-md border border-[var(--vh-pink)]/40 bg-[var(--vh-pink)]/10 px-3 py-2 text-xs text-[#FFD3DF]">
+                  <div className="mt-3 rounded-md border border-[var(--vh-pink)]/40 bg-[var(--vh-pink)]/10 px-3 py-2 text-xs text-[#FDECEC]">
                     {error}
                   </div>
                 ) : null}

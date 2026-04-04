@@ -128,12 +128,12 @@ export default function ProfilePage() {
 
   return (
     <div className="flex min-h-screen items-start justify-center bg-[rgba(35,15,20,0.20)]  py-8">
-      <div className="w-full max-w-[448px] border-x border-[rgba(255,46,98,0.10)] bg-[#230F14]">
+      <div className="w-full max-w-[448px] border-x border-[rgba(198,40,40,0.10)] bg-[#230F14]">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[rgba(255,46,98,0.10)] bg-[rgba(35,15,20,0.80)] p-4 backdrop-blur-md">
+        <div className="flex items-center justify-between border-b border-[rgba(198,40,40,0.10)] bg-[rgba(35,15,20,0.80)] p-4 backdrop-blur-md">
           <button
-            className="inline-flex h-10 w-10 items-center justify-center text-[#FF2E62] hover:opacity-80"
+            className="inline-flex h-10 w-10 items-center justify-center text-[#c62828] hover:opacity-80"
             onClick={() => window.history.back()}
             type="button"
           >
@@ -145,11 +145,11 @@ export default function ProfilePage() {
           </div>
           
           <button
-            className="inline-flex h-10 w-10 items-center justify-center text-[#FF2E62] hover:opacity-80"
+            className="inline-flex h-10 w-10 items-center justify-center text-[#c62828] hover:opacity-80"
             onClick={() => isEditing ? cancelEdit() : null}
             type="button"
           >
-            {isEditing ? <X size={20} /> : <div className="h-5 w-5 bg-[#FF2E62]" />}
+            {isEditing ? <X size={20} /> : <div className="h-5 w-5 bg-[#c62828]" />}
           </button>
         </div>
 
@@ -157,15 +157,15 @@ export default function ProfilePage() {
         <div className="space-y-8 overflow-y-auto px-6 pb-32 pt-6">
           
           {/* Passport Card */}
-          <div className="relative space-y-6 rounded-lg border border-[rgba(255,46,98,0.20)] bg-[rgba(255,46,98,0.05)] p-8">
+          <div className="relative space-y-6 rounded-lg border border-[rgba(198,40,40,0.20)] bg-[rgba(198,40,40,0.05)] p-8">
             
             {/* Gradient top line */}
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#00F0FF] via-[#FF2E62] to-[#39FF14]" />
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#00F0FF] via-[#c62828] to-[#39FF14]" />
             
             {/* Avatar */}
             <div className="relative flex justify-center">
               <div className="relative inline-block">
-                <div className="flex h-32 w-32 items-center justify-center rounded-xl border-4 border-[#FF2E62] bg-gradient-to-br from-[#FF2E62] to-[#FF6B98] text-5xl font-bold text-white">
+                <div className="flex h-32 w-32 items-center justify-center rounded-xl border-4 border-[#c62828] bg-gradient-to-br from-[#c62828] to-[#8e1b1b] text-5xl font-bold text-white">
                   {guest.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#230F14] bg-[#00F0FF]" />
@@ -177,7 +177,7 @@ export default function ProfilePage() {
               <h2 className="text-3xl font-bold text-[#F1F5F9]" style={{ fontFamily: "Space Grotesk" }}>
                 {guest.name}
               </h2>
-              <p className="text-sm font-semibold uppercase tracking-wider text-[#FF2E62]" style={{ fontFamily: "Space Grotesk" }}>
+              <p className="text-sm font-semibold uppercase tracking-wider text-[#c62828]" style={{ fontFamily: "Space Grotesk" }}>
                 Global Nomad
               </p>
               <p className="text-xs font-mono text-[#94A3B8]">
@@ -187,7 +187,7 @@ export default function ProfilePage() {
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="rounded bg-[rgba(35,15,20,0.50)] border border-[rgba(255,46,98,0.10)] p-3 text-center">
+              <div className="rounded bg-[rgba(35,15,20,0.50)] border border-[rgba(198,40,40,0.10)] p-3 text-center">
                 <div className="text-2xl font-bold text-[#00F0FF]" style={{ fontFamily: "Space Grotesk" }}>
                   {visits}
                 </div>
@@ -196,7 +196,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               
-              <div className="rounded bg-[rgba(35,15,20,0.50)] border border-[rgba(255,46,98,0.10)] p-3 text-center">
+              <div className="rounded bg-[rgba(35,15,20,0.50)] border border-[rgba(198,40,40,0.10)] p-3 text-center">
                 <div className="text-2xl font-bold text-[#39FF14]" style={{ fontFamily: "Space Grotesk" }}>
                   4.9
                 </div>
@@ -205,8 +205,8 @@ export default function ProfilePage() {
                 </div>
               </div>
               
-              <div className="rounded bg-[rgba(35,15,20,0.50)] border border-[rgba(255,46,98,0.10)] p-3 text-center">
-                <div className="text-2xl font-bold text-[#FF2E62]" style={{ fontFamily: "Space Grotesk" }}>
+              <div className="rounded bg-[rgba(35,15,20,0.50)] border border-[rgba(198,40,40,0.10)] p-3 text-center">
+                <div className="text-2xl font-bold text-[#c62828]" style={{ fontFamily: "Space Grotesk" }}>
                   12k
                 </div>
                 <div className="mt-1 text-xs uppercase tracking-wider text-[#94A3B8]" style={{ fontFamily: "Space Grotesk" }}>
@@ -219,9 +219,9 @@ export default function ProfilePage() {
           {/* Member Since & Verified Badges */}
           <div className="relative space-y-4">
             <div className="flex justify-center">
-              <div className="relative inline-block -rotate-2 rounded-xl border-2 border-[rgba(255,46,98,0.40)] bg-[#1E293B] px-6 py-2 text-center text-sm text-[#CBD5E1]" style={{ fontFamily: "Caveat Brush" }}>
+              <div className="relative inline-block -rotate-2 rounded-xl border-2 border-[rgba(198,40,40,0.40)] bg-[#1E293B] px-6 py-2 text-center text-sm text-[#CBD5E1]" style={{ fontFamily: "Caveat Brush" }}>
                 {memberSinceText}
-                <span className="absolute -left-3 -top-2 text-2xl text-[#FF2E62]">★</span>
+                <span className="absolute -left-3 -top-2 text-2xl text-[#c62828]">★</span>
               </div>
             </div>
 
@@ -243,7 +243,7 @@ export default function ProfilePage() {
               Always asks for extra pillows. Loves local coffee recommendations. Prefers sunrise views over sunset.
             </p>
             
-            <div className="absolute bottom-2 right-2 rotate-12 inline-block rounded bg-[#FF2E62] px-2 py-1">
+            <div className="absolute bottom-2 right-2 rotate-12 inline-block rounded bg-[#c62828] px-2 py-1">
               <div className="text-xs font-bold text-white" style={{ fontFamily: "Space Grotesk" }}>
                 TOP GUEST
               </div>
@@ -262,7 +262,7 @@ export default function ProfilePage() {
               </button>
               <button
                 onClick={signOut}
-                className="flex-1 rounded-lg border border-[var(--vh-pink)] bg-[rgba(255,46,98,0.2)] px-4 py-2 font-bold text-[var(--vh-pink)] hover:opacity-90"
+                className="flex-1 rounded-lg border border-[var(--vh-pink)] bg-[rgba(198,40,40,0.2)] px-4 py-2 font-bold text-[var(--vh-pink)] hover:opacity-90"
                 type="button"
               >
                 Logout
@@ -306,7 +306,7 @@ export default function ProfilePage() {
               </label>
 
               {error && (
-                <div className="rounded bg-[rgba(255,46,98,0.1)] px-3 py-2 text-xs text-[#FFD3DF]">
+                <div className="rounded bg-[rgba(198,40,40,0.1)] px-3 py-2 text-xs text-[#FDECEC]">
                   {error}
                 </div>
               )}

@@ -18,21 +18,21 @@ export const footerLinks = {
 };
 
 export const siteMeta = {
-  name: "Vibe House",
+  name: "The Daily Social",
   tagline: "Stay. Mix. Repeat.",
   description:
     "A vibrant hostel marketing site for travelers looking for community, safe stays, and memorable nights.",
   contact: {
     phoneDisplay: "+91 98765 43210",
     phoneHref: "tel:+919876543210",
-    email: "hello@vibehouse.com",
-    emailHref: "mailto:hello@vibehouse.com",
+    email: "hello@thedailysocial.com",
+    emailHref: "mailto:hello@thedailysocial.com",
     addressLines: [
-      "Vibe House Koramangala",
+      "The Daily Social Koramangala",
       "13/14, Bank Officer Housing Co-operative Society",
       "Bengaluru Urban, Karnataka, India",
     ],
-    instagramHref: "https://instagram.com/vibehouse",
+    instagramHref: "https://instagram.com/thedailysocial",
     mapsHref: "https://maps.app.goo.gl/jJKJUUKzdmFJGbCG6?g_st=aw",
   },
 };

@@ -10,7 +10,7 @@ import imgAttendee1 from "figma:asset/6989de701a00dfa0f44397c92c700b78f2f45e9d.p
 function Container1() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="flex flex-col font-['Bebas_Neue:Regular',sans-serif] h-[28px] justify-center leading-[0] not-italic relative shrink-0 text-[#ff2e62] text-[20px] tracking-[2px] uppercase w-[173.06px]">
+      <div className="flex flex-col font-['Bebas_Neue:Regular',sans-serif] h-[28px] justify-center leading-[0] not-italic relative shrink-0 text-[#c62828] text-[20px] tracking-[2px] uppercase w-[173.06px]">
         <p className="leading-[28px]">Hostel Underground</p>
       </div>
     </div>
@@ -22,7 +22,7 @@ function Container2() {
     <div className="content-stretch flex items-start mb-[-4.5px] py-[4.5px] relative shrink-0 w-[55.02px]" data-name="Container">
       <div className="absolute flex inset-[55.62%_3.73%_2.62%_-9.43%] items-center justify-center">
         <div className="-rotate-1 flex-none h-[22.8px] w-[57.77px]">
-          <div className="bg-[rgba(255,46,98,0.4)] size-full" data-name="Overlay" />
+          <div className="bg-[rgba(198,40,40,0.4)] size-full" data-name="Overlay" />
         </div>
       </div>
       <div className="flex flex-col font-['Bebas_Neue:Regular',sans-serif] h-[48px] justify-center leading-[0] not-italic relative shrink-0 text-[#f1f5f9] text-[48px] tracking-[-2.4px] w-[55.02px]">
@@ -65,7 +65,7 @@ function Container3() {
     <div className="h-[12px] relative shrink-0 w-[18px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 12">
         <g id="Container">
-          <path d={svgPaths.p2bce57c0} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p2bce57c0} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -75,7 +75,7 @@ function Container3() {
 function Border() {
   return (
     <div className="content-stretch flex items-center justify-center p-[2px] relative rounded-[12px] shrink-0 size-[48px]" data-name="Border">
-      <div aria-hidden="true" className="absolute border-2 border-[#ff2e62] border-solid inset-0 pointer-events-none rounded-[12px]" />
+      <div aria-hidden="true" className="absolute border-2 border-[#c62828] border-solid inset-0 pointer-events-none rounded-[12px]" />
       <Container3 />
     </div>
   );
@@ -109,7 +109,7 @@ function Container4() {
 function Link() {
   return (
     <div className="relative self-stretch shrink-0" data-name="Link">
-      <div aria-hidden="true" className="absolute border-[#ff2e62] border-b-4 border-solid inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[#c62828] border-b-4 border-solid inset-0 pointer-events-none" />
       <div className="flex flex-col items-center justify-center size-full">
         <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex flex-col h-full items-center justify-center pb-[12px] relative">
           <Container4 />
@@ -203,7 +203,7 @@ function HorizontalBorder() {
         <Link2 />
         <Link3 />
       </div>
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.3)] border-b border-solid inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.3)] border-b border-solid inset-0 pointer-events-none" />
     </div>
   );
 }
@@ -236,7 +236,7 @@ function Container10() {
     <div className="relative shrink-0 size-[11.667px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 11.6667 11.6667">
         <g id="Container">
-          <path d={svgPaths.p29478120} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p29478120} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -246,7 +246,7 @@ function Container10() {
 function Container11() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[12px] tracking-[1.2px] uppercase w-[216.663px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[12px] tracking-[1.2px] uppercase w-[216.663px]">
         <p className="leading-[16px]">Basement Stage • 22:00 - Late</p>
       </div>
     </div>
@@ -265,7 +265,7 @@ function Container9() {
 function ParagraphVerticalBorder() {
   return (
     <div className="relative shrink-0 w-full" data-name="Paragraph+VerticalBorder">
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.5)] border-l-2 border-solid inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.5)] border-l-2 border-solid inset-0 pointer-events-none" />
       <div className="content-stretch flex flex-col font-['Space_Grotesk:Regular',sans-serif] font-normal items-start leading-[0] pb-[0.3px] pl-[18px] relative text-[#94a3b8] text-[14px] w-full">
         <div className="flex flex-col h-[23px] justify-center mb-[-0.3px] relative shrink-0 w-[262.29px]">
           <p className="leading-[22.75px]">High-energy industrial techno set with</p>
@@ -283,7 +283,7 @@ function ParagraphVerticalBorder() {
 
 function Button() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex items-center justify-center px-[24px] py-[8px] relative shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]" data-name="Button">
+    <div className="bg-[#c62828] content-stretch flex items-center justify-center px-[24px] py-[8px] relative shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]" data-name="Button">
       <div className="flex flex-col font-['Bebas_Neue:Regular',sans-serif] h-[36px] justify-center leading-[0] not-italic relative shrink-0 text-[30px] text-center text-white w-[46.295px]">
         <p className="leading-[36px]">RSVP</p>
       </div>
@@ -330,14 +330,14 @@ function OverlayBorder() {
         </div>
         <Container8 />
       </div>
-      <div aria-hidden="true" className="absolute border border-[rgba(255,46,98,0.2)] border-solid inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border border-[rgba(198,40,40,0.2)] border-solid inset-0 pointer-events-none" />
     </div>
   );
 }
 
 function BackgroundShadow() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex flex-col items-start px-[12px] py-[4px] relative shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]" data-name="Background+Shadow">
+    <div className="bg-[#c62828] content-stretch flex flex-col items-start px-[12px] py-[4px] relative shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]" data-name="Background+Shadow">
       <div className="flex flex-col font-['Bebas_Neue:Regular',sans-serif] h-[28px] justify-center leading-[0] not-italic relative shrink-0 text-[20px] text-white tracking-[-1px] w-[44.1px]">
         <p className="leading-[28px]">TONIGHT</p>
       </div>
@@ -487,7 +487,7 @@ function PubCrawlCard() {
 function Heading3() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 2">
-      <div className="flex flex-col font-['Bebas_Neue:Regular',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#ff2e62] text-[60px] tracking-[-1.5px] w-full">
+      <div className="flex flex-col font-['Bebas_Neue:Regular',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#c62828] text-[60px] tracking-[-1.5px] w-full">
         <p className="leading-[60px]">OPEN MIC</p>
       </div>
     </div>
@@ -587,7 +587,7 @@ function Margin() {
 
 function BackgroundBorder2() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex items-center justify-center p-[2px] relative rounded-[12px] shrink-0 size-[40.004px]" data-name="Background+Border">
+    <div className="bg-[#c62828] content-stretch flex items-center justify-center p-[2px] relative rounded-[12px] shrink-0 size-[40.004px]" data-name="Background+Border">
       <div aria-hidden="true" className="absolute border-2 border-[#230f14] border-solid inset-0 pointer-events-none rounded-[12px]" />
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[12px] text-center text-white w-[19.992px]">
         <p className="leading-[16px]">+12</p>
@@ -616,9 +616,9 @@ function Container22() {
 
 function Button2() {
   return (
-    <div className="bg-[rgba(255,46,98,0.2)] content-stretch flex flex-col items-center justify-center px-[17px] py-[9px] relative shrink-0" data-name="Button">
-      <div aria-hidden="true" className="absolute border border-[#ff2e62] border-solid inset-0 pointer-events-none" />
-      <div className="flex flex-col font-['Bebas_Neue:Regular',sans-serif] h-[28px] justify-center leading-[0] not-italic relative shrink-0 text-[#ff2e62] text-[20px] text-center w-[56.745px]">
+    <div className="bg-[rgba(198,40,40,0.2)] content-stretch flex flex-col items-center justify-center px-[17px] py-[9px] relative shrink-0" data-name="Button">
+      <div aria-hidden="true" className="absolute border border-[#c62828] border-solid inset-0 pointer-events-none" />
+      <div className="flex flex-col font-['Bebas_Neue:Regular',sans-serif] h-[28px] justify-center leading-[0] not-italic relative shrink-0 text-[#c62828] text-[20px] text-center w-[56.745px]">
         <p className="leading-[28px]">PERFORM</p>
       </div>
     </div>
@@ -662,7 +662,7 @@ function OpenMicCard() {
         </div>
         <Container17 />
       </div>
-      <div aria-hidden="true" className="absolute border-4 border-[rgba(255,46,98,0.4)] border-solid inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-4 border-[rgba(198,40,40,0.4)] border-solid inset-0 pointer-events-none" />
     </div>
   );
 }
@@ -696,7 +696,7 @@ function BackgroundBorderShadow() {
         <MainFeed />
         <div className="h-[96px] shrink-0 w-full" data-name="Rectangle" />
       </div>
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.2)] border-l border-r border-solid inset-0 pointer-events-none shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.25)]" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.2)] border-l border-r border-solid inset-0 pointer-events-none shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.25)]" />
     </div>
   );
 }
@@ -706,7 +706,7 @@ function Container23() {
     <div className="h-[20px] relative shrink-0 w-[25px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 25 20">
         <g id="Container">
-          <path d={svgPaths.p3656e480} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p3656e480} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -716,7 +716,7 @@ function Container23() {
 function Container24() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[10px] tracking-[1px] uppercase w-[41.78px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[10px] tracking-[1px] uppercase w-[41.78px]">
         <p className="leading-[15px]">Events</p>
       </div>
     </div>
@@ -839,7 +839,7 @@ function Container32() {
 
 function Button3() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex items-center justify-center relative rounded-[12px] shadow-[0px_0px_20px_0px_rgba(255,46,98,0.5)] shrink-0 size-[56px]" data-name="Button">
+    <div className="bg-[#c62828] content-stretch flex items-center justify-center relative rounded-[12px] shadow-[0px_0px_20px_0px_rgba(198,40,40,0.5)] shrink-0 size-[56px]" data-name="Button">
       <Container32 />
     </div>
   );
@@ -856,7 +856,7 @@ function Container31() {
 function BottomNav() {
   return (
     <div className="absolute backdrop-blur-[6px] bg-[rgba(35,15,20,0.95)] bottom-0 h-[89px] left-0 max-w-[448px] right-0" data-name="Bottom Nav">
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.3)] border-solid border-t inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.3)] border-solid border-t inset-0 pointer-events-none" />
       <Link4 />
       <Link5 />
       <Link6 />
@@ -871,8 +871,8 @@ export default function VhdsgnEventBookingVibrant() {
     <div className="content-stretch flex flex-col items-start relative size-full" data-name="vhdsgn - Event Booking (Vibrant)">
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
         <div className="absolute bg-[#230f14] inset-0 mix-blend-overlay" />
-        <div className="absolute inset-0 mix-blend-overlay" style={{ backgroundImage: "url('data:image/svg+xml;utf8,<svg viewBox=\\'0 0 390 2106\\' xmlns=\\'http://www.w3.org/2000/svg\\' preserveAspectRatio=\\'none\\'><rect x=\\'0\\' y=\\'0\\' height=\\'100%\\' width=\\'100%\\' fill=\\'url(%23grad)\\' opacity=\\'1\\'/><defs><radialGradient id=\\'grad\\' gradientUnits=\\'userSpaceOnUse\\' cx=\\'0\\' cy=\\'0\\' r=\\'10\\' gradientTransform=\\'matrix(150.69 0 0 150.69 312 1474.2)\\'><stop stop-color=\\'rgba(255,46,98,0.1)\\' offset=\\'0\\'/><stop stop-color=\\'rgba(255,46,98,0)\\' offset=\\'0.5\\'/></radialGradient></defs></svg>')" }} />
-        <div className="absolute inset-0 mix-blend-overlay" style={{ backgroundImage: "url('data:image/svg+xml;utf8,<svg viewBox=\\'0 0 390 2106\\' xmlns=\\'http://www.w3.org/2000/svg\\' preserveAspectRatio=\\'none\\'><rect x=\\'0\\' y=\\'0\\' height=\\'100%\\' width=\\'100%\\' fill=\\'url(%23grad)\\' opacity=\\'1\\'/><defs><radialGradient id=\\'grad\\' gradientUnits=\\'userSpaceOnUse\\' cx=\\'0\\' cy=\\'0\\' r=\\'10\\' gradientTransform=\\'matrix(150.69 0 0 150.69 78 631.8)\\'><stop stop-color=\\'rgba(255,46,98,0.15)\\' offset=\\'0\\'/><stop stop-color=\\'rgba(255,46,98,0)\\' offset=\\'0.5\\'/></radialGradient></defs></svg>')" }} />
+        <div className="absolute inset-0 mix-blend-overlay" style={{ backgroundImage: "url('data:image/svg+xml;utf8,<svg viewBox=\\'0 0 390 2106\\' xmlns=\\'http://www.w3.org/2000/svg\\' preserveAspectRatio=\\'none\\'><rect x=\\'0\\' y=\\'0\\' height=\\'100%\\' width=\\'100%\\' fill=\\'url(%23grad)\\' opacity=\\'1\\'/><defs><radialGradient id=\\'grad\\' gradientUnits=\\'userSpaceOnUse\\' cx=\\'0\\' cy=\\'0\\' r=\\'10\\' gradientTransform=\\'matrix(150.69 0 0 150.69 312 1474.2)\\'><stop stop-color=\\'rgba(198,40,40,0.1)\\' offset=\\'0\\'/><stop stop-color=\\'rgba(198,40,40,0)\\' offset=\\'0.5\\'/></radialGradient></defs></svg>')" }} />
+        <div className="absolute inset-0 mix-blend-overlay" style={{ backgroundImage: "url('data:image/svg+xml;utf8,<svg viewBox=\\'0 0 390 2106\\' xmlns=\\'http://www.w3.org/2000/svg\\' preserveAspectRatio=\\'none\\'><rect x=\\'0\\' y=\\'0\\' height=\\'100%\\' width=\\'100%\\' fill=\\'url(%23grad)\\' opacity=\\'1\\'/><defs><radialGradient id=\\'grad\\' gradientUnits=\\'userSpaceOnUse\\' cx=\\'0\\' cy=\\'0\\' r=\\'10\\' gradientTransform=\\'matrix(150.69 0 0 150.69 78 631.8)\\'><stop stop-color=\\'rgba(198,40,40,0.15)\\' offset=\\'0\\'/><stop stop-color=\\'rgba(198,40,40,0)\\' offset=\\'0.5\\'/></radialGradient></defs></svg>')" }} />
         <div className="absolute inset-0 mix-blend-overlay overflow-hidden">
           <img alt="" className="absolute h-full left-0 max-w-none top-0 w-[540%]" src={imgVhdsgnEventBookingVibrant} />
         </div>

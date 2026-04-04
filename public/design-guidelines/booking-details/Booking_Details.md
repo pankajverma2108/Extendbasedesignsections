@@ -1,5 +1,5 @@
 <div style={{width: '100%', height: '100%', background: '#230F14', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
-    <div style={{alignSelf: 'stretch', padding: 16, background: '#230F14', borderBottom: '1px rgba(255, 46, 98, 0.10) solid', justifyContent: 'space-between', alignItems: 'center', display: 'inline-flex'}}>
+    <div style={{alignSelf: 'stretch', padding: 16, background: '#230F14', borderBottom: '1px rgba(198, 40, 40, 0.10) solid', justifyContent: 'space-between', alignItems: 'center', display: 'inline-flex'}}>
         <div style={{width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', display: 'flex'}}>
             <div data-svg-wrapper>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -22,7 +22,7 @@
     </div>
     <div style={{alignSelf: 'stretch', height: 936.02, paddingTop: 21.07, paddingBottom: 24, paddingLeft: 24, paddingRight: 24, overflow: 'hidden', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-end', display: 'flex'}}>
         <div style={{width: 348.43, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
-            <div style={{width: 342, maxWidth: 448, padding: 32, position: 'relative', transform: 'rotate(-1deg)', transformOrigin: 'top left', background: '#FACC15', boxShadow: '8px 8px 0px #FF2E62', outline: '2px #0F172A solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 32, display: 'flex'}}>
+            <div style={{width: 342, maxWidth: 448, padding: 32, position: 'relative', transform: 'rotate(-1deg)', transformOrigin: 'top left', background: '#FACC15', boxShadow: '8px 8px 0px #c62828', outline: '2px #0F172A solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 32, display: 'flex'}}>
                 <div style={{alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 4, display: 'flex'}}>
                     <div style={{alignSelf: 'stretch', opacity: 0.70, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                         <div style={{alignSelf: 'stretch', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#0F172A', fontSize: 12, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 16, letterSpacing: 1.20, wordWrap: 'break-word'}}>Confirmation Receipt</div>
@@ -68,7 +68,7 @@
                             </svg>
                         </div>
                         <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
-                            <div style={{width: 142.38, height: 38.47, justifyContent: 'center', display: 'flex', flexDirection: 'column'}}><span style="color: '#0F172A', fontSize: 30, fontFamily: 'Caveat', fontWeight: '400', lineHeight: 36, wordWrap: 'break-word'">Locker: </span><span style="color: '#FF2E62', fontSize: 30, fontFamily: 'Caveat', fontWeight: '700', wordWrap: 'break-word'">L-042</span></div>
+                            <div style={{width: 142.38, height: 38.47, justifyContent: 'center', display: 'flex', flexDirection: 'column'}}><span style="color: '#0F172A', fontSize: 30, fontFamily: 'Caveat', fontWeight: '400', lineHeight: 36, wordWrap: 'break-word'">Locker: </span><span style="color: '#c62828', fontSize: 30, fontFamily: 'Caveat', fontWeight: '700', wordWrap: 'break-word'">L-042</span></div>
                         </div>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
                         <div style={{width: 38.61, height: 20.66, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#0F172A', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: '400', lineHeight: 20, wordWrap: 'break-word'}}>Berlin</div>
                     </div>
                 </div>
-                <div style={{paddingLeft: 24, paddingRight: 24, paddingTop: 8, paddingBottom: 8, left: 231.09, top: -33.16, position: 'absolute', transform: 'rotate(12deg)', transformOrigin: 'top left', background: '#FF2E62', borderRadius: 12, outline: '2px #0F172A solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
+                <div style={{paddingLeft: 24, paddingRight: 24, paddingTop: 8, paddingBottom: 8, left: 231.09, top: -33.16, position: 'absolute', transform: 'rotate(12deg)', transformOrigin: 'top left', background: '#c62828', borderRadius: 12, outline: '2px #0F172A solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                     <div style={{width: 136.56, height: 68.10, left: 0, top: 0, position: 'absolute', background: 'rgba(255, 255, 255, 0)', boxShadow: '0px 4px 6px -4px rgba(0, 0, 0, 0.10), 0px 10px 15px -3px rgba(0, 0, 0, 0.10)', borderRadius: 12}} />
                     <div style={{width: 81.70, height: 38.55, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'white', fontSize: 16, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 24, wordWrap: 'break-word'}}>YOU&apos;RE IN!</div>
                 </div>
@@ -100,13 +100,13 @@
         </div>
         <div style={{maxWidth: 448, paddingTop: 48, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
             <div style={{width: 342, height: 92, maxWidth: 448, position: 'relative'}}>
-                <div style={{height: 38, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, left: 27.73, top: 0, position: 'absolute', background: 'rgba(255, 46, 98, 0.10)', borderRadius: 12, outline: '1px rgba(255, 46, 98, 0.30) solid', outlineOffset: '-1px', justifyContent: 'flex-start', alignItems: 'center', gap: 7.99, display: 'inline-flex'}}>
+                <div style={{height: 38, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, left: 27.73, top: 0, position: 'absolute', background: 'rgba(198, 40, 40, 0.10)', borderRadius: 12, outline: '1px rgba(198, 40, 40, 0.30) solid', outlineOffset: '-1px', justifyContent: 'flex-start', alignItems: 'center', gap: 7.99, display: 'inline-flex'}}>
                     <div data-svg-wrapper>
                         <svg width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3.82083 9.45L6.83958 5.83333H4.50625L4.92917 2.52292L2.23125 6.41667H4.25833L3.82083 9.45ZM2.33333 11.6667L2.91667 7.58333H0L5.25 0H6.41667L5.83333 4.66667H9.33333L3.5 11.6667H2.33333Z" fill="#FF2E62"/>
+                        <path d="M3.82083 9.45L6.83958 5.83333H4.50625L4.92917 2.52292L2.23125 6.41667H4.25833L3.82083 9.45ZM2.33333 11.6667L2.91667 7.58333H0L5.25 0H6.41667L5.83333 4.66667H9.33333L3.5 11.6667H2.33333Z" fill="#c62828"/>
                         </svg>
                     </div>
-                    <div style={{width: 73.86, height: 16, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 12, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 16, wordWrap: 'break-word'}}>High Energy</div>
+                    <div style={{width: 73.86, height: 16, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 12, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 16, wordWrap: 'break-word'}}>High Energy</div>
                 </div>
                 <div style={{height: 38, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8, left: 171.84, top: 0, position: 'absolute', background: '#230F14', borderRadius: 12, outline: '1px rgba(241, 245, 249, 0.20) solid', outlineOffset: '-1px', justifyContent: 'flex-start', alignItems: 'center', gap: 8, display: 'inline-flex'}}>
                     <div data-svg-wrapper>
@@ -213,7 +213,7 @@ color: '#0F172A';
  wordWrap: 'break-word'
 ---
 // L-042
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 30;
  fontFamily: 'Caveat';
  fontWeight: '700';
@@ -261,7 +261,7 @@ color: 'white';
  wordWrap: 'break-word'
 ---
 // High Energy
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 12;
  fontFamily: 'Space Grotesk';
  fontWeight: '700';

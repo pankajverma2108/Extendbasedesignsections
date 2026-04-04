@@ -10,7 +10,7 @@
 
 | Term | Meaning |
 |---|---|
-| **Guest** | Any user registered on the Vibe House PWA (email + password OR Google OAuth) |
+| **Guest** | Any user registered on The Daily Social PWA (email + password OR Google OAuth) |
 | **Customer (Cx)** | Guest who has at least one linked booking (`ezee_reservation_id`) |
 | **PRIMARY** | Guest whose email/phone matches the original booker in eZee |
 | **SECONDARY** | Additional guest added to a booking, approved by PRIMARY |
@@ -136,7 +136,7 @@ Authenticates an existing guest using email + password.
 
 ```json
 {
-  "email": "arjun@vibehouse.in",
+  "email": "arjun@thedailysocial.in",
   "password": "Vibe@2026!"
 }
 ```
@@ -149,7 +149,7 @@ Authenticates an existing guest using email + password.
   "guest": {
     "id": "guest-arjun-001",
     "name": "Arjun Mehta",
-    "email": "arjun@vibehouse.in",
+    "email": "arjun@thedailysocial.in",
     "phone": "+919000000001",
     "email_verified": true,
     "phone_verified": false,
@@ -196,7 +196,7 @@ Authorization: Bearer <access_token>
 {
   "id": "guest-arjun-001",
   "name": "Arjun Mehta",
-  "email": "arjun@vibehouse.in",
+  "email": "arjun@thedailysocial.in",
   "phone": "+919000000001",
   "email_verified": true,
   "phone_verified": false,
@@ -248,7 +248,7 @@ The access token encodes the following claims:
 {
   "sub": "guest-arjun-001",
   "guest_id": "guest-arjun-001",
-  "email": "arjun@vibehouse.in",
+  "email": "arjun@thedailysocial.in",
   "email_verified": true,
   "phone_verified": false,
   "iat": 1741694400,
@@ -280,13 +280,13 @@ All guest accounts share password: **`Vibe@2026!`**
 
 | Email | Name | Bookings | Notes |
 |---|---|---|---|
-| `arjun@vibehouse.in` | Arjun Mehta | PRIMARY on `EZEE-BND-2026-001` and `EZEE-BND-2026-002` | `email_verified: true` |
-| `neha@vibehouse.in` | Neha Kapoor | SECONDARY on `EZEE-BND-2026-001` | Approved by Arjun |
-| `preethi@vibehouse.in` | Preethi Iyer | None | `email_verified: false` — no bookings yet |
+| `arjun@thedailysocial.in` | Arjun Mehta | PRIMARY on `EZEE-BND-2026-001` and `EZEE-BND-2026-002` | `email_verified: true` |
+| `neha@thedailysocial.in` | Neha Kapoor | SECONDARY on `EZEE-BND-2026-001` | Approved by Arjun |
+| `preethi@thedailysocial.in` | Preethi Iyer | None | `email_verified: false` — no bookings yet |
 
 ### Seeded Booking Snapshots
 
 | Reservation ID | Property | Room | Check-in | Check-out | Source |
 |---|---|---|---|---|---|
-| `EZEE-BND-2026-001` | Vibe House Bandra | Mixed Dorm 6-Bed / D-101 | 2026-03-13 | 2026-03-17 | MakeMyTrip |
-| `EZEE-BND-2026-002` | Vibe House Bandra | Private Room / P-205 | 2026-04-05 | 2026-04-08 | Direct |
+| `EZEE-BND-2026-001` | The Daily Social Bandra | Mixed Dorm 6-Bed / D-101 | 2026-03-13 | 2026-03-17 | MakeMyTrip |
+| `EZEE-BND-2026-002` | The Daily Social Bandra | Private Room / P-205 | 2026-04-05 | 2026-04-08 | Direct |

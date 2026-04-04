@@ -1,10 +1,10 @@
 code:
 <div style={{width: '100%', height: '100%', background: 'rgba(35, 15, 20, 0.20)', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
-    <div style={{width: '100%', height: 1147, maxWidth: 448, minHeight: 1147, background: '#230F14', overflow: 'hidden', borderLeft: '1px rgba(255, 46, 98, 0.10) solid', borderRight: '1px rgba(255, 46, 98, 0.10) solid', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
+    <div style={{width: '100%', height: 1147, maxWidth: 448, minHeight: 1147, background: '#230F14', overflow: 'hidden', borderLeft: '1px rgba(198, 40, 40, 0.10) solid', borderRight: '1px rgba(198, 40, 40, 0.10) solid', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
         <div style={{alignSelf: 'stretch', padding: 16, background: 'rgba(35, 15, 20, 0.80)', backdropFilter: 'blur(6px)', justifyContent: 'space-between', alignItems: 'center', display: 'inline-flex'}}>
             <div style={{width: 40, height: 40, justifyContent: 'center', alignItems: 'center', display: 'flex'}}>
                 <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
-                    <div style={{width: 16, height: 16, background: '#FF2E62'}} />
+                    <div style={{width: 16, height: 16, background: '#c62828'}} />
                 </div>
             </div>
             <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
@@ -13,17 +13,17 @@ code:
             <div style={{width: 40, justifyContent: 'flex-end', alignItems: 'center', display: 'flex'}}>
                 <div style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center', display: 'inline-flex'}}>
                     <div style={{justifyContent: 'center', alignItems: 'flex-start', display: 'inline-flex'}}>
-                        <div style={{width: 18, height: 18, background: '#FF2E62'}} />
+                        <div style={{width: 18, height: 18, background: '#c62828'}} />
                     </div>
                 </div>
             </div>
         </div>
         <div style={{alignSelf: 'stretch', paddingBottom: 96, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 32, display: 'flex'}}>
             <div style={{alignSelf: 'stretch', paddingTop: 24, paddingBottom: 20.76, paddingLeft: 24, paddingRight: 24, position: 'relative', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 28.77, display: 'flex'}}>
-                <div style={{alignSelf: 'stretch', padding: 32, position: 'relative', background: 'rgba(255, 46, 98, 0.05)', overflow: 'hidden', borderRadius: 8, outline: '1px rgba(255, 46, 98, 0.20) solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 24, display: 'flex'}}>
-                    <div style={{width: 338, height: 4, left: 1, top: 1, position: 'absolute', background: 'linear-gradient(90deg, #00F0FF 0%, #FF2E62 50%, #39FF14 100%)'}} />
+                <div style={{alignSelf: 'stretch', padding: 32, position: 'relative', background: 'rgba(198, 40, 40, 0.05)', overflow: 'hidden', borderRadius: 8, outline: '1px rgba(198, 40, 40, 0.20) solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 24, display: 'flex'}}>
+                    <div style={{width: 338, height: 4, left: 1, top: 1, position: 'absolute', background: 'linear-gradient(90deg, #00F0FF 0%, #c62828 50%, #39FF14 100%)'}} />
                     <div style={{position: 'relative', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
-                        <img style={{width: 128, height: 128, borderRadius: 12, border: '4px #FF2E62 solid'}} src="https://placehold.co/128x128" />
+                        <img style={{width: 128, height: 128, borderRadius: 12, border: '4px #c62828 solid'}} src="https://placehold.co/128x128" />
                         <div style={{padding: 4, left: 112.33, top: 112.92, position: 'absolute', background: '#00F0FF', borderRadius: 12, outline: '2px #230F14 solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                             <div style={{width: 11.67, height: 11.08, background: 'black'}} />
                         </div>
@@ -32,7 +32,7 @@ code:
                         <div style={{width: 177.61, height: 36, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#F1F5F9', fontSize: 30, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 36, wordWrap: 'break-word'}}>Elena Thorne</div>
                         <div style={{paddingTop: 4, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                             <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'flex'}}>
-                                <div style={{width: 137.27, height: 20, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: '500', textTransform: 'uppercase', lineHeight: 20, letterSpacing: 2.80, wordWrap: 'break-word'}}>Global Nomad</div>
+                                <div style={{width: 137.27, height: 20, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: '500', textTransform: 'uppercase', lineHeight: 20, letterSpacing: 2.80, wordWrap: 'break-word'}}>Global Nomad</div>
                             </div>
                         </div>
                         <div style={{paddingTop: 16, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
@@ -43,7 +43,7 @@ code:
                     </div>
                     <div style={{alignSelf: 'stretch', paddingTop: 16, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                         <div style={{alignSelf: 'stretch', justifyContent: 'center', alignItems: 'flex-start', gap: 16, display: 'inline-flex'}}>
-                            <div style={{flex: '1 1 0', alignSelf: 'stretch', padding: 12, background: 'rgba(35, 15, 20, 0.50)', borderRadius: 4, outline: '1px rgba(255, 46, 98, 0.10) solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex'}}>
+                            <div style={{flex: '1 1 0', alignSelf: 'stretch', padding: 12, background: 'rgba(35, 15, 20, 0.50)', borderRadius: 4, outline: '1px rgba(198, 40, 40, 0.10) solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex'}}>
                                 <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                                     <div style={{width: 24.28, height: 28, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#00F0FF', fontSize: 20, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 28, wordWrap: 'break-word'}}>24</div>
                                 </div>
@@ -51,7 +51,7 @@ code:
                                     <div style={{width: 35.03, height: 15, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#94A3B8', fontSize: 10, fontFamily: 'Space Grotesk', fontWeight: '400', textTransform: 'uppercase', lineHeight: 15, letterSpacing: 1, wordWrap: 'break-word'}}>Visits</div>
                                 </div>
                             </div>
-                            <div style={{flex: '1 1 0', alignSelf: 'stretch', padding: 12, background: 'rgba(35, 15, 20, 0.50)', borderRadius: 4, outline: '1px rgba(255, 46, 98, 0.10) solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex'}}>
+                            <div style={{flex: '1 1 0', alignSelf: 'stretch', padding: 12, background: 'rgba(35, 15, 20, 0.50)', borderRadius: 4, outline: '1px rgba(198, 40, 40, 0.10) solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex'}}>
                                 <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                                     <div style={{width: 31, height: 28, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#39FF14', fontSize: 20, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 28, wordWrap: 'break-word'}}>4.9</div>
                                 </div>
@@ -59,9 +59,9 @@ code:
                                     <div style={{width: 39.42, height: 15, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#94A3B8', fontSize: 10, fontFamily: 'Space Grotesk', fontWeight: '400', textTransform: 'uppercase', lineHeight: 15, letterSpacing: 1, wordWrap: 'break-word'}}>Rating</div>
                                 </div>
                             </div>
-                            <div style={{flex: '1 1 0', alignSelf: 'stretch', padding: 12, background: 'rgba(35, 15, 20, 0.50)', borderRadius: 4, outline: '1px rgba(255, 46, 98, 0.10) solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex'}}>
+                            <div style={{flex: '1 1 0', alignSelf: 'stretch', padding: 12, background: 'rgba(35, 15, 20, 0.50)', borderRadius: 4, outline: '1px rgba(198, 40, 40, 0.10) solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', display: 'inline-flex'}}>
                                 <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
-                                    <div style={{width: 32.20, height: 28, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 20, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 28, wordWrap: 'break-word'}}>12k</div>
+                                    <div style={{width: 32.20, height: 28, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 20, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 28, wordWrap: 'break-word'}}>12k</div>
                                 </div>
                                 <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                                     <div style={{width: 39.61, height: 15, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#94A3B8', fontSize: 10, fontFamily: 'Space Grotesk', fontWeight: '400', textTransform: 'uppercase', lineHeight: 15, letterSpacing: 1, wordWrap: 'break-word'}}>Points</div>
@@ -71,9 +71,9 @@ code:
                     </div>
                 </div>
                 <div style={{alignSelf: 'stretch', justifyContent: 'center', alignItems: 'flex-start', display: 'inline-flex'}}>
-                    <div style={{height: 40, paddingTop: 6.99, paddingBottom: 9.01, paddingLeft: 24, paddingRight: 24, position: 'relative', transform: 'rotate(-2deg)', transformOrigin: 'top left', background: '#1E293B', boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)', borderRadius: 12, outline: '2px rgba(255, 46, 98, 0.40) solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
+                    <div style={{height: 40, paddingTop: 6.99, paddingBottom: 9.01, paddingLeft: 24, paddingRight: 24, position: 'relative', transform: 'rotate(-2deg)', transformOrigin: 'top left', background: '#1E293B', boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)', borderRadius: 12, outline: '2px rgba(198, 40, 40, 0.40) solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
                         <div style={{width: 134.46, height: 24.66, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#CBD5E1', fontSize: 14, fontFamily: 'Caveat', fontWeight: '400', lineHeight: 20, wordWrap: 'break-word'}}>Member since Autumn 2021</div>
-                        <div style={{width: 25.06, height: 26.83, left: -10.41, top: -4.01, position: 'absolute', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 24, fontFamily: 'Material Symbols Outlined', fontWeight: '400', lineHeight: 24, wordWrap: 'break-word'}}>workspace_premium</div>
+                        <div style={{width: 25.06, height: 26.83, left: -10.41, top: -4.01, position: 'absolute', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 24, fontFamily: 'Material Symbols Outlined', fontWeight: '400', lineHeight: 24, wordWrap: 'break-word'}}>workspace_premium</div>
                     </div>
                 </div>
                 <div style={{left: 294.72, top: -18.65, position: 'absolute', transform: 'rotate(12deg)', transformOrigin: 'top left', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
@@ -88,8 +88,8 @@ code:
                     <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
                         <div style={{width: 159.97, height: 28, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#F1F5F9', fontSize: 20, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 28, wordWrap: 'break-word'}}>Past Adventures</div>
                     </div>
-                    <div style={{paddingLeft: 8, paddingRight: 8, paddingTop: 2, paddingBottom: 2, background: 'rgba(255, 46, 98, 0.20)', borderRadius: 2, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
-                        <div style={{width: 42.89, height: 15, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 10, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 15, wordWrap: 'break-word'}}>VIEW ALL</div>
+                    <div style={{paddingLeft: 8, paddingRight: 8, paddingTop: 2, paddingBottom: 2, background: 'rgba(198, 40, 40, 0.20)', borderRadius: 2, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
+                        <div style={{width: 42.89, height: 15, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 10, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 15, wordWrap: 'break-word'}}>VIEW ALL</div>
                     </div>
                 </div>
                 <div style={{alignSelf: 'stretch', height: 236, position: 'relative', overflow: 'hidden'}}>
@@ -110,7 +110,7 @@ code:
                             <div style={{width: 70.31, height: 22.42, textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#0F172A', fontSize: 14, fontFamily: 'Caveat', fontWeight: '400', lineHeight: 20, wordWrap: 'break-word'}}>Tokyo Neon &apos;24</div>
                         </div>
                         <div style={{paddingBottom: 1, left: -7.59, top: 193.64, position: 'absolute', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
-                            <div style={{width: 25.27, height: 32.82, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 24, fontFamily: 'Material Symbols Outlined', fontWeight: '400', lineHeight: 32, wordWrap: 'break-word'}}>favorite</div>
+                            <div style={{width: 25.27, height: 32.82, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 24, fontFamily: 'Material Symbols Outlined', fontWeight: '400', lineHeight: 32, wordWrap: 'break-word'}}>favorite</div>
                         </div>
                     </div>
                     <div style={{width: 160, height: 212, paddingTop: 8, paddingBottom: 32, paddingLeft: 8, paddingRight: 8, left: 366.16, top: 1.41, position: 'absolute', transform: 'rotate(-1deg)', transformOrigin: 'top left', background: '#F1F5F9', outline: '1px #E2E8F0 solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 8, display: 'inline-flex'}}>
@@ -130,7 +130,7 @@ code:
                     <div style={{alignSelf: 'stretch', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#E2E8F0', fontSize: 20, fontFamily: 'Caveat', fontWeight: '400', lineHeight: 32.50, wordWrap: 'break-word'}}>Always asks for extra pillows. Loves local<br/>coffee recommendations. Prefers sunrise<br/>views over sunset.</div>
                 </div>
                 <div style={{left: 258.58, top: 143.73, position: 'absolute', transform: 'rotate(12deg)', transformOrigin: 'top left', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
-                    <div style={{paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4, position: 'relative', background: '#FF2E62', borderRadius: 2, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
+                    <div style={{paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4, position: 'relative', background: '#c62828', borderRadius: 2, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                         <div style={{width: 70.86, height: 36.54, left: 0, top: 0, position: 'absolute', background: 'rgba(255, 255, 255, 0)', boxShadow: '0px 2px 4px -2px rgba(0, 0, 0, 0.10), 0px 4px 6px -1px rgba(0, 0, 0, 0.10)', borderRadius: 2}} />
                         <div style={{width: 53.54, height: 25.39, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'white', fontSize: 10, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 15, wordWrap: 'break-word'}}>TOP GUEST</div>
                     </div>
@@ -160,7 +160,7 @@ color: '#F1F5F9';
  wordWrap: 'break-word'
 ---
 // Global Nomad
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 14;
  fontFamily: 'Space Grotesk';
  fontWeight: '500';
@@ -214,7 +214,7 @@ color: '#94A3B8';
  wordWrap: 'break-word'
 ---
 // 12k
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 20;
  fontFamily: 'Space Grotesk';
  fontWeight: '700';
@@ -240,7 +240,7 @@ color: '#CBD5E1';
  wordWrap: 'break-word'
 ---
 // workspace_premium
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 24;
  fontFamily: 'Material Symbols Outlined';
  fontWeight: '400';
@@ -266,7 +266,7 @@ color: '#F1F5F9';
  wordWrap: 'break-word'
 ---
 // VIEW ALL
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 10;
  fontFamily: 'Space Grotesk';
  fontWeight: '700';
@@ -290,7 +290,7 @@ color: '#0F172A';
  wordWrap: 'break-word'
 ---
 // favorite
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 24;
  fontFamily: 'Material Symbols Outlined';
  fontWeight: '400';

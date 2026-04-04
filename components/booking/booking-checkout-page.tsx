@@ -349,7 +349,7 @@ export function BookingCheckoutPage() {
           amount: paymentOrder.amount_paise,
           currency: paymentOrder.currency,
           order_id: paymentOrder.razorpay_order_id,
-          name: "Vibe House",
+          name: "The Daily Social",
           description: `${orderSummary.property_name} booking`,
           prefill: {
             name: guest?.name ?? "",
@@ -357,7 +357,7 @@ export function BookingCheckoutPage() {
             contact: guest?.phone ?? "",
           },
           theme: {
-            color: "#ff2e62",
+            color: "#c62828",
           },
           notes: {
             ezee_reservation_id: orderSummary.ezee_reservation_id,
@@ -544,7 +544,7 @@ export function BookingCheckoutPage() {
                 </div>
               </div>
             ) : (
-              <div className="mt-6 rounded-[22px] border border-[rgba(255,46,98,0.22)] bg-[rgba(255,46,98,0.08)] p-5">
+              <div className="mt-6 rounded-[22px] border border-[rgba(198,40,40,0.22)] bg-[rgba(198,40,40,0.08)] p-5">
                 <p className="font-semibold text-white">Sign in before payment</p>
                 <p className="mt-2 text-sm leading-7 text-white/70">
                   The booking APIs require a guest JWT. Your room selection is already saved locally, so you can sign in now and continue without rebuilding the cart.

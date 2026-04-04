@@ -68,7 +68,7 @@ function Container2() {
 function Nav() {
   return (
     <div className="bg-[#230f14] relative shrink-0 w-full" data-name="Nav">
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.1)] border-b border-solid inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.1)] border-b border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex items-center justify-between pb-[17px] pt-[16px] px-[16px] relative w-full">
           <Container />
@@ -212,7 +212,7 @@ function Container9() {
         <div className="flex flex-col font-['Caveat:Regular',sans-serif] font-normal h-[36px] justify-center leading-[0] relative shrink-0 text-[#0f172a] text-[30px] w-[141.777px]">
           <p>
             <span className="leading-[36px]">{`Locker: `}</span>
-            <span className="font-['Caveat:Bold',sans-serif] font-bold leading-[36px] text-[#ff2e62]">L-042</span>
+            <span className="font-['Caveat:Bold',sans-serif] font-bold leading-[36px] text-[#c62828]">L-042</span>
           </p>
         </div>
       </div>
@@ -319,7 +319,7 @@ function AddressLabel() {
 
 function FloatingSticker() {
   return (
-    <div className="bg-[#ff2e62] relative rounded-[12px]" data-name="Floating Sticker">
+    <div className="bg-[#c62828] relative rounded-[12px]" data-name="Floating Sticker">
       <div aria-hidden="true" className="absolute border-2 border-[#0f172a] border-solid inset-0 pointer-events-none rounded-[12px]" />
       <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex flex-col items-start px-[26px] py-[10px] relative">
         <div className="absolute bg-[rgba(255,255,255,0)] inset-0 rounded-[12px] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]" data-name="Floating Sticker:shadow" />
@@ -334,7 +334,7 @@ function FloatingSticker() {
 function PosterStyleCard() {
   return (
     <div className="bg-[#facc15] content-stretch flex flex-col gap-[32px] items-start p-[34px] relative w-[342px]" data-name="Poster Style Card">
-      <div aria-hidden="true" className="absolute border-2 border-[#0f172a] border-solid inset-0 pointer-events-none shadow-[8px_8px_0px_0px_#ff2e62]" />
+      <div aria-hidden="true" className="absolute border-2 border-[#0f172a] border-solid inset-0 pointer-events-none shadow-[8px_8px_0px_0px_#c62828]" />
       <HeaderSection />
       <RoomInfoCutoutMaskGroup />
       <HandwrittenInfo />
@@ -366,7 +366,7 @@ function Container11() {
     <div className="h-[11.667px] relative shrink-0 w-[9.333px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 9.33333 11.6667">
         <g id="Container">
-          <path d={svgPaths.pd490b00} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.pd490b00} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -375,10 +375,10 @@ function Container11() {
 
 function OverlayBorder1() {
   return (
-    <div className="-translate-x-1/2 absolute bg-[rgba(255,46,98,0.1)] bottom-[54px] content-stretch flex gap-[7.99px] items-center left-[calc(50%-80.68px)] px-[17px] py-[9px] rounded-[12px] top-0" data-name="Overlay+Border">
-      <div aria-hidden="true" className="absolute border border-[rgba(255,46,98,0.3)] border-solid inset-0 pointer-events-none rounded-[12px]" />
+    <div className="-translate-x-1/2 absolute bg-[rgba(198,40,40,0.1)] bottom-[54px] content-stretch flex gap-[7.99px] items-center left-[calc(50%-80.68px)] px-[17px] py-[9px] rounded-[12px] top-0" data-name="Overlay+Border">
+      <div aria-hidden="true" className="absolute border border-[rgba(198,40,40,0.3)] border-solid inset-0 pointer-events-none rounded-[12px]" />
       <Container11 />
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[12px] uppercase w-[73.86px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[12px] uppercase w-[73.86px]">
         <p className="leading-[16px]">High Energy</p>
       </div>
     </div>
@@ -500,7 +500,7 @@ function Container17() {
     <div className="h-[16px] relative shrink-0 w-[20px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 16">
         <g id="Container">
-          <path d={svgPaths.p12995800} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p12995800} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -510,7 +510,7 @@ function Container17() {
 function Container18() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Medium',sans-serif] font-medium h-[15px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[10px] tracking-[0.5px] uppercase w-[52.19px]">
+      <div className="flex flex-col font-['Space_Grotesk:Medium',sans-serif] font-medium h-[15px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[10px] tracking-[0.5px] uppercase w-[52.19px]">
         <p className="leading-[15px]">Bookings</p>
       </div>
     </div>
@@ -604,7 +604,7 @@ function Container14() {
 function BottomNavigation() {
   return (
     <div className="bg-[#230f14] relative shrink-0 w-full" data-name="Bottom Navigation">
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.1)] border-solid border-t inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.1)] border-solid border-t inset-0 pointer-events-none" />
       <div className="content-stretch flex flex-col items-start pb-[24px] pt-[9px] px-[16px] relative w-full">
         <Container14 />
       </div>

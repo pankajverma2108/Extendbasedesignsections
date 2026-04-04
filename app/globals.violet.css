@@ -179,8 +179,8 @@ body {
 }
 
 .vh-calendar-dark.rdp-root {
-  --rdp-accent-color: #ff2e62;
-  --rdp-accent-background-color: #ff2e62;
+  --rdp-accent-color: #c62828;
+  --rdp-accent-background-color: #c62828;
   --rdp-day_button-border-radius: 0;
   --rdp-day_button-border: 1px solid rgba(51, 69, 103, 0.58);
   --rdp-selected-border: 1px solid transparent;

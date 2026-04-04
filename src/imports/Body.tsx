@@ -18,7 +18,7 @@ function Container() {
     <div className="absolute bottom-[43.78%] content-stretch flex flex-col items-start opacity-20 right-[40px] top-1/4" data-name="Container">
       <div className="h-[101.333px] relative shrink-0 w-[85.333px]" data-name="Icon">
         <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 85.3333 101.333">
-          <path d={svgPaths.pac8e080} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.pac8e080} fill="var(--fill-0, #c62828)" id="Icon" />
         </svg>
       </div>
     </div>
@@ -27,7 +27,7 @@ function Container() {
 
 function Background() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex flex-col items-center px-[12px] py-[4px] relative" data-name="Background">
+    <div className="bg-[#c62828] content-stretch flex flex-col items-center px-[12px] py-[4px] relative" data-name="Background">
       <div className="absolute bg-[rgba(255,255,255,0)] inset-0 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]" data-name="Overlay+Shadow" />
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[12px] text-center text-white tracking-[1.2px] uppercase w-[143.267px]">
         <p className="leading-[16px]">Street Art Inspired</p>
@@ -42,7 +42,7 @@ function Heading() {
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[102px] justify-center leading-[0] relative shrink-0 text-[#f1f5f9] text-[60px] text-center tracking-[-3px] uppercase w-[235.68px]">
         <p className="mb-0">
           <span className="leading-[51px]">{`STAY `}</span>
-          <span className="font-['Space_Grotesk:Bold',sans-serif] font-bold leading-[51px] text-[#ff2e62]">MIX</span>
+          <span className="font-['Space_Grotesk:Bold',sans-serif] font-bold leading-[51px] text-[#c62828]">MIX</span>
         </p>
         <p className="leading-[51px]">REPEAT</p>
       </div>
@@ -60,7 +60,7 @@ function Heading1Margin() {
 
 function Button() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex flex-col items-center justify-center px-[40px] py-[16px] relative rounded-[2px] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] shrink-0" data-name="Button">
+    <div className="bg-[#c62828] content-stretch flex flex-col items-center justify-center px-[40px] py-[16px] relative rounded-[2px] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] shrink-0" data-name="Button">
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[28px] justify-center leading-[0] relative shrink-0 text-[18px] text-center text-white uppercase w-[144.19px]">
         <p className="leading-[28px]">Book Your Stay</p>
       </div>
@@ -71,7 +71,7 @@ function Button() {
 function Container4() {
   return (
     <div className="content-stretch flex flex-col items-center relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[24px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[16px] text-center uppercase w-[152.75px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[24px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[16px] text-center uppercase w-[152.75px]">
         <p className="leading-[24px]">Check Availability</p>
       </div>
     </div>
@@ -83,7 +83,7 @@ function Container5() {
     <div className="h-[9px] relative shrink-0 w-[19px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 19 9">
         <g id="Container">
-          <path d={svgPaths.p19756be0} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p19756be0} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -111,7 +111,7 @@ function Container2() {
 function Container1() {
   return (
     <div className="h-[282px] relative shrink-0 w-full" data-name="Container">
-      <div className="absolute bg-[rgba(255,46,98,0.2)] blur-[12px] bottom-[-16px] h-[48px] left-1/4 mix-blend-screen right-[48.18%] rounded-[12px]" data-name="Overlay+Blur" />
+      <div className="absolute bg-[rgba(198,40,40,0.2)] blur-[12px] bottom-[-16px] h-[48px] left-1/4 mix-blend-screen right-[48.18%] rounded-[12px]" data-name="Overlay+Blur" />
       <div className="-translate-x-1/2 absolute flex h-[29.823px] items-center justify-center left-[calc(50%-0.01px)] top-[-2.91px] w-[168.003px]" style={{ "--transform-inner-width": "1185", "--transform-inner-height": "21" } as React.CSSProperties}>
         <div className="-rotate-2 flex-none">
           <Background />
@@ -128,7 +128,7 @@ function Container6() {
     <div className="absolute h-[19px] left-[8px] top-[391px] w-[20px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 19">
         <g id="Container">
-          <path d={svgPaths.p3e30af00} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p3e30af00} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -138,7 +138,7 @@ function Container6() {
 function HeaderHeroSection() {
   return (
     <div className="absolute content-stretch flex flex-col items-start left-0 overflow-clip pb-[80px] pt-[48px] px-[16px] right-0 top-[81px]" data-name="Header - Hero Section">
-      <div className="absolute bg-[rgba(255,46,98,0.2)] blur-[32px] right-[-40px] rounded-[12px] size-[160px] top-[-40px]" data-name="Overlay+Blur" />
+      <div className="absolute bg-[rgba(198,40,40,0.2)] blur-[32px] right-[-40px] rounded-[12px] size-[160px] top-[-40px]" data-name="Overlay+Blur" />
       <div className="absolute bg-gradient-to-t bottom-0 from-[#230f14] h-[128px] left-0 right-0 to-[rgba(35,15,20,0)]" data-name="Gradient" />
       <Container />
       <Container1 />
@@ -147,15 +147,15 @@ function HeaderHeroSection() {
   );
 }
 
-function TonightAtVibeHouseSectionPaints() {
-  return <div className="absolute bg-[#1a0a0e] inset-0" data-name="Tonight at Vibe House Section paints" />;
+function TonightAtDailySocialSectionPaints() {
+  return <div className="absolute bg-[#1a0a0e] inset-0" data-name="Tonight at The Daily Social Section paints" />;
 }
 
 function Heading1() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 2">
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[36px] justify-center leading-[0] relative shrink-0 text-[#f1f5f9] text-[30px] tracking-[-1.5px] uppercase w-[303.78px]">
-        <p className="leading-[36px]">Tonight at Vibe House</p>
+        <p className="leading-[36px]">Tonight at The Daily Social</p>
       </div>
     </div>
   );
@@ -164,7 +164,7 @@ function Heading1() {
 function Container9() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[20px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[14px] uppercase w-[159.8px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[20px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[14px] uppercase w-[159.8px]">
         <p className="leading-[20px]">{`Don't miss the energy`}</p>
       </div>
     </div>
@@ -190,7 +190,7 @@ function Container7() {
 
 function Background1() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex items-start px-[8px] py-[2px] relative rounded-[12px] shrink-0" data-name="Background">
+    <div className="bg-[#c62828] content-stretch flex items-start px-[8px] py-[2px] relative rounded-[12px] shrink-0" data-name="Background">
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[10px] text-white uppercase w-[55.11px]">
         <p className="leading-[15px]">Live DJ Set</p>
       </div>
@@ -221,7 +221,7 @@ function Container13() {
 
 function Button1() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex flex-col items-center justify-center px-[16px] py-[8px] relative rounded-[2px] shrink-0" data-name="Button">
+    <div className="bg-[#c62828] content-stretch flex flex-col items-center justify-center px-[16px] py-[8px] relative rounded-[2px] shrink-0" data-name="Button">
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[20px] justify-center leading-[0] relative shrink-0 text-[14px] text-center text-white uppercase w-[81.98px]">
         <p className="leading-[20px]">Get Tickets</p>
       </div>
@@ -272,7 +272,7 @@ function Container14() {
     <div className="relative shrink-0 size-[55px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 55 55">
         <g id="Container">
-          <path d={svgPaths.p34cb7300} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p34cb7300} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -390,7 +390,7 @@ function Container17() {
     <div className="absolute bottom-[-534.5px] h-[19px] right-[-32px] w-[20px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 19">
         <g id="Container">
-          <path d={svgPaths.p3e30af00} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p3e30af00} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -399,8 +399,8 @@ function Container17() {
 
 function FeatureCard() {
   return (
-    <div className="bg-[rgba(255,46,98,0.1)] col-1 justify-self-stretch relative rounded-[8px] row-2 self-start shrink-0" data-name="Feature Card 1">
-      <div aria-hidden="true" className="absolute border-2 border-[#ff2e62] border-dashed inset-0 pointer-events-none rounded-[8px]" />
+    <div className="bg-[rgba(198,40,40,0.1)] col-1 justify-self-stretch relative rounded-[8px] row-2 self-start shrink-0" data-name="Feature Card 1">
+      <div aria-hidden="true" className="absolute border-2 border-[#c62828] border-dashed inset-0 pointer-events-none rounded-[8px]" />
       <div className="flex flex-col items-center justify-center size-full">
         <div className="content-stretch flex flex-col items-center justify-center p-[34px] relative w-full">
           <Margin />
@@ -416,7 +416,7 @@ function FeatureCard() {
 
 function Background2() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex items-start px-[8px] py-[2px] relative rounded-[12px] shrink-0" data-name="Background">
+    <div className="bg-[#c62828] content-stretch flex items-start px-[8px] py-[2px] relative rounded-[12px] shrink-0" data-name="Background">
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[10px] text-white uppercase w-[59.03px]">
         <p className="leading-[15px]">Community</p>
       </div>
@@ -517,17 +517,17 @@ function Container10() {
   );
 }
 
-function TonightAtVibeHouseSection() {
+function TonightAtDailySocialSection() {
   return (
-    <div className="absolute content-stretch flex flex-col gap-[32px] items-start left-0 px-[16px] py-[48px] right-0 top-[491px]" data-name="Tonight at Vibe House Section">
+    <div className="absolute content-stretch flex flex-col gap-[32px] items-start left-0 px-[16px] py-[48px] right-0 top-[491px]" data-name="Tonight at The Daily Social Section">
       <div className="absolute flex inset-[-3.4px_0_-3.41px_0] items-center justify-center">
         <div className="flex-none h-[1449px] rotate-1 skew-x-1 w-[390.06px]">
           <div className="relative size-full" data-name="Border">
-            <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.2)] border-b-4 border-solid border-t-4 inset-0 pointer-events-none" />
+            <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.2)] border-b-4 border-solid border-t-4 inset-0 pointer-events-none" />
           </div>
         </div>
       </div>
-      <TonightAtVibeHouseSectionPaints />
+      <TonightAtDailySocialSectionPaints />
       <Container7 />
       <Container10 />
     </div>
@@ -539,7 +539,7 @@ function Container21() {
     <div className="h-[14px] relative shrink-0 w-[20px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 14">
         <g id="Container">
-          <path d={svgPaths.p18e761b0} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p18e761b0} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -555,7 +555,7 @@ function Heading5() {
       <Container21 />
       <div className="absolute bottom-[-8.62px] flex h-[10.233px] items-center justify-center left-[-0.06px] w-[128.12px]" style={{ "--transform-inner-width": "1185", "--transform-inner-height": "0" } as React.CSSProperties}>
         <div className="-rotate-1 flex-none">
-          <div className="bg-[rgba(255,46,98,0.3)] h-[8px] w-[128px]" data-name="Overlay" />
+          <div className="bg-[rgba(198,40,40,0.3)] h-[8px] w-[128px]" data-name="Overlay" />
         </div>
       </div>
     </div>
@@ -587,7 +587,7 @@ function Container23() {
 function Container25() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[12px] tracking-[2.4px] uppercase w-full">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#c62828] text-[12px] tracking-[2.4px] uppercase w-full">
         <p className="leading-[16px]">Signature Room</p>
       </div>
     </div>
@@ -697,7 +697,7 @@ function Margin7() {
 
 function Button3() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex flex-col items-center justify-center px-[32px] py-[12px] relative rounded-[2px] shadow-[4px_4px_0px_0px_#1a0a0e] shrink-0" data-name="Button">
+    <div className="bg-[#c62828] content-stretch flex flex-col items-center justify-center px-[32px] py-[12px] relative rounded-[2px] shadow-[4px_4px_0px_0px_#1a0a0e] shrink-0" data-name="Button">
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[24px] justify-center leading-[0] relative shrink-0 text-[16px] text-center text-white uppercase w-[82.16px]">
         <p className="leading-[24px]">Book Now</p>
       </div>
@@ -747,7 +747,7 @@ function RoomCard() {
   return (
     <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[8px] shrink-0 w-full" data-name="Room Card 1">
       <div className="absolute inset-[10px_-6px_-6px_10px]" data-name="Border">
-        <div aria-hidden="true" className="absolute border-2 border-[rgba(255,46,98,0.1)] border-solid inset-0 pointer-events-none" />
+        <div aria-hidden="true" className="absolute border-2 border-[rgba(198,40,40,0.1)] border-solid inset-0 pointer-events-none" />
       </div>
       <RoomCard1Paints />
       <Container23 />
@@ -773,7 +773,7 @@ function Container29() {
 function Container31() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[12px] tracking-[2.4px] uppercase w-full">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#c62828] text-[12px] tracking-[2.4px] uppercase w-full">
         <p className="leading-[16px]">Shared Experience</p>
       </div>
     </div>
@@ -877,7 +877,7 @@ function Margin10() {
 
 function Button4() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex flex-col items-center justify-center px-[32px] py-[12px] relative rounded-[2px] shadow-[4px_4px_0px_0px_#1a0a0e] shrink-0" data-name="Button">
+    <div className="bg-[#c62828] content-stretch flex flex-col items-center justify-center px-[32px] py-[12px] relative rounded-[2px] shadow-[4px_4px_0px_0px_#1a0a0e] shrink-0" data-name="Button">
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[24px] justify-center leading-[0] relative shrink-0 text-[16px] text-center text-white uppercase w-[82.16px]">
         <p className="leading-[24px]">Book Now</p>
       </div>
@@ -966,7 +966,7 @@ function Heading8() {
 function Container36() {
   return (
     <div className="content-stretch flex flex-col items-center relative shrink-0 w-full" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[24px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[16px] text-center uppercase w-[265.13px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[24px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[16px] text-center uppercase w-[265.13px]">
         <p className="leading-[24px]">Captured by you, curated by us</p>
       </div>
     </div>
@@ -1129,7 +1129,7 @@ function Container43() {
     <div className="relative shrink-0 size-[20px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 20">
         <g id="Container">
-          <path d={svgPaths.p3de21300} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p3de21300} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -1138,7 +1138,7 @@ function Container43() {
 
 function Button5() {
   return (
-    <div className="bg-[rgba(255,46,98,0.1)] content-stretch flex items-center justify-center p-[8px] relative rounded-[12px] shrink-0" data-name="Button">
+    <div className="bg-[rgba(198,40,40,0.1)] content-stretch flex items-center justify-center p-[8px] relative rounded-[12px] shrink-0" data-name="Button">
       <Container43 />
     </div>
   );
@@ -1157,7 +1157,7 @@ function Container42() {
 function NavHeader() {
   return (
     <div className="absolute bg-[#230f14] content-stretch flex items-center left-0 pb-[17px] pt-[16px] px-[16px] right-0 top-0" data-name="Nav - Header">
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.1)] border-b border-solid inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.1)] border-b border-solid inset-0 pointer-events-none" />
       <Container40 />
       <Heading9 />
       <Container42 />
@@ -1170,7 +1170,7 @@ function Container45() {
     <div className="h-[18px] relative shrink-0 w-[16px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 18">
         <g id="Container">
-          <path d={svgPaths.p12a32500} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p12a32500} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -1188,7 +1188,7 @@ function Container44() {
 function Container46() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[18px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[12px] tracking-[1.2px] uppercase w-[38.03px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[18px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[12px] tracking-[1.2px] uppercase w-[38.03px]">
         <p className="leading-[18px]">Home</p>
       </div>
     </div>
@@ -1332,7 +1332,7 @@ function Link3() {
 function BackgroundHorizontalBorderOverlayBlur() {
   return (
     <div className="backdrop-blur-[6px] bg-[#230f14] relative shrink-0 w-full" data-name="Background+HorizontalBorder+OverlayBlur">
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.2)] border-solid border-t inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.2)] border-solid border-t inset-0 pointer-events-none" />
       <div className="flex flex-row justify-center size-full">
         <div className="content-stretch flex gap-[8px] items-start justify-center pb-[24px] pt-[9px] px-[16px] relative w-full">
           <div className="absolute bg-[rgba(255,255,255,0)] inset-0 shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.25)]" data-name="Overlay+Shadow" />
@@ -1358,7 +1358,7 @@ export default function Body() {
   return (
     <div className="bg-gradient-to-r from-[#230f14] relative size-full to-[#230f14]" data-name="Body">
       <HeaderHeroSection />
-      <TonightAtVibeHouseSection />
+      <TonightAtDailySocialSection />
       <OurSpacesSection />
       <SectionGuestEnergyCollage />
       <div className="absolute h-[80px] left-0 right-0 top-[4194.25px]" data-name="Footer / Bottom Navigation" />

@@ -19,7 +19,7 @@ function Container1() {
   return (
     <div className="relative shrink-0" data-name="Container">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex flex-col items-start relative">
-        <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[20px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[14px] tracking-[1.4px] uppercase w-[100.352px]">
+        <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[20px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[14px] tracking-[1.4px] uppercase w-[100.352px]">
           <p className="leading-[20px]">Dorm Alpha</p>
         </div>
       </div>
@@ -29,8 +29,8 @@ function Container1() {
 
 function Link() {
   return (
-    <div className="bg-[rgba(255,46,98,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center px-[2px] py-[14px] relative rounded-[4px] w-[171px]" data-name="Link">
-      <div aria-hidden="true" className="absolute border-2 border-[#ff2e62] border-solid inset-0 pointer-events-none rounded-[4px]" />
+    <div className="bg-[rgba(198,40,40,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center px-[2px] py-[14px] relative rounded-[4px] w-[171px]" data-name="Link">
+      <div aria-hidden="true" className="absolute border-2 border-[#c62828] border-solid inset-0 pointer-events-none rounded-[4px]" />
       <Container1 />
     </div>
   );
@@ -196,7 +196,7 @@ function BackgroundBorderShadow() {
 
 function MineSticker() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex flex-col items-start px-[18px] py-[10px] relative" data-name="MINE Sticker">
+    <div className="bg-[#c62828] content-stretch flex flex-col items-start px-[18px] py-[10px] relative" data-name="MINE Sticker">
       <div aria-hidden="true" className="absolute border-2 border-solid border-white inset-0 pointer-events-none" />
       <div className="absolute bg-[rgba(255,255,255,0)] inset-0 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]" data-name="MINE Sticker:shadow" />
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[28px] justify-center leading-[0] relative shrink-0 text-[20px] text-white w-[53.38px]">
@@ -243,7 +243,7 @@ function Container9() {
 
 function HotPickBadge() {
   return (
-    <div className="absolute bg-[#ff2e62] bottom-[8px] content-stretch flex gap-[3.99px] items-center px-[8px] py-[4px] right-[8px] rounded-[12px]" data-name="HOT PICK Badge">
+    <div className="absolute bg-[#c62828] bottom-[8px] content-stretch flex gap-[3.99px] items-center px-[8px] py-[4px] right-[8px] rounded-[12px]" data-name="HOT PICK Badge">
       <Container9 />
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[10px] text-white uppercase w-[42.55px]">
         <p className="leading-[15px]">HOT PICK</p>
@@ -282,7 +282,7 @@ function Container12() {
 function Container13() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="flex flex-col font-['Liberation_Serif:Bold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#ff2e62] text-[12px] w-full">
+      <div className="flex flex-col font-['Liberation_Serif:Bold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#c62828] text-[12px] w-full">
         <p className="leading-[16px]">✓ AVAILABLE</p>
       </div>
     </div>
@@ -300,9 +300,9 @@ function Container11() {
 
 function Button() {
   return (
-    <div className="bg-[rgba(255,46,98,0.2)] content-stretch flex flex-col items-center justify-center px-[13px] py-[5px] relative rounded-[2px] shrink-0" data-name="Button">
-      <div aria-hidden="true" className="absolute border border-[#ff2e62] border-solid inset-0 pointer-events-none rounded-[2px]" />
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[12px] text-center uppercase w-[53.09px]">
+    <div className="bg-[rgba(198,40,40,0.2)] content-stretch flex flex-col items-center justify-center px-[13px] py-[5px] relative rounded-[2px] shrink-0" data-name="Button">
+      <div aria-hidden="true" className="absolute border border-[#c62828] border-solid inset-0 pointer-events-none rounded-[2px]" />
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[16px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[12px] text-center uppercase w-[53.09px]">
         <p className="leading-[16px]">Upgrade</p>
       </div>
     </div>
@@ -671,7 +671,7 @@ function Container33() {
     <div className="relative shrink-0 size-[20px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 20">
         <g id="Container">
-          <path d={svgPaths.p2816f2c0} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p2816f2c0} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -680,7 +680,7 @@ function Container33() {
 
 function Button2() {
   return (
-    <div className="bg-[rgba(255,46,98,0.2)] content-stretch flex items-center justify-center relative rounded-[12px] shrink-0 size-[40px]" data-name="Button">
+    <div className="bg-[rgba(198,40,40,0.2)] content-stretch flex items-center justify-center relative rounded-[12px] shrink-0 size-[40px]" data-name="Button">
       <Container33 />
     </div>
   );
@@ -699,7 +699,7 @@ function Container32() {
 function Header() {
   return (
     <div className="absolute backdrop-blur-[6px] bg-[rgba(35,15,20,0.8)] content-stretch flex items-center justify-between left-0 pb-[9px] pt-[16px] px-[16px] right-0 top-0" data-name="Header">
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.2)] border-b border-solid inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.2)] border-b border-solid inset-0 pointer-events-none" />
       <Container30 />
       <Heading2 />
       <Container32 />
@@ -745,7 +745,7 @@ function Container36() {
     <div className="h-[14px] relative shrink-0 w-[20px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 14">
         <g id="Container">
-          <path d={svgPaths.p38b8fb00} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p38b8fb00} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -755,7 +755,7 @@ function Container36() {
 function Container37() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[10px] uppercase w-[43.83px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[10px] uppercase w-[43.83px]">
         <p className="leading-[15px]">My Bunk</p>
       </div>
     </div>
@@ -842,7 +842,7 @@ function Link5() {
 function BackgroundHorizontalBorderOverlayBlur() {
   return (
     <div className="backdrop-blur-[8px] bg-[rgba(35,15,20,0.95)] h-[76px] relative shrink-0 w-full" data-name="Background+HorizontalBorder+OverlayBlur">
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.2)] border-solid border-t inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.2)] border-solid border-t inset-0 pointer-events-none" />
       <div className="flex flex-row justify-center size-full">
         <div className="content-stretch flex gap-[8px] items-start justify-center pb-[24px] pt-[13px] px-[16px] relative size-full">
           <Link2 />
@@ -865,7 +865,7 @@ function BottomNavigationBar() {
 
 function Background() {
   return (
-    <div className="h-[967px] min-h-[967px] overflow-clip relative shrink-0 w-full" data-name="Background" style={{ backgroundImage: "url('data:image/svg+xml;utf8,<svg viewBox=\\'0 0 390 967\\' xmlns=\\'http://www.w3.org/2000/svg\\' preserveAspectRatio=\\'none\\'><rect x=\\'0\\' y=\\'0\\' height=\\'100%\\' width=\\'100%\\' fill=\\'url(%23grad)\\' opacity=\\'1\\'/><defs><radialGradient id=\\'grad\\' gradientUnits=\\'userSpaceOnUse\\' cx=\\'0\\' cy=\\'0\\' r=\\'10\\' gradientTransform=\\'matrix(74.534 0 0 74.534 78 290.1)\\'><stop stop-color=\\'rgba(255,46,98,0.15)\\' offset=\\'0\\'/><stop stop-color=\\'rgba(255,46,98,0)\\' offset=\\'0.5\\'/></radialGradient></defs></svg>'), url('data:image/svg+xml;utf8,<svg viewBox=\\'0 0 390 967\\' xmlns=\\'http://www.w3.org/2000/svg\\' preserveAspectRatio=\\'none\\'><rect x=\\'0\\' y=\\'0\\' height=\\'100%\\' width=\\'100%\\' fill=\\'url(%23grad)\\' opacity=\\'1\\'/><defs><radialGradient id=\\'grad\\' gradientUnits=\\'userSpaceOnUse\\' cx=\\'0\\' cy=\\'0\\' r=\\'10\\' gradientTransform=\\'matrix(74.534 0 0 74.534 312 676.9)\\'><stop stop-color=\\'rgba(57,255,20,0.1)\\' offset=\\'0\\'/><stop stop-color=\\'rgba(57,255,20,0)\\' offset=\\'0.4\\'/></radialGradient></defs></svg>')" }}>
+    <div className="h-[967px] min-h-[967px] overflow-clip relative shrink-0 w-full" data-name="Background" style={{ backgroundImage: "url('data:image/svg+xml;utf8,<svg viewBox=\\'0 0 390 967\\' xmlns=\\'http://www.w3.org/2000/svg\\' preserveAspectRatio=\\'none\\'><rect x=\\'0\\' y=\\'0\\' height=\\'100%\\' width=\\'100%\\' fill=\\'url(%23grad)\\' opacity=\\'1\\'/><defs><radialGradient id=\\'grad\\' gradientUnits=\\'userSpaceOnUse\\' cx=\\'0\\' cy=\\'0\\' r=\\'10\\' gradientTransform=\\'matrix(74.534 0 0 74.534 78 290.1)\\'><stop stop-color=\\'rgba(198,40,40,0.15)\\' offset=\\'0\\'/><stop stop-color=\\'rgba(198,40,40,0)\\' offset=\\'0.5\\'/></radialGradient></defs></svg>'), url('data:image/svg+xml;utf8,<svg viewBox=\\'0 0 390 967\\' xmlns=\\'http://www.w3.org/2000/svg\\' preserveAspectRatio=\\'none\\'><rect x=\\'0\\' y=\\'0\\' height=\\'100%\\' width=\\'100%\\' fill=\\'url(%23grad)\\' opacity=\\'1\\'/><defs><radialGradient id=\\'grad\\' gradientUnits=\\'userSpaceOnUse\\' cx=\\'0\\' cy=\\'0\\' r=\\'10\\' gradientTransform=\\'matrix(74.534 0 0 74.534 312 676.9)\\'><stop stop-color=\\'rgba(57,255,20,0.1)\\' offset=\\'0\\'/><stop stop-color=\\'rgba(57,255,20,0)\\' offset=\\'0.4\\'/></radialGradient></defs></svg>')" }}>
       <RoomSelectorTabs />
       <BunkGrid />
       <StickyCtaAreaMargin />

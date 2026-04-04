@@ -501,7 +501,7 @@ We need to restructure.
 ## ✅ Final Figma Structure
 
 text
-📁 Vibe House Design System
+📁 The Daily Social Design System
 
 01 Foundations
    - Colors
@@ -1018,8 +1018,8 @@ Note: A date picker component for selecting a range of dates.
 Trust & Assurances Grid / Why Vibehouse: "Stay With Confidence" (Icons/Cards for Clean Rooms, Safe & Secure, AC Dorms, 24/7 Reception & Power, Secure Lockers, 7-Day Cancel).
 Amenities Carousel: Fast Wi-Fi, Hot Showers, Co-working, Laundry, etc. 
 Rooms Overview: High-level cards (4-Bed Mixed, 4-Bed Female, Private) with starting prices. (Use the room cards same as we have on /rooms page)
-Tonight at Vibe House: Dynamic event preview cards (Queries Document DB for upcoming 48 hours).
-The Vibe House Experience: text/images (focusing on community and safety).
+Tonight at The Daily Social: Dynamic event preview cards (Queries Document DB for upcoming 48 hours).
+The Daily Social Experience: text/images (focusing on community and safety).
 Guest energy - social media redirect
 Social Proof: Guest reviews/testimonials, The Energy
 Final CTA: Secondary Booking Widget.
@@ -1076,7 +1076,7 @@ Plan
 
 Open
 
-Next.js App Router Migration for Vibe House Marketing + Booking Shell
+Next.js App Router Migration for The Daily Social Marketing + Booking Shell
 Summary
 Migrate the current Vite marketing site to Next.js App Router as a production-grade frontend foundation, preserving launch-parity for the existing public pages while restructuring the UI into reusable sections, shared layout primitives, and CMS-ready content modules. Include an API-ready booking widget shell with explicit idle/loading/success/error states, but do not implement real auth, profile, dashboard, or backend integrations in this phase.
 
@@ -1172,7 +1172,7 @@ Plan
 
 Open
 
-Next.js App Router Migration for Vibe House Marketing Site
+Next.js App Router Migration for The Daily Social Marketing Site
 Summary
 Migrate the current Vite app to Next.js App Router as a clean marketing-site foundation only. This phase includes the public pages, shared layout, reusable UI sections, and CMS-ready content modules. The booking widget remains interactive at the UI level with local date input behavior and validation, but it will not include async submit contracts, API integration, auth, dashboard, or backend flow logic yet.
 

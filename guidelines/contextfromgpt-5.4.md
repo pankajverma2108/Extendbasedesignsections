@@ -5,7 +5,7 @@ Repo: `C:\Space\Vibehouse2\Extendbasedesignsections`
 
 ## User direction across this chat
 
-The user wants the project to keep the Vibe House core theme unless they explicitly request a visual/theme change.
+The user wants the project to keep The Daily Social core theme unless they explicitly request a visual/theme change.
 
 They asked for:
 
@@ -13,14 +13,14 @@ They asked for:
 - Route rename from `/rooms` to `/property`, including redirects and label updates from `Rooms` to `Property`.
 - Property page cleanup:
   - remove unnecessary sticker tags and labels
-  - use centered `Vibe House` and bold `Koramangala`
+  - use centered `The Daily Social` and bold `Koramangala`
   - update address and Google Maps link
   - use `About` instead of `Property About`
   - remove “Read More” sticker, “Starting at 599”, “Only category inventory shown”, and other non-meaningful tags
   - amenities should be shown as icons and labels, not card tiles
   - guidelines and FAQ should use accordion layouts
   - booking summary should be sticky on desktop and mobile sticky at bottom on mobile
-  - preserve the Vibe House theme while changing layout/behavior
+  - preserve The Daily Social theme while changing layout/behavior
 - Follow layout/structure guidance from:
   - `guidelines/NavMenu_MobileDesign.coffee`
   - `guidelines/NavMenu_MobileDesign.png`
@@ -39,7 +39,7 @@ They asked for:
 - Mobile overlay nav was reworked in `components/marketing/mobile-staggered-menu.tsx`.
 - `/rooms` now redirects to `/property`.
 - Links throughout the site were updated to point to `/property`.
-- Property page data was changed to Vibe House Koramangala.
+- Property page data was changed to The Daily Social Koramangala.
 - Guidelines and FAQ were previously converted to accordion layouts.
 - Policies page was updated to a lighter accordion-based structure.
 
@@ -47,7 +47,7 @@ They asked for:
 
 The latest instruction was:
 
-- Revert the Availability section to the earlier Vibe House themed look, but keep the newer functionality and layout.
+- Revert the Availability section to the earlier The Daily Social themed look, but keep the newer functionality and layout.
 - Keep theme/colors centralized in one place so the core theme can be changed later from a single source.
 - Make the property page About section match `guidelines/About section.md`.
 - Add smooth dropdown/accordion animations everywhere.
@@ -60,7 +60,7 @@ The latest instruction was:
 
 ### Shared theme and animation foundation
 
-Updated `app/globals.css` to make the core Vibe House theme more centralized with reusable variables and helper classes:
+Updated `app/globals.css` to make the core The Daily Social theme more centralized with reusable variables and helper classes:
 
 - Added semantic variables:
   - `--vh-panel`
@@ -87,7 +87,7 @@ Updated `app/globals.css` to make the core Vibe House theme more centralized wit
   - `vh-fade-out`
   - `vh-scale-in`
 
-This is now the main central place for core Vibe House theme tokens.
+This is now the main central place for core The Daily Social theme tokens.
 
 ### Shared calendar component
 
@@ -95,7 +95,7 @@ Added a shared calendar at:
 
 - `components/ui/calendar.tsx`
 
-This is based on `react-day-picker`, themed to the current Vibe House palette instead of generic shadcn defaults.
+This is based on `react-day-picker`, themed to the current The Daily Social palette instead of generic shadcn defaults.
 
 ### Property page
 
@@ -110,7 +110,7 @@ Main changes:
   - gradient fade when collapsed
   - `View More` / `View Less`
   - smooth height transition
-- Availability section now uses the earlier Vibe House themed panel styling again instead of the plain white simplified version.
+- Availability section now uses the earlier The Daily Social themed panel styling again instead of the plain white simplified version.
 - Availability still keeps the new interaction model:
   - `Add` button
   - increment/decrement quantity controls
@@ -151,7 +151,7 @@ Verified after the latest changes:
 ## Notes for the next assistant
 
 - The user is very specific about separating layout/behavior changes from theme changes. Do not change colors/theme unless the user explicitly asks.
-- If the user asks for further refinements, preserve the current Vibe House palette and sticker/tag language unless they specifically say otherwise.
+- If the user asks for further refinements, preserve the current The Daily Social palette and sticker/tag language unless they specifically say otherwise.
 - The user wants design/layout guidance to continue following the markdown files inside `guidelines/`.
 
 ## Latest follow-up on 2026-03-21
@@ -159,7 +159,7 @@ Verified after the latest changes:
 The user then asked for another pass with these directions:
 
 - Fix the floating header and hero overlap because the hero tagline/text was getting obscured by the nav.
-- Keep the updated Availability section layout/behavior, but continue preserving the Vibe House core theme, typography, sticker-tag feel, and design language.
+- Keep the updated Availability section layout/behavior, but continue preserving The Daily Social core theme, typography, sticker-tag feel, and design language.
 - On the homepage, merge `Stay with confidence` into `Amenities` and remove the separate confidence section.
 - Make homepage amenity items visually closer to the provided reference:
   - colored icons

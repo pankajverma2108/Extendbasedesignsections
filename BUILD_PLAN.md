@@ -1,4 +1,4 @@
-# Vibe House Full Build Plan
+# The Daily Social Full Build Plan
 
 ## 1) Product Goal
 Build a visually distinct, mobile-first hospitality web app that converts discovery traffic into bookings while supporting profile, stay management, and event-driven engagement.

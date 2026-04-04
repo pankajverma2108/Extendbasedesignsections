@@ -104,7 +104,7 @@ export const policies: Record<string, PolicyPageContent> = {
         id: "acceptance",
         title: "Acceptance of Terms",
         content: [
-          "By making a booking at Vibe House, you agree to these terms and conditions.",
+          "By making a booking at The Daily Social, you agree to these terms and conditions.",
           "We may revise these terms over time and publish updates on the website.",
         ],
       },
@@ -121,7 +121,7 @@ export const policies: Record<string, PolicyPageContent> = {
         id: "liability",
         title: "Limitation of Liability",
         content: [
-          "Vibe House is not responsible for loss, theft, or damage to personal belongings.",
+          "The Daily Social is not responsible for loss, theft, or damage to personal belongings.",
           "Use of facilities is at your own risk unless harm is caused by our negligence.",
           "Travel insurance is strongly recommended.",
         ],

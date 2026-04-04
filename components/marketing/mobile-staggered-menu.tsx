@@ -31,7 +31,7 @@ const figmaMenuCards: FigmaMenuCard[] = [
     href: "/property",
     title: "Rooms",
     subtitle: "find your corner...",
-    bg: "#FF2E62",
+    bg: "#c62828",
     text: "#FFFFFF",
     mutedText: "rgba(255,255,255,0.8)",
     rotate: "-rotate-[1.5deg]",
@@ -192,7 +192,7 @@ export function MobileStaggeredMenu({ items, isAuthenticated, onOpenSignIn }: Mo
 
                   <motion.aside
                     animate={{ opacity: 1, y: 0 }}
-                    className="fixed inset-0 z-[100] overflow-hidden bg-[radial-gradient(130%_100%_at_10%_0%,rgba(255,46,98,0.18),transparent_52%),radial-gradient(120%_100%_at_85%_18%,rgba(0,209,255,0.12),transparent_58%),linear-gradient(170deg,#1A0B12_0%,#230F14_62%,#140912_100%)]"
+                    className="fixed inset-0 z-[100] overflow-hidden bg-[radial-gradient(130%_100%_at_10%_0%,rgba(198,40,40,0.18),transparent_52%),radial-gradient(120%_100%_at_85%_18%,rgba(0,209,255,0.12),transparent_58%),linear-gradient(170deg,#1A0B12_0%,#230F14_62%,#140912_100%)]"
                     exit={{ opacity: 0, y: 6 }}
                     initial={{ opacity: 0, y: 12 }}
                     transition={{ duration: 0.22, ease: "easeOut" }}
@@ -253,7 +253,7 @@ export function MobileStaggeredMenu({ items, isAuthenticated, onOpenSignIn }: Mo
                                         className="rounded-xl border border-white/20 px-2 py-1 text-[10px] font-bold not-italic uppercase tracking-[1px]"
                                         label={card.badge}
                                         rotate="rotate-0"
-                                        text="#FF2E62"
+                                        text="#c62828"
                                       />
                                     ) : card.title === "Events" ? (
                                       <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: card.iconBg ?? "transparent" }}>

@@ -57,7 +57,7 @@ GET /public/events?filter=past
     "contact_link": "https://wa.me/919876543210",
     "poster_url": "https://vibehouse-kyc-documents.s3.ap-south-1.amazonaws.com/events/prop-bandra-001/a1b2c3d4.jpg",
     "badge_label": "Tonight",
-    "badge_color": "#ff2e62",
+    "badge_color": "#c62828",
     "is_upcoming": true
   }
 ]
@@ -92,7 +92,7 @@ Returns a single active event by ID. Returns 404 if the event doesn't exist or i
   "contact_link": "https://wa.me/919876543210",
   "poster_url": "https://...",
   "badge_label": "Tonight",
-  "badge_color": "#ff2e62",
+  "badge_color": "#c62828",
   "is_upcoming": true
 }
 ```
@@ -119,7 +119,7 @@ Returns a single active event by ID. Returns 404 if the event doesn't exist or i
 | `contact_link` | string \| null | RSVP / contact URL |
 | `poster_url` | string \| null | S3 URL of event poster image |
 | `badge_label` | string \| null | Badge text (e.g. "Tonight") |
-| `badge_color` | string \| null | Badge hex colour (e.g. "#ff2e62") |
+| `badge_color` | string \| null | Badge hex colour (e.g. "#c62828") |
 | `is_upcoming` | boolean | Computed: `true` if `date >= today` |
 
 ---

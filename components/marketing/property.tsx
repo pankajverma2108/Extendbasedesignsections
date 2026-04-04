@@ -18,6 +18,7 @@ import {
   Clock3,
   Droplets,
   GlassWater,
+  Info,
   LampDesk,
   Lock,
   Minus,
@@ -36,6 +37,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { buildBookingSignature, saveBookingDraft, type BookingDraftRoom } from "@/lib/booking-session";
 import type { CxRoomCategory } from "@/lib/cx-api";
 import {
@@ -51,7 +53,7 @@ import {
   roomFaqs,
 } from "@/content/rooms";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
-import { FadeIn, Stagger, StaggerItem } from "@/components/shared/motion";
+import { FadeIn } from "@/components/shared/motion";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -140,17 +142,6 @@ function formatDisplayDate(value?: string): string {
   }).format(date);
 }
 
-function formatShortDate(date?: Date) {
-  if (!date) {
-    return "Select";
-  }
-
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "numeric",
-    month: "short",
-  }).format(date);
-}
-
 function resolveNextRange(current: DateRange | undefined, nextValue: DateRange | undefined, selectedDay?: Date) {
   if (!selectedDay) {
     return nextValue;
@@ -196,34 +187,37 @@ function buildPropertyHref(checkIn: string, checkOut: string, propertyId?: strin
   return query ? `/property?${query}` : "/property";
 }
 
-const emptySummaryImage = encodeURI("/design-guidelines/Property Page/calendar.svg");
-
 const bookingEssentials = [
   {
+    id: "dinner",
     title: "Dinner",
-    originalPrice: "Rs. 385",
-    price: "Rs. 350",
+    originalPrice: 385,
+    price: 350,
     note: "per adult - per day",
-    actionLabel: "View menu",
+    actionLabel: "Add",
     icon: UtensilsCrossed,
   },
   {
+    id: "toilet-kit",
     title: "Toilet Kit",
-    originalPrice: "Rs. 141.9",
-    price: "Rs. 129",
+    originalPrice: 141.9,
+    price: 129,
     note: "per kit",
     actionLabel: "Add",
     icon: Sparkles,
   },
   {
+    id: "bath-towel",
     title: "Bath Towel",
-    originalPrice: "Rs. 141.9",
-    price: "Rs. 129",
+    originalPrice: 141.9,
+    price: 129,
     note: "per towel",
     actionLabel: "Add",
     icon: Shirt,
   },
 ] as const;
+
+const propertyAboutText = propertyOverview.join(" ");
 
 function iconForLabel(label: string) {
   return roomFeatureIcons[label] ?? Sparkles;
@@ -241,7 +235,7 @@ function SectionTitle({
   title: string;
   className?: string;
 }) {
-  return <h2 className={`text-[28px] font-bold leading-[34px] text-white ${className}`}>{title}</h2>;
+  return <h2 className={`vh-title text-center text-[26px] leading-[1.12] text-white lg:text-left md:text-[30px] ${className}`}>{title}</h2>;
 }
 
 function DateRangePicker({
@@ -260,23 +254,22 @@ function DateRangePicker({
       <PopoverTrigger asChild>
         <button
           aria-expanded={open}
-          className="flex w-full items-center justify-between gap-4 rounded-[20px] border border-white/12 bg-[rgba(15,16,26,0.86)] px-4 py-4 text-left hover:border-white/20"
+          className="flex w-full items-center justify-center gap-3 rounded-full border border-[var(--vh-pink)] bg-[rgba(198,40,40,0.18)] px-4 py-3 text-center text-white shadow-[0_10px_26px_rgba(0,0,0,0.28)]"
           type="button"
         >
-          <div className="grid min-w-0 flex-1 grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] items-center gap-3 md:gap-5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/6 text-[var(--vh-cyan)]">
-              <CalendarDays className="h-4 w-4" />
+          <div className="inline-flex min-w-0 items-center gap-3">
+            <span className="inline-flex items-center justify-center text-[var(--vh-cyan)]">
+              <CalendarDays className="h-5 w-5" />
             </span>
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">Check In</p>
-              <p className="mt-1 text-sm font-semibold text-white">{formatShortDate(dateRange?.from)}</p>
-            </div>
-            <div className="min-w-0 border-l border-white/10 pl-3 md:pl-5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">Check Out</p>
-              <p className="mt-1 text-sm font-semibold text-white">{formatShortDate(dateRange?.to)}</p>
-            </div>
+            <span className="text-base font-semibold md:text-lg">
+              {formatDisplayDate(toLocalDateString(dateRange?.from))}
+            </span>
+            <span aria-hidden="true">&#8594;</span>
+            <span className="text-base font-semibold md:text-lg">
+              {formatDisplayDate(toLocalDateString(dateRange?.to))}
+            </span>
           </div>
-          <ChevronDown className={`h-4 w-4 text-white/60 ${open ? "rotate-180" : ""}`} />
+          <ChevronDown className={`h-4 w-4 text-white/70 ${open ? "rotate-180" : ""}`} />
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -306,6 +299,10 @@ function DateRangePicker({
 function DesktopBookingSummary({
   checkIn,
   checkOut,
+  essentials,
+  essentialsTotal,
+  isAgeConfirmed,
+  onAgeConfirmChange,
   selectedCounts,
   roomCategoryList,
   onContinue,
@@ -313,6 +310,15 @@ function DesktopBookingSummary({
 }: {
   checkIn: string;
   checkOut: string;
+  essentials: Array<{
+    id: string;
+    title: string;
+    quantity: number;
+    unitPrice: number;
+  }>;
+  essentialsTotal: number;
+  isAgeConfirmed: boolean;
+  onAgeConfirmChange: (value: boolean) => void;
   selectedCounts: Record<string, number>;
   roomCategoryList: RoomCategory[];
   onContinue: () => void;
@@ -328,8 +334,11 @@ function DesktopBookingSummary({
     (sum, room) => sum + room.basePrice * (selectedCounts[room.slug] ?? 0) * nights,
     0,
   );
-  const taxes = Math.round(roomTotal * 0.12);
-  const grandTotal = roomTotal + taxes;
+  const roomTaxes = Math.round(roomTotal * 0.12);
+  const addonTaxes = Math.round(essentialsTotal * 0.18);
+  const taxes = roomTaxes + addonTaxes;
+  const grandTotal = roomTotal + essentialsTotal + taxes;
+  const hasSelection = selectedRooms.length > 0;
 
   return (
     <aside className="hidden self-start lg:sticky lg:top-28 lg:block">
@@ -353,7 +362,7 @@ function DesktopBookingSummary({
         </div>
 
         <div className="mt-5 space-y-3 border-t border-white/10 pt-5 text-sm text-white/82">
-          {selectedRooms.length > 0 ? (
+          {hasSelection ? (
             selectedRooms.map((room) => (
               <div key={room.slug} className="flex items-start justify-between gap-3">
                 <div>
@@ -368,48 +377,183 @@ function DesktopBookingSummary({
               </div>
             ))
           ) : (
-            <div className="space-y-4 rounded-[20px] border border-dashed border-white/10 bg-white/5 p-4 text-center">
-              <Image alt="Empty booking summary" className="mx-auto h-36 w-36 object-contain" height={144} src={emptySummaryImage} width={144} />
-              <p className="text-sm font-semibold text-white">Select a room to unlock the booking summary.</p>
-              <p className="text-xs leading-6 text-white/60">No rooms or add-ons are in the cart yet, so the total stays hidden until you pick something.</p>
-            </div>
+            <p className="rounded-[16px] border border-dashed border-white/12 bg-white/5 px-3 py-3 text-center text-sm font-semibold text-white/76">
+              Add room(s) to see booking totals.
+            </p>
           )}
+
+          {essentials.filter((item) => item.quantity > 0).map((item) => (
+            <div key={item.id} className="flex items-start justify-between gap-3 border-t border-white/10 pt-3">
+              <div>
+                <p className="font-semibold text-white">{item.title}</p>
+                <p className="text-xs text-white/55">
+                  Rs. {item.unitPrice} x {item.quantity}
+                </p>
+              </div>
+              <p className="font-semibold text-white">Rs. {item.unitPrice * item.quantity}</p>
+            </div>
+          ))}
         </div>
 
         <div className="mt-5 border-t border-white/10 pt-4 text-sm text-white/82">
           <div className="flex items-center justify-between">
-            <p>Taxes</p>
+            <p>Total room charges</p>
+            <p className="font-semibold text-white">Rs. {roomTotal}</p>
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <p>Add-on charges</p>
+            <p className="font-semibold text-white">Rs. {essentialsTotal}</p>
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <p className="inline-flex items-center gap-1">
+              Total taxes
+              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/25 text-white/75">
+                <Info className="h-3 w-3" />
+              </span>
+            </p>
             <p className="font-semibold text-white">Rs. {taxes}</p>
           </div>
           <div className="mt-3 flex items-center justify-between text-base">
-            <p className="font-semibold text-white">Payable Now</p>
+            <p className="font-semibold text-white">Total price</p>
             <p className="font-bold text-[var(--vh-amber)]">Rs. {grandTotal}</p>
           </div>
         </div>
 
-        <Button asChild className="mt-5 w-full">
-          {selectedRooms.length > 0 ? (
-            <button onClick={onContinue} type="button">
-              Continue to checkout
-            </button>
-          ) : (
+        <div className="my-4 flex items-start">
+          <input
+            checked={isAgeConfirmed}
+            className="mt-1 h-10 w-10 cursor-pointer rounded border-gray-300 bg-gray-100 p-2 text-blue-600 align-top focus:ring-blue-500"
+            id="checked-checkbox-desktop"
+            onChange={(event) => onAgeConfirmChange(event.target.checked)}
+            type="checkbox"
+          />
+          <span className="cursor-pointer select-none px-2 text-sm font-poppins text-[#ffffff]">
+            Yes, I confirm <span className="font-bold">all the guests are above 18 year old</span> and I acknowledge and accept the{" "}
+            <Link className="text-blue-400" href="/policies/">
+              Terms of Booking Conditions, Cancellation Policy &amp; Property Policy.
+            </Link>
+          </span>
+        </div>
+
+        {hasSelection ? (
+          <Button className="mt-5 w-full" disabled={!isAgeConfirmed} onClick={onContinue} type="button">
+            Review Booking
+          </Button>
+        ) : (
+          <Button asChild className="mt-5 w-full">
             <Link href={`${propertyHref}#availability`}>View rooms</Link>
-          )}
-        </Button>
+          </Button>
+        )}
       </div>
     </aside>
+  );
+}
+
+function AddEssentialsPanel({
+  selectedEssentials,
+  onIncrement,
+  onDecrement,
+}: {
+  selectedEssentials: Record<string, number>;
+  onIncrement: (id: string) => void;
+  onDecrement: (id: string) => void;
+}) {
+  return (
+    <section className="mt-6 lg:mt-10" id="essentials">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <SectionTitle title="Essentials" />
+          <p className="mt-3 max-w-[640px] text-[15px] font-medium leading-7 text-white/84 md:text-base">
+            Add what you need now. Selected essentials are reflected live in your booking summary.
+          </p>
+        </div>
+        <div className="hidden md:block">
+          <StickerTag bg="#fef08a" className="px-3 py-1 text-[10px] font-bold not-italic uppercase tracking-[0.12em]" label="Optional" rotate="rotate-[2deg]" text="#0f172a" />
+        </div>
+      </div>
+
+      <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {bookingEssentials.map((item) => {
+          const Icon = item.icon;
+          const quantity = selectedEssentials[item.id] ?? 0;
+
+          return (
+            <div key={item.id} className="bg-transparent p-0">
+              <div className="flex items-start gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center text-[var(--vh-cyan)]">
+                  <Icon className="h-7 w-7" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-white">{item.title}</p>
+                      <p className="text-xs text-white/55 line-through">Rs. {item.originalPrice}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-[var(--vh-amber)]">Rs. {item.price}</p>
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-white/45">{item.note}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <p className="text-xs text-white/60">Add while you are booking the room.</p>
+                    {quantity === 0 ? (
+                      <Button className="h-8 rounded-full px-4 text-xs" onClick={() => onIncrement(item.id)} type="button" variant="outline">
+                        {item.actionLabel}
+                      </Button>
+                    ) : (
+                      <div className="ml-auto flex items-center gap-2">
+                        <button
+                          aria-label={`Remove ${item.title}`}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)]"
+                          onClick={() => onDecrement(item.id)}
+                          type="button"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <span className="w-4 text-center text-sm font-semibold text-white">{quantity}</span>
+                        <button
+                          aria-label={`Add ${item.title}`}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)]"
+                          onClick={() => onIncrement(item.id)}
+                          type="button"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
 function MobileStickySummary({
   checkIn,
   checkOut,
+  essentials,
+  essentialsTotal,
+  isAgeConfirmed,
+  onAgeConfirmChange,
   selectedCounts,
   roomCategoryList,
   onContinue,
 }: {
   checkIn: string;
   checkOut: string;
+  essentials: Array<{
+    id: string;
+    title: string;
+    quantity: number;
+    unitPrice: number;
+  }>;
+  essentialsTotal: number;
+  isAgeConfirmed: boolean;
+  onAgeConfirmChange: (value: boolean) => void;
   selectedCounts: Record<string, number>;
   roomCategoryList: RoomCategory[];
   onContinue: () => void;
@@ -421,8 +565,10 @@ function MobileStickySummary({
     (sum, room) => sum + room.basePrice * (selectedCounts[room.slug] ?? 0) * nights,
     0,
   );
-  const taxes = Math.round(roomTotal * 0.12);
-  const grandTotal = roomTotal + taxes;
+  const roomTaxes = Math.round(roomTotal * 0.12);
+  const addonTaxes = Math.round(essentialsTotal * 0.18);
+  const taxes = roomTaxes + addonTaxes;
+  const grandTotal = roomTotal + essentialsTotal + taxes;
   const hasSelection = selectedRooms.length > 0;
 
   return (
@@ -460,22 +606,53 @@ function MobileStickySummary({
                   <p className="text-xs text-white/55">Rs. {room.basePrice} / night</p>
                 </div>
               ))}
+              {essentials.filter((item) => item.quantity > 0).map((item) => (
+                <div key={item.id} className="space-y-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="font-medium text-white">
+                      {item.title} x {item.quantity}
+                    </p>
+                    <p className="font-semibold text-white">Rs. {item.unitPrice * item.quantity}</p>
+                  </div>
+                  <p className="text-xs text-white/55">Rs. {item.unitPrice} each</p>
+                </div>
+              ))}
               <div className="border-t border-dashed border-white/15 pt-4 text-sm text-white/78">
                 <div className="flex items-center justify-between">
-                  <p>Tax</p>
+                  <p>Add-ons</p>
+                  <p>Rs. {essentialsTotal}</p>
+                </div>
+                <div className="mt-1 flex items-center justify-between">
+                  <p>Total taxes</p>
                   <p>Rs. {taxes}</p>
                 </div>
                 <div className="mt-2 flex items-center justify-between font-semibold text-white">
-                  <p>Grand Total</p>
+                  <p>Total price</p>
                   <p>Rs. {grandTotal}</p>
                 </div>
               </div>
+              <div className="flex items-start my-4">
+                <input
+                  checked={isAgeConfirmed}
+                  className="mt-1 h-10 w-10 cursor-pointer rounded border-gray-300 bg-gray-100 p-2 text-blue-600 align-top focus:ring-blue-500"
+                  id="checked-checkbox-mobile"
+                  onChange={(event) => onAgeConfirmChange(event.target.checked)}
+                  type="checkbox"
+                />
+                <span className="cursor-pointer select-none px-2 text-sm font-poppins text-[#ffffff]">
+                  Yes, I confirm <span className="font-bold">all the guests are above 18 year old</span> and I acknowledge and accept the{" "}
+                  <Link className="text-blue-400" href="/policies/">
+                    Terms of Booking Conditions, Cancellation Policy &amp; Property Policy.
+                  </Link>
+                </span>
+              </div>
+              <Button className="w-full" disabled={!isAgeConfirmed} onClick={onContinue} type="button">
+                Review Booking
+              </Button>
             </div>
           </div>
         ) : !hasSelection ? (
           <div className="p-4 text-center">
-            <Image alt="Empty booking summary" className="mx-auto h-28 w-28 object-contain" height={112} src={emptySummaryImage} width={112} />
-            <p className="mt-3 text-sm font-semibold text-white">Pick a room to start the summary.</p>
             <Button asChild className="mt-4 w-full rounded-full">
               <Link href="#availability">View rooms</Link>
             </Button>
@@ -494,8 +671,8 @@ function MobileStickySummary({
               <Button className="h-10 min-w-[100px] rounded-[16px] px-3 py-2.5 text-xs sm:px-4 sm:text-sm" onClick={() => setOpen((value) => !value)} type="button">
                 {open ? "Hide" : "Summary"}
               </Button>
-              <Button className="h-10 min-w-[90px] rounded-[16px] px-3 py-2.5 text-xs font-black sm:px-4 sm:text-sm" onClick={onContinue} type="button">
-                Checkout
+              <Button className="h-10 min-w-[120px] rounded-[16px] px-3 py-2.5 text-xs font-black sm:px-4 sm:text-sm" disabled={!isAgeConfirmed} onClick={onContinue} type="button">
+                Review Booking
               </Button>
             </div>
           ) : (
@@ -742,6 +919,8 @@ export function Property({
   const [resolvedPropertyId, setResolvedPropertyId] = useState(propertyId ?? "");
   const [propertyContextError, setPropertyContextError] = useState<string | null>(null);
   const [isLoadingRooms, setIsLoadingRooms] = useState(false);
+  const [selectedEssentials, setSelectedEssentials] = useState<Record<string, number>>({});
+  const [isAgeConfirmed, setIsAgeConfirmed] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: fromDateString(initialCheckIn) ?? getLocalDate(0),
     to: fromDateString(initialCheckOut) ?? getLocalDate(1),
@@ -769,6 +948,22 @@ export function Property({
         })),
     [roomCategoryList, selectedCounts],
   );
+  const selectedEssentialDrafts = useMemo(
+    () =>
+      bookingEssentials
+        .map((item) => ({
+          id: item.id,
+          title: item.title,
+          quantity: selectedEssentials[item.id] ?? 0,
+          unitPrice: item.price,
+        }))
+        .filter((item) => item.quantity > 0),
+    [selectedEssentials],
+  );
+  const essentialsTotal = useMemo(
+    () => selectedEssentialDrafts.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0),
+    [selectedEssentialDrafts],
+  );
 
   const updateCount = (slug: string, nextValue: number) => {
     const room = roomCategoryList.find((item) => item.slug === slug);
@@ -789,6 +984,20 @@ export function Property({
 
       return resolvedRange;
     });
+  };
+
+  const incrementEssential = (id: string) => {
+    setSelectedEssentials((current) => ({
+      ...current,
+      [id]: (current[id] ?? 0) + 1,
+    }));
+  };
+
+  const decrementEssential = (id: string) => {
+    setSelectedEssentials((current) => ({
+      ...current,
+      [id]: Math.max(0, (current[id] ?? 0) - 1),
+    }));
   };
 
   useEffect(() => {
@@ -817,6 +1026,9 @@ export function Property({
         if (!response.ok) {
           if (mounted) {
             setPropertyContextError("Room availability request failed. Retry once before continuing to checkout.");
+            toast.error("Could not refresh room availability.", {
+              description: "Retry once before continuing to checkout.",
+            });
           }
           return;
         }
@@ -855,6 +1067,9 @@ export function Property({
         if (mounted) {
           setPropertyContextError("Unable to refresh room availability right now. Retry before continuing to checkout.");
           setRoomCategoryList((current) => (current.length > 0 ? current : roomCategories));
+          toast.error("Availability sync failed", {
+            description: "Please retry in a few seconds.",
+          });
         }
       } finally {
         if (mounted) {
@@ -880,12 +1095,34 @@ export function Property({
       setPropertyContextError(
         "Checkout is blocked because the booking property could not be resolved from the live API response.",
       );
+      toast.error("Checkout blocked", {
+        description: "Property context is missing. Refresh and try again.",
+      });
       return;
     }
 
     if (!checkIn || !checkOut || selectedRoomDrafts.length === 0) {
+      toast.error("Select at least one room", {
+        description: "Pick your dates and rooms to continue to checkout.",
+      });
       return;
     }
+
+    if (!isAgeConfirmed) {
+      toast.error("Please confirm guest age", {
+        description: "You must confirm all guests are above 18 to continue.",
+      });
+      return;
+    }
+
+    const addonDrafts = selectedEssentialDrafts.map((item) => ({
+      productId: item.id,
+      name: item.title,
+      category: "SERVICE" as const,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      inStock: true,
+    }));
 
     const signature = buildBookingSignature({
       propertyId: resolvedPropertyId,
@@ -895,7 +1132,10 @@ export function Property({
         roomTypeId: room.roomTypeId,
         quantity: room.quantity,
       })),
-      addons: [],
+      addons: addonDrafts.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      })),
     });
 
     saveBookingDraft({
@@ -903,12 +1143,15 @@ export function Property({
       checkinDate: checkIn,
       checkoutDate: checkOut,
       rooms: selectedRoomDrafts,
-      addons: [],
+      addons: addonDrafts,
       signature,
       createdAt: Date.now(),
     });
 
-    router.push("/booking");
+    toast.success("Room selection saved", {
+      description: "Taking you to review booking.",
+    });
+    router.push("/reviewnew");
   };
 
   return (
@@ -916,8 +1159,10 @@ export function Property({
       <section className="vh-section pt-28 md:pt-32">
         <div className="vh-container">
           <FadeIn className="mb-8 text-center">
-            <h1 className="vh-retro-3d text-[2.8rem] md:text-[4.8rem] lg:text-[5.8rem] leading-none">
-              Vibe House Koramangala
+            <h1 className="leading-none">
+              <span className="vh-retro-sign-flat text-[2.2rem] md:text-[4.2rem] lg:text-[5rem]">
+                THE D<span className="vh-flicker">A</span>ILY SO<span className="vh-flicker" style={{ animationDelay: "0.6s" }}>C</span>IA<span className="vh-flicker" style={{ animationDelay: "1.2s" }}>L</span>
+              </span>
             </h1>
             <p className="mx-auto mt-5 max-w-[760px] text-base leading-7 text-white/78 md:text-lg">
               {propertyHero.blurb}
@@ -946,34 +1191,30 @@ export function Property({
       </section>
 
       <section className="vh-section vh-section-alt">
-        <div className="vh-container grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_390px]">
-          <div className="space-y-14 pb-6 lg:pb-0">
+        <div className="vh-container">
+          <div className="space-y-8 pb-4 md:space-y-10 lg:pb-0">
             <section id="about" className="scroll-mt-28">
-              <div className="flex max-w-4xl flex-col gap-6">
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
                 <div>
                   <SectionTitle title="About" />
-                  <p className="mt-3 max-w-[640px] text-[15px] font-medium leading-7 text-white/84 md:text-base">
-                    The lowdown before you toss your bag, claim a bunk, and start settling into the good kind of chaos.
+                  {/* <p className="mt-3 text-[15px] font-medium leading-7 text-white/84 md:text-base">
+                    The Hosteller BAM Coorg is where misty mornings, fresh brews, and good chaos settle into a comfortable rhythm.
+                  </p> */}
+                  <p className={`mt-3 text-[15px] leading-7 text-white/82 md:text-base ${aboutExpanded ? "" : "line-clamp-2"}`}>
+                    {propertyAboutText}
                   </p>
-                </div>
-                <div className="relative w-full">
-                  <div className={`relative overflow-hidden transition-all duration-500 ease-in-out ${aboutExpanded ? "max-h-[560px]" : "max-h-32"}`}>
-                    <div className="space-y-4 text-sm leading-7 text-white/82 md:text-base">
-                      {propertyOverview.map((paragraph) => (
-                        <p key={paragraph}>{paragraph}</p>
-                      ))}
-                    </div>
-                    {!aboutExpanded ? (
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[var(--vh-section-b)] via-[var(--vh-section-b)]/80 to-transparent" />
-                    ) : null}
-                  </div>
                   <button
-                    className="mt-2 text-sm underline transition-colors duration-200 hover:text-[var(--vh-cyan)]"
+                    className="mt-2 text-sm font-semibold underline transition-colors duration-200 hover:text-[var(--vh-cyan)]"
                     onClick={() => setAboutExpanded((value) => !value)}
                     type="button"
                   >
                     {aboutExpanded ? "View Less" : "View More"}
                   </button>
+                </div>
+                <div className="hidden lg:block lg:sticky lg:top-28">
+                  <Button asChild className="h-12 w-full rounded-[10px] text-base font-black uppercase tracking-[0.04em]">
+                    <Link href="#availability">View rooms</Link>
+                  </Button>
                 </div>
               </div>
             </section>
@@ -981,41 +1222,42 @@ export function Property({
             <section id="amenities">
               <div>
                 <SectionTitle title="Amenities" />
-                <p className="mt-3 max-w-[640px] text-[15px] font-medium leading-7 text-white/84 md:text-base">
+                <p className="mt-2 max-w-[640px] text-[15px] font-medium leading-7 text-white/84 md:text-base">
                   The good stuff that keeps the stay easy, social, and very hard to complain about.
                 </p>
               </div>
-              <Stagger className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                {propertyAmenities.map((amenity) => {
-                  const Icon = amenityIcons[amenity.icon as keyof typeof amenityIcons] ?? Sparkles;
-                  const colorIndex = propertyAmenities.indexOf(amenity) % 4;
-                  const colors = ["#00d1ff", "#ff2e62", "#39ff14", "#facc15"];
+              <div className="mt-5 grid grid-cols-4 gap-4 sm:gap-5 lg:grid-cols-12 lg:gap-2">
+                  {propertyAmenities.map((amenity, index) => {
+                    const Icon = amenityIcons[amenity.icon as keyof typeof amenityIcons] ?? Sparkles;
+                    const colorIndex = index % 3;
+                    const colors = ["var(--vh-pink)", "var(--vh-cyan)", "var(--vh-amber)"];
 
-                  return (
-                    <StaggerItem key={amenity.label}>
-                      <div className="mx-auto w-full max-w-[110px] text-center">
-                        <span className="inline-flex h-10 w-10 items-center justify-center" style={{ color: colors[colorIndex] }}>
-                          <Icon className="h-5 w-5" />
+                    return (
+                      <div key={`${amenity.label}-${index}`} className="text-center">
+                        <span className="inline-flex h-12 w-12 items-center justify-center" style={{ color: colors[colorIndex] }}>
+                          <Icon className="h-9 w-9" />
                         </span>
-                        <p className="mt-2 text-sm font-medium leading-5 text-white/82">{amenity.label}</p>
+                        <p className="mt-2 text-xs font-medium leading-5 text-white/82 lg:text-sm">{amenity.label}</p>
                       </div>
-                    </StaggerItem>
-                  );
-                })}
-              </Stagger>
+                    );
+                  })}
+              </div>
             </section>
 
             <section id="availability" className="scroll-mt-28">
-              <div className="space-y-6">
-                <div className="text-left">
-                  <span className="vh-retro-3d" style={{ fontSize: '1.6rem' }}>Availa<span className="vh-flicker">b</span>ility</span>
-                  <p className="mt-2 max-w-[640px] text-sm leading-6 text-slate-300">
-                    Pick your perch for tonight. We&apos;ll keep the vibe ready.
-                  </p>
-                </div>
-                <div className="max-w-[420px]">
-                  <DateRangePicker align="left" dateRange={dateRange} onSelect={handleRangeChange} />
-                </div>
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_390px]">
+                <div className="space-y-6">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div className="text-center lg:text-left">
+                      <SectionTitle className="text-left" title="Availability" />
+                      <p className="mx-auto mt-2 max-w-[640px] text-sm leading-6 text-slate-300 lg:mx-0">
+                        Pick your perch for tonight. We&apos;ll keep the vibe ready.
+                      </p>
+                    </div>
+                    <div className="w-full max-w-[420px] md:w-auto md:min-w-[336px]">
+                      <DateRangePicker align="left" dateRange={dateRange} onSelect={handleRangeChange} />
+                    </div>
+                  </div>
                 {propertyContextError ? (
                   <div className="rounded-[18px] border border-[rgba(255,76,48,0.24)] bg-[rgba(255,76,48,0.1)] px-4 py-3 text-sm text-white/88">
                     {propertyContextError}
@@ -1028,6 +1270,18 @@ export function Property({
                     <RoomCardSkeleton />
                     <RoomCardSkeleton />
                   </>
+                ) : roomCategoryList.length === 0 ? (
+                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-6 text-center">
+                    <Image
+                      alt="No room availability"
+                      className="mx-auto h-56 w-56 object-contain"
+                      height={224}
+                      src={encodeURI("/design-guidelines/Property Page/hospital-reception.svg")}
+                      width={224}
+                    />
+                    <p className="mt-4 text-base font-semibold text-white">Oh Sorry! There are no available rooms for this date.</p>
+                    <p className="mt-2 text-sm text-white/75">Please choose another day or mail us for booking@thedailysocial.in</p>
+                  </div>
                 ) : (
                   roomCategoryList.map((room) => {
                     const count = selectedCounts[room.slug] ?? 0;
@@ -1035,7 +1289,7 @@ export function Property({
                     const roomGallery = getRoomGallery(room);
 
                     return (
-                      <article key={room.slug} className="overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)]" style={{ backgroundColor: "#211122" }}>
+                      <article key={room.slug} className="overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)]" style={{ backgroundColor: "#10111a" }}>
                         <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_188px]">
                           <div className="border-b border-white/10 lg:border-b-0 lg:border-r">
                             <button className="group block w-full text-left" onClick={() => openRoomPopup(room.slug)} type="button">
@@ -1063,9 +1317,16 @@ export function Property({
                           </div>
 
                           <div className="space-y-4 p-5">
-                            <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
                               <button className="text-left" onClick={() => openRoomPopup(room.slug)} type="button">
                                 <h3 className="text-xl font-semibold text-white hover:text-[var(--vh-cyan)]">{room.title}</h3>
+                              </button>
+                              <button
+                                className="text-sm font-semibold text-[var(--vh-cyan)] hover:text-white"
+                                onClick={() => openRoomPopup(room.slug)}
+                                type="button"
+                              >
+                                View details
                               </button>
                             </div>
 
@@ -1075,18 +1336,16 @@ export function Property({
 
                             <div className="flex flex-wrap gap-1">
                               {featureLabels.map((label, index) => {
-                                const Icon = iconForLabel(label);
                                 const colorIndex = index % 4;
-                                const colors = ["#00d1ff", "#ff2e62", "#39ff14", "#facc15"];
+                                const colors = ["#00d1ff", "#c62828", "#39ff14", "#facc15"];
 
                                 return (
                                   <span
                                     key={`${label}-${index}`}
-                                    className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs"
+                                    className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs"
                                     title={label}
                                     style={{ color: colors[colorIndex] }}
                                   >
-                                    <Icon className="h-3 w-3" />
                                     <span className="text-white/70">{label}</span>
                                   </span>
                                 );
@@ -1099,20 +1358,13 @@ export function Property({
                                   Only {room.availableCount} {room.availableCount === 1 ? "bed" : "beds"} available
                                 </p>
                               ) : null}
-                              <button
-                                className="text-sm font-semibold text-[var(--vh-cyan)] hover:text-white"
-                                onClick={() => openRoomPopup(room.slug)}
-                                type="button"
-                              >
-                                View details
-                              </button>
                             </div>
                           </div>
 
                           <div className="flex flex-col justify-between border-t border-white/10 p-5 lg:border-l lg:border-t-0">
                             <div>
                               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">Price / night</p>
-                              <p className="mt-2 text-3xl font-bold text-[#ff2e62]">Rs. {room.basePrice}</p>
+                              <p className="mt-2 text-3xl font-bold text-[#c62828]">Rs. {room.basePrice}</p>
                             </div>
 
                             <div className="mt-5 flex items-center justify-end gap-2">
@@ -1153,7 +1405,27 @@ export function Property({
                   })
                 )}
                 </div>
+                </div>
+                <div className="space-y-6">
+                  <DesktopBookingSummary
+                    checkIn={checkIn}
+                    checkOut={checkOut}
+                    essentials={selectedEssentialDrafts}
+                    essentialsTotal={essentialsTotal}
+                    isAgeConfirmed={isAgeConfirmed}
+                    onContinue={continueToCheckout}
+                    onAgeConfirmChange={setIsAgeConfirmed}
+                    propertyId={resolvedPropertyId}
+                    selectedCounts={selectedCounts}
+                    roomCategoryList={roomCategoryList}
+                  />
+                </div>
               </div>
+              <AddEssentialsPanel
+                onDecrement={decrementEssential}
+                onIncrement={incrementEssential}
+                selectedEssentials={selectedEssentials}
+              />
             </section>
 
             <section id="guidelines">
@@ -1266,65 +1538,17 @@ export function Property({
             </section>
           </div>
 
-          <DesktopBookingSummary
-            checkIn={checkIn}
-            checkOut={checkOut}
-            onContinue={continueToCheckout}
-            propertyId={resolvedPropertyId}
-            selectedCounts={selectedCounts}
-            roomCategoryList={roomCategoryList}
-          />
-
-          <div className="mt-6 rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)] lg:sticky lg:top-[calc(28rem+1rem)]">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--vh-pink)]">Add Essentials</p>
-                <h3 className="mt-3 font-suez text-2xl uppercase tracking-[-0.04em] text-white">Little upgrades, fewer complaints</h3>
-              </div>
-              <StickerTag bg="#fef08a" className="px-3 py-1 text-[10px] font-bold not-italic uppercase tracking-[0.12em]" label="Optional" rotate="rotate-[2deg]" text="#0f172a" />
-            </div>
-
-            <div className="mt-5 space-y-3">
-              {bookingEssentials.map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <div key={item.title} className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/8 text-[var(--vh-cyan)]">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="font-semibold text-white">{item.title}</p>
-                            <p className="text-xs text-white/55 line-through">{item.originalPrice}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-[var(--vh-amber)]">{item.price}</p>
-                            <p className="text-[10px] uppercase tracking-[0.14em] text-white/45">{item.note}</p>
-                          </div>
-                        </div>
-                        <div className="mt-3 flex items-center justify-between gap-3">
-                          <p className="text-xs text-white/60">Add while you are booking the room.</p>
-                          <Button className="h-8 rounded-full px-4 text-xs" type="button" variant="outline">
-                            {item.actionLabel}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </div>
       </section>
 
       <MobileStickySummary
         checkIn={checkIn}
         checkOut={checkOut}
+        essentials={selectedEssentialDrafts}
+        essentialsTotal={essentialsTotal}
+        isAgeConfirmed={isAgeConfirmed}
         onContinue={continueToCheckout}
+        onAgeConfirmChange={setIsAgeConfirmed}
         selectedCounts={selectedCounts}
         roomCategoryList={roomCategoryList}
       />

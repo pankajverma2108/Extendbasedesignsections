@@ -23,7 +23,7 @@ Validates credentials AND role in one step. If the selected role does not match 
 #### Body (JSON)
 ```json
 {
-  "email": "manager@vibehouse.in",
+  "email": "manager@thedailysocial.in",
   "password": "Vibe@2026!",
   "role": "MANAGER"
 }
@@ -36,7 +36,7 @@ Validates credentials AND role in one step. If the selected role does not match 
   "admin": {
     "id": "a1b2c3d4-e5f6-...",
     "name": "Priya Sharma",
-    "email": "manager@vibehouse.in",
+    "email": "manager@thedailysocial.in",
     "role": "MANAGER",
     "display_name": "Property Manager",
     "property_id": "prop-bandra-001",
@@ -93,7 +93,7 @@ Authorization: Bearer <access_token>
 {
   "id": "a1b2c3d4-e5f6-...",
   "name": "Priya Sharma",
-  "email": "manager@vibehouse.in",
+  "email": "manager@thedailysocial.in",
   "phone": "+919876543211",
   "role": "MANAGER",
   "display_name": "Property Manager",
@@ -136,7 +136,7 @@ Authorization: Bearer <owner_access_token>
 ```json
 {
   "name": "Anjali Singh",
-  "email": "anjali@vibehouse.in",
+  "email": "anjali@thedailysocial.in",
   "phone": "+919876543220",
   "password": "SecurePass@123",
   "role_id": "role-reception",
@@ -158,7 +158,7 @@ Authorization: Bearer <owner_access_token>
 {
   "id": "f9e8d7c6-b5a4-...",
   "name": "Anjali Singh",
-  "email": "anjali@vibehouse.in",
+  "email": "anjali@thedailysocial.in",
   "phone": "+919876543220",
   "role": "RECEPTION",
   "display_name": "Front Desk / Receptionist",
@@ -202,7 +202,7 @@ No query parameters. No body.
   {
     "id": "a1b2c3d4-...",
     "name": "Priya Sharma",
-    "email": "manager@vibehouse.in",
+    "email": "manager@thedailysocial.in",
     "phone": "+919876543211",
     "role": "MANAGER",
     "display_name": "Property Manager",
@@ -299,7 +299,7 @@ Example: `GET /admin/users/a1b2c3d4-e5f6-7890-abcd-ef1234567890`
 {
   "id": "a1b2c3d4-...",
   "name": "Priya Sharma",
-  "email": "manager@vibehouse.in",
+  "email": "manager@thedailysocial.in",
   "phone": "+919876543211",
   "role": "MANAGER",
   "display_name": "Property Manager",
@@ -406,7 +406,7 @@ Authorization: Bearer <access_token>
 {
   "id": "a1b2c3d4-...",
   "name": "Priya S. Sharma",
-  "email": "manager@vibehouse.in",
+  "email": "manager@thedailysocial.in",
   "phone": "+919876540000",
   "role": "MANAGER",
   "display_name": "Property Manager",
@@ -500,8 +500,8 @@ All seeded users share the same password: **`Vibe@2026!`**
 
 | Email | Role | Property Scope |
 |---|---|---|
-| `owner@vibehouse.in` | OWNER | All properties |
-| `manager@vibehouse.in` | MANAGER | Vibe House Bandra |
-| `reception@vibehouse.in` | RECEPTION | Vibe House Bandra |
-| `housekeeping@vibehouse.in` | HOUSEKEEPING_LEAD | Vibe House Bandra |
-| `maintenance@vibehouse.in` | MAINTENANCE_LEAD | Vibe House Bandra |
+| `owner@thedailysocial.in` | OWNER | All properties |
+| `manager@thedailysocial.in` | MANAGER | The Daily Social Bandra |
+| `reception@thedailysocial.in` | RECEPTION | The Daily Social Bandra |
+| `housekeeping@thedailysocial.in` | HOUSEKEEPING_LEAD | The Daily Social Bandra |
+| `maintenance@thedailysocial.in` | MAINTENANCE_LEAD | The Daily Social Bandra |

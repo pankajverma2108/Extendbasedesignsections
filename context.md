@@ -1,8 +1,39 @@
-# Vibe House Design Handoff
+# The Daily Social Design Handoff
 
 This file is a complete handoff for the next agent session.
 
-The user is currently in the VS Code Codex extension and plans to switch to Antigravity to continue refining the design with another agent. This summary is meant to accelerate that handoff, but it is not a substitute for reading the live code. The next agent must first gather fresh codebase context from the actual files before making edits.
+## Latest Update (Property + Typography Pass)
+
+This update captures the newest visual and behavior refinements requested after the booking/pre-arrival work.
+
+Completed changes:
+
+- Property hero subtitle cleanup:
+  - Removed KORAMANGALA from the Property hero heading in `components/marketing/property.tsx`.
+- Footer brand mark cleanup:
+  - Removed horizontal top/bottom lines around THE DAILY SOCIAL retro sign in `components/marketing/footer.tsx`.
+- Availability heading normalization:
+  - Replaced retro sign heading treatment with the standard section header treatment in `components/marketing/property.tsx`.
+- Amenities behavior update:
+  - Reworked amenities to auto-advance one item every 2 seconds, looping infinitely, and removed chunked prev/next jumps that could create awkward states.
+  - Logic now uses rotating index + visible window to avoid blank frames.
+- Room card background update:
+  - Set room-card dark background to `#10111a` in:
+    - `components/marketing/property.tsx` (availability cards)
+    - `components/marketing/widgets/room-card.tsx` (shared marketing card)
+- Section header font consistency:
+  - Updated Property local section title component to use `vh-title` so headings align with Home section-heading typography.
+- Home hero typography refinement:
+  - Applied `vh-title` to the home hero title (`STAY MIX REPEAT`) and increased scale/tall styling in `components/marketing/widgets/hero-carousel.tsx`.
+- TypeScript warning suppression:
+  - Added `"ignoreDeprecations": "6.0"` to `tsconfig.json`.
+
+Quick verification checklist for next chat:
+
+1. Confirm amenities auto-rotation cadence feels right at 2s on mobile and desktop.
+2. Confirm heading rhythm/line-height with `vh-title` remains readable at all breakpoints.
+3. Confirm room card contrast with `#10111a` still matches overall palette and CTA contrast.
+4. Run lint/type-check and fix any newly surfaced styling or unused-import warnings.
 
 ## User Request In This Chat
 
@@ -299,7 +330,7 @@ Do not:
 
 Use or adapt the following:
 
-You are continuing a live design-refinement pass in the Vibe House repo. First gather full codebase context before editing anything. Read `context.md` completely, then inspect the current live implementations in `components/booking/booking-detail-page.tsx`, `components/booking/pre-arrival-page.tsx`, `components/booking/booking-shell.tsx`, `app/bookings/[eri]/page.tsx`, `app/bookings/[eri]/pre-arrival/page.tsx`, `app/globals.css`, and `content/rooms.ts`. Then read the exported design guideline markdown and inspect assets in `public/design-guidelines/booking-details` and `public/design-guidelines/pre-arrival`. Also review the reference-only imported files `src/imports/VhdsgnBookingDetailsVibrant.tsx` and `src/imports/VhdsgnPreArrivalSetupVibrant.tsx`. The user asked to keep refining the design fidelity of the live booking detail and pre-arrival pages while preserving all existing functionality. In the last pass, those two live pages were significantly restyled to better match the exported references, while keeping booking data wiring and the full KYC flow functional. Continue from that state. Do not break auth gating, booking linking, slot loading, slot switching, add/delete slot, upload, OCR, validation, or submission. Do not reintroduce backend-driven room amenities. Treat the exported design guidelines as the visual source of truth, but adapt them to the real product behavior instead of inventing fake features. Focus on spacing, typography, card/sticker/cutout fidelity, responsive behavior, and overall polish.
+You are continuing a live design-refinement pass in The Daily Social repo. First gather full codebase context before editing anything. Read `context.md` completely, then inspect the current live implementations in `components/booking/booking-detail-page.tsx`, `components/booking/pre-arrival-page.tsx`, `components/booking/booking-shell.tsx`, `app/bookings/[eri]/page.tsx`, `app/bookings/[eri]/pre-arrival/page.tsx`, `app/globals.css`, and `content/rooms.ts`. Then read the exported design guideline markdown and inspect assets in `public/design-guidelines/booking-details` and `public/design-guidelines/pre-arrival`. Also review the reference-only imported files `src/imports/VhdsgnBookingDetailsVibrant.tsx` and `src/imports/VhdsgnPreArrivalSetupVibrant.tsx`. The user asked to keep refining the design fidelity of the live booking detail and pre-arrival pages while preserving all existing functionality. In the last pass, those two live pages were significantly restyled to better match the exported references, while keeping booking data wiring and the full KYC flow functional. Continue from that state. Do not break auth gating, booking linking, slot loading, slot switching, add/delete slot, upload, OCR, validation, or submission. Do not reintroduce backend-driven room amenities. Treat the exported design guidelines as the visual source of truth, but adapt them to the real product behavior instead of inventing fake features. Focus on spacing, typography, card/sticker/cutout fidelity, responsive behavior, and overall polish.
 
 ## Short Version
 

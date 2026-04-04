@@ -20,28 +20,29 @@ export const heroImages = [
 
 export const assurances = [
   { label: "Clean Rooms", color: "#00d1ff" },
-  { label: "Safe & Secure", color: "#ff2e62" },
+  { label: "Safe & Secure", color: "#c62828" },
   { label: "AC Dorms", color: "#39ff14" },
-  { label: "24/7 Reception", color: "#facc15" },
-  { label: "Secure Lockers", color: "#ff2e62" },
-  { label: "7-Day Cancel", color: "#39ff14" },
+  { label: "Night Managers", color: "#facc15" },
+  { label: "Secure Lockers", color: "#c62828" },
 ];
 
 export const amenities = [
   { label: "Fast Wi-Fi", color: "#00d1ff", icon: "wifi", tilt: "-rotate-2" },
-  { label: "Hot Showers", color: "#ff2e62", icon: "droplets", tilt: "rotate-0" },
-  { label: "Cafe", color: "#facc15", icon: "coffee", tilt: "rotate-2" },
+  { label: "Hot Showers", color: "#c62828", icon: "droplets", tilt: "rotate-0" },
+  { label: "Cafe & Bar", color: "#facc15", icon: "coffee", tilt: "rotate-2" },
   { label: "Laundry", color: "#39ff14", icon: "shirt", tilt: "-rotate-2" },
-  { label: "AC", color: "#00d1ff", icon: "snowflake", tilt: "rotate-0" },
-  { label: "Kitchen", color: "#ff2e62", icon: "utensils", tilt: "rotate-2" },
+  { label: "Air Conditioning", color: "#00d1ff", icon: "snowflake", tilt: "rotate-0" },
   { label: "Central Location", color: "#facc15", icon: "map-pin", tilt: "-rotate-2" },
-  { label: "Lockers", color: "#39ff14", icon: "lock", tilt: "rotate-0" },
-  { label: "Clean Rooms", color: "#00d1ff", icon: "sparkles", tilt: "rotate-2" },
-  { label: "Safe & Secure", color: "#ff2e62", icon: "shield-check", tilt: "-rotate-2" },
-  { label: "AC Dorms", color: "#39ff14", icon: "bed-double", tilt: "rotate-2" },
-  { label: "24/7 Reception", color: "#facc15", icon: "clock-3", tilt: "rotate-0" },
-  { label: "Secure Lockers", color: "#ff2e62", icon: "lock-keyhole", tilt: "-rotate-2" },
-  { label: "7-Day Cancel", color: "#39ff14", icon: "calendar-check", tilt: "rotate-2" },
+  { label: "Secure Lockers", color: "#c62828", icon: "lock-keyhole", tilt: "-rotate-2" },
+  { label: "Privacy Pods", color: "#00d1ff", icon: "bed", tilt: "-rotate-2" },
+  { label: "Hotel-Grade Beds", color: "#c62828", icon: "moon", tilt: "rotate-0" },
+  { label: "DJ Nights", color: "#facc15", icon: "music", tilt: "rotate-2" },
+  { label: "Co-working", color: "#39ff14", icon: "laptop", tilt: "-rotate-2" },
+  { label: "Rooftop Zones", color: "#00d1ff", icon: "sunset", tilt: "rotate-0" },
+  { label: "Social Hours", color: "#c62828", icon: "users", tilt: "rotate-2" },
+  { label: "Reading Lights", color: "#39ff14", icon: "lamp", tilt: "rotate-0" },
+  { label: "Luggage Storage", color: "#facc15", icon: "briefcase", tilt: "rotate-2" },
+  { label: "First Aid", color: "#c62828", icon: "cross", tilt: "rotate-0" },
 ];
 
 export const experienceCards = [
@@ -49,7 +50,7 @@ export const experienceCards = [
     title: "High Energy",
     body:
       "Daily events, pub crawls, and game nights keep the energy alive. Meet travelers from around the world and create memories that last.",
-    color: "#ff2e62",
+    color: "#c62828",
   },
   {
     title: "Safety First",
@@ -129,9 +130,9 @@ export const homePageContent = {
   roomsTagline: "Pick your perch, drop your bag, and settle into the stay like you own the soundtrack.",
   upsellTitle: "Build Your Stay",
   upsellSubtitle: "Elevate your nights",
-  eventsTitle: "Tonight at Vibe House",
+  eventsTitle: "Tonight at The Daily Social",
   eventsSubtitle: "What's on the agenda",
-  experienceTitle: "The Vibe House Experience",
+  experienceTitle: "The Daily Social Experience",
   experienceSubtitle: "Why we're unforgettable",
   energyTitle: "The Energy",
   energySubtitle: "Snapshots of real moments",

@@ -263,7 +263,7 @@ function formatTime12Hour(value: unknown) {
 
 function roomBadge(availableBeds: number) {
   if (availableBeds <= 0) {
-    return { label: "Waitlist", color: "#ff2e62" };
+    return { label: "Waitlist", color: "#c62828" };
   }
 
   if (availableBeds <= 3) {
@@ -308,7 +308,7 @@ function fallbackEvents(count = 3): EventCardProps[] {
     title: index === 0 ? "Details TBA" : `Experience Drop ${index + 1}`,
     date: "TBA",
     time: "Details on arrival",
-    location: "Vibe House",
+    location: "The Daily Social",
     price: "Details on arrival",
     image: FALLBACK_EVENT_IMAGE,
     capacity: "Limited slots",
@@ -331,7 +331,7 @@ function normalizeEvent(event: RawEvent): EventCardProps {
   const time = formatTime12Hour(event.time);
   if (!event.time) recordTelemetry({ type: "missing_field", source: "event", field: "time" });
 
-  const location = ensureString(event.location, "Vibe House");
+  const location = ensureString(event.location, "The Daily Social");
   if (!event.location) recordTelemetry({ type: "missing_field", source: "event", field: "location" });
 
   const price = ensureString(event.price_text, "Details on arrival");

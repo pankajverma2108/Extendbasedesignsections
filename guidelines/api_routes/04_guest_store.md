@@ -339,7 +339,7 @@ Returns all orders for this booking (PENDING carts + PAID orders).
 
 ## Testing with Postman
 
-1. **Login:** `POST /guest/auth/login` → `{"email":"arjun@vibehouse.in","password":"Vibe@2026!"}`
+1. **Login:** `POST /guest/auth/login` → `{"email":"arjun@thedailysocial.in","password":"Vibe@2026!"}`
 2. Copy `access_token` → set as Bearer token
 3. Use ERI `EZEE-BND-2026-001` (Arjun's active booking at D-101)
 4. Property ID: `prop-bandra-001`

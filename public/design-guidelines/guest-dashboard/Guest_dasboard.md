@@ -3,13 +3,13 @@
         <div style={{alignSelf: 'stretch', padding: 24, justifyContent: 'space-between', alignItems: 'center', display: 'inline-flex'}}>
             <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
                 <div style={{alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
-                    <div style={{width: 62.70, height: 20, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 20, letterSpacing: 1.40, wordWrap: 'break-word'}}>VHDSGN</div>
+                    <div style={{width: 62.70, height: 20, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 20, letterSpacing: 1.40, wordWrap: 'break-word'}}>VHDSGN</div>
                 </div>
                 <div style={{alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                     <div style={{width: 148.63, height: 36, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'white', fontSize: 30, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 36, wordWrap: 'break-word'}}>Your Stay.</div>
                 </div>
             </div>
-            <div style={{width: 48, height: 48, overflow: 'hidden', borderRadius: 12, outline: '2px #FF2E62 solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
+            <div style={{width: 48, height: 48, overflow: 'hidden', borderRadius: 12, outline: '2px #c62828 solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
                 <div data-svg-wrapper style={{position: 'relative'}}>
                     <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                     <rect width="44" height="44" fill="url(#pattern0_1_582)"/>
@@ -27,7 +27,7 @@
             <div style={{width: 358, left: 16, top: 460.50, position: 'absolute', justifyContent: 'flex-start', alignItems: 'center', gap: 8, display: 'inline-flex'}}>
                 <div data-svg-wrapper>
                     <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M2 18C1.45 18 0.979167 17.8042 0.5875 17.4125C0.195833 17.0208 0 16.55 0 16V9H2V16H11V18H2ZM6 14C5.45 14 4.97917 13.8042 4.5875 13.4125C4.19583 13.0208 4 12.55 4 12V5H6V12H15V14H6ZM10 10C9.45 10 8.97917 9.80417 8.5875 9.4125C8.19583 9.02083 8 8.55 8 8V2C8 1.45 8.19583 0.979167 8.5875 0.5875C8.97917 0.195833 9.45 0 10 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V8C20 8.55 19.8042 9.02083 19.4125 9.4125C19.0208 9.80417 18.55 10 18 10H10ZM10 8H18V4H10V8Z" fill="#FF2E62"/>
+                    <path d="M2 18C1.45 18 0.979167 17.8042 0.5875 17.4125C0.195833 17.0208 0 16.55 0 16V9H2V16H11V18H2ZM6 14C5.45 14 4.97917 13.8042 4.5875 13.4125C4.19583 13.0208 4 12.55 4 12V5H6V12H15V14H6ZM10 10C9.45 10 8.97917 9.80417 8.5875 9.4125C8.19583 9.02083 8 8.55 8 8V2C8 1.45 8.19583 0.979167 8.5875 0.5875C8.97917 0.195833 9.45 0 10 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V8C20 8.55 19.8042 9.02083 19.4125 9.4125C19.0208 9.80417 18.55 10 18 10H10ZM10 8H18V4H10V8Z" fill="#c62828"/>
                     </svg>
                 </div>
                 <div style={{width: 121.42, height: 28, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#F1F5F9', fontSize: 18, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 28, wordWrap: 'break-word'}}>Guest Actions</div>
@@ -46,27 +46,27 @@
                             <div style={{alignSelf: 'stretch', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#0F172A', fontSize: 14, fontFamily: 'Space Grotesk', fontWeight: '400', lineHeight: 20, wordWrap: 'break-word'}}>Deluxe King Bed • 2 Guests</div>
                         </div>
                         <div style={{alignSelf: 'stretch', paddingTop: 4, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
-                            <div style={{alignSelf: 'stretch', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 12, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 16, wordWrap: 'break-word'}}>Until Oct 24, 2023</div>
+                            <div style={{alignSelf: 'stretch', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 12, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 16, wordWrap: 'break-word'}}>Until Oct 24, 2023</div>
                         </div>
                     </div>
                 </div>
                 <div style={{left: 34.72, top: 411.98, position: 'absolute', transform: 'rotate(-15deg)', transformOrigin: 'top left', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', gap: 0.01, display: 'inline-flex'}}>
                     <div data-svg-wrapper>
                         <svg width="29" height="31" viewBox="0 0 29 31" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M19.6399 26.9605L17.022 25.449L20.8501 18.8716L4.65874 23.2101L0 5.82343L2.89778 5.04697L6.78006 19.5359L20.0736 15.9739L13.46 12.1555L14.9352 9.5473L26.0038 15.9378L19.6399 26.9605Z" fill="#FF2E62"/>
+                        <path d="M19.6399 26.9605L17.022 25.449L20.8501 18.8716L4.65874 23.2101L0 5.82343L2.89778 5.04697L6.78006 19.5359L20.0736 15.9739L13.46 12.1555L14.9352 9.5473L26.0038 15.9378L19.6399 26.9605Z" fill="#c62828"/>
                         </svg>
                     </div>
                     <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
-                        <div style={{width: 79.15, height: 34.66, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 10, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 15, wordWrap: 'break-word'}}>Your Sanctuary</div>
+                        <div style={{width: 79.15, height: 34.66, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 10, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 15, wordWrap: 'break-word'}}>Your Sanctuary</div>
                     </div>
                 </div>
-                <div style={{paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, left: 279.42, top: -16.20, position: 'absolute', transform: 'rotate(12deg)', transformOrigin: 'top left', background: '#FF2E62', boxShadow: '4px 4px 0px rgba(0, 0, 0, 0.20)', borderRadius: 9999, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
+                <div style={{paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, left: 279.42, top: -16.20, position: 'absolute', transform: 'rotate(12deg)', transformOrigin: 'top left', background: '#c62828', boxShadow: '4px 4px 0px rgba(0, 0, 0, 0.20)', borderRadius: 9999, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
                     <div style={{width: 68.56, height: 31.38, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'white', fontSize: 12, fontFamily: 'Space Grotesk', fontWeight: '700', textTransform: 'uppercase', lineHeight: 18, wordWrap: 'break-word'}}>Confirmed</div>
                 </div>
             </div>
             <div style={{width: 358, left: 16, top: 505, position: 'absolute', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
                 <div style={{alignSelf: 'stretch', position: 'relative', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
-                    <div style={{alignSelf: 'stretch', paddingTop: 126.25, paddingBottom: 16, paddingLeft: 16, paddingRight: 16, position: 'relative', background: '#FF2E62', boxShadow: '0px 4px 6px -4px rgba(0, 0, 0, 0.10), 0px 10px 15px -3px rgba(0, 0, 0, 0.10)', overflow: 'hidden', borderRadius: 8, flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'flex-start', display: 'flex'}}>
+                    <div style={{alignSelf: 'stretch', paddingTop: 126.25, paddingBottom: 16, paddingLeft: 16, paddingRight: 16, position: 'relative', background: '#c62828', boxShadow: '0px 4px 6px -4px rgba(0, 0, 0, 0.10), 0px 10px 15px -3px rgba(0, 0, 0, 0.10)', overflow: 'hidden', borderRadius: 8, flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'flex-start', display: 'flex'}}>
                         <div data-svg-wrapper style={{left: 115.50, top: 8, position: 'absolute'}}>
                             <svg width="48" height="50" viewBox="0 0 48 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <g opacity="0.2">
@@ -91,7 +91,7 @@
                         <div style={{width: 44.78, height: 18.75, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'black', fontSize: 10, fontFamily: 'Space Grotesk', fontWeight: '900', lineHeight: 15, wordWrap: 'break-word'}}>POPULAR</div>
                     </div>
                 </div>
-                <div style={{alignSelf: 'stretch', paddingTop: 122.25, paddingBottom: 16, paddingLeft: 16, paddingRight: 16, position: 'relative', background: '#1E293B', boxShadow: '0px 4px 6px -4px rgba(0, 0, 0, 0.10), 0px 10px 15px -3px rgba(0, 0, 0, 0.10)', overflow: 'hidden', borderRadius: 8, outline: '2px rgba(255, 46, 98, 0.20) solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'flex-start', display: 'inline-flex'}}>
+                <div style={{alignSelf: 'stretch', paddingTop: 122.25, paddingBottom: 16, paddingLeft: 16, paddingRight: 16, position: 'relative', background: '#1E293B', boxShadow: '0px 4px 6px -4px rgba(0, 0, 0, 0.10), 0px 10px 15px -3px rgba(0, 0, 0, 0.10)', overflow: 'hidden', borderRadius: 8, outline: '2px rgba(198, 40, 40, 0.20) solid', outlineOffset: '-2px', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'flex-start', display: 'inline-flex'}}>
                     <div style={{alignSelf: 'stretch', paddingBottom: 0.75, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                         <div style={{alignSelf: 'stretch', justifyContent: 'center', display: 'flex', flexDirection: 'column', color: 'white', fontSize: 18, fontFamily: 'Space Grotesk', fontWeight: '700', lineHeight: 22.50, wordWrap: 'break-word'}}>Buy<br/>Add-ons</div>
                     </div>
@@ -99,22 +99,22 @@
                         <div style={{alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                             <div data-svg-wrapper>
                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 15H11V11H15V9H11V5H9V9H5V11H9V15ZM10 20C8.61667 20 7.31667 19.7375 6.1 19.2125C4.88333 18.6875 3.825 17.975 2.925 17.075C2.025 16.175 1.3125 15.1167 0.7875 13.9C0.2625 12.6833 0 11.3833 0 10C0 8.61667 0.2625 7.31667 0.7875 6.1C1.3125 4.88333 2.025 3.825 2.925 2.925C3.825 2.025 4.88333 1.3125 6.1 0.7875C7.31667 0.2625 8.61667 0 10 0C11.3833 0 12.6833 0.2625 13.9 0.7875C15.1167 1.3125 16.175 2.025 17.075 2.925C17.975 3.825 18.6875 4.88333 19.2125 6.1C19.7375 7.31667 20 8.61667 20 10C20 11.3833 19.7375 12.6833 19.2125 13.9C18.6875 15.1167 17.975 16.175 17.075 17.075C16.175 17.975 15.1167 18.6875 13.9 19.2125C12.6833 19.7375 11.3833 20 10 20ZM10 18C12.2333 18 14.125 17.225 15.675 15.675C17.225 14.125 18 12.2333 18 10C18 7.76667 17.225 5.875 15.675 4.325C14.125 2.775 12.2333 2 10 2C7.76667 2 5.875 2.775 4.325 4.325C2.775 5.875 2 7.76667 2 10C2 12.2333 2.775 14.125 4.325 15.675C5.875 17.225 7.76667 18 10 18Z" fill="#FF2E62"/>
+                                <path d="M9 15H11V11H15V9H11V5H9V9H5V11H9V15ZM10 20C8.61667 20 7.31667 19.7375 6.1 19.2125C4.88333 18.6875 3.825 17.975 2.925 17.075C2.025 16.175 1.3125 15.1167 0.7875 13.9C0.2625 12.6833 0 11.3833 0 10C0 8.61667 0.2625 7.31667 0.7875 6.1C1.3125 4.88333 2.025 3.825 2.925 2.925C3.825 2.025 4.88333 1.3125 6.1 0.7875C7.31667 0.2625 8.61667 0 10 0C11.3833 0 12.6833 0.2625 13.9 0.7875C15.1167 1.3125 16.175 2.025 17.075 2.925C17.975 3.825 18.6875 4.88333 19.2125 6.1C19.7375 7.31667 20 8.61667 20 10C20 11.3833 19.7375 12.6833 19.2125 13.9C18.6875 15.1167 17.975 16.175 17.075 17.075C16.175 17.975 15.1167 18.6875 13.9 19.2125C12.6833 19.7375 11.3833 20 10 20ZM10 18C12.2333 18 14.125 17.225 15.675 15.675C17.225 14.125 18 12.2333 18 10C18 7.76667 17.225 5.875 15.675 4.325C14.125 2.775 12.2333 2 10 2C7.76667 2 5.875 2.775 4.325 4.325C2.775 5.875 2 7.76667 2 10C2 12.2333 2.775 14.125 4.325 15.675C5.875 17.225 7.76667 18 10 18Z" fill="#c62828"/>
                                 </svg>
                             </div>
                         </div>
                     </div>
-                    <div style={{width: 96, height: 96, left: 89, top: -14, position: 'absolute', background: 'rgba(255, 46, 98, 0.10)', borderRadius: 12}} />
+                    <div style={{width: 96, height: 96, left: 89, top: -14, position: 'absolute', background: 'rgba(198, 40, 40, 0.10)', borderRadius: 12}} />
                     <div data-svg-wrapper style={{left: 19.27, top: 23.50, position: 'absolute'}}>
                         <svg width="28" height="24" viewBox="0 0 28 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5.6411 23.75C5.0786 23.75 4.5786 23.5781 4.1411 23.2344C3.7036 22.8906 3.40152 22.4479 3.23485 21.9062L0.0473485 10.3438C-0.0568182 9.94792 0.0108902 9.58333 0.250473 9.25C0.490057 8.91667 0.818182 8.75 1.23485 8.75H7.17235L12.6723 0.5625C12.7765 0.395833 12.9223 0.260417 13.1098 0.15625C13.2973 0.0520833 13.4953 0 13.7036 0C13.9119 0 14.1098 0.0520833 14.2973 0.15625C14.4848 0.260417 14.6307 0.395833 14.7348 0.5625L20.2348 8.75H26.2348C26.6515 8.75 26.9796 8.91667 27.2192 9.25C27.4588 9.58333 27.5265 9.94792 27.4223 10.3438L24.2348 21.9062C24.0682 22.4479 23.7661 22.8906 23.3286 23.2344C22.8911 23.5781 22.3911 23.75 21.8286 23.75H5.6411ZM5.60985 21.25H21.8598L24.6098 11.25H2.85985L5.60985 21.25ZM13.7348 18.75C14.4223 18.75 15.0109 18.5052 15.5005 18.0156C15.9901 17.526 16.2348 16.9375 16.2348 16.25C16.2348 15.5625 15.9901 14.974 15.5005 14.4844C15.0109 13.9948 14.4223 13.75 13.7348 13.75C13.0473 13.75 12.4588 13.9948 11.9692 14.4844C11.4796 14.974 11.2348 15.5625 11.2348 16.25C11.2348 16.9375 11.4796 17.526 11.9692 18.0156C12.4588 18.5052 13.0473 18.75 13.7348 18.75ZM10.2036 8.75H17.2348L13.7036 3.5L10.2036 8.75Z" fill="#FF2E62"/>
+                        <path d="M5.6411 23.75C5.0786 23.75 4.5786 23.5781 4.1411 23.2344C3.7036 22.8906 3.40152 22.4479 3.23485 21.9062L0.0473485 10.3438C-0.0568182 9.94792 0.0108902 9.58333 0.250473 9.25C0.490057 8.91667 0.818182 8.75 1.23485 8.75H7.17235L12.6723 0.5625C12.7765 0.395833 12.9223 0.260417 13.1098 0.15625C13.2973 0.0520833 13.4953 0 13.7036 0C13.9119 0 14.1098 0.0520833 14.2973 0.15625C14.4848 0.260417 14.6307 0.395833 14.7348 0.5625L20.2348 8.75H26.2348C26.6515 8.75 26.9796 8.91667 27.2192 9.25C27.4588 9.58333 27.5265 9.94792 27.4223 10.3438L24.2348 21.9062C24.0682 22.4479 23.7661 22.8906 23.3286 23.2344C22.8911 23.5781 22.3911 23.75 21.8286 23.75H5.6411ZM5.60985 21.25H21.8598L24.6098 11.25H2.85985L5.60985 21.25ZM13.7348 18.75C14.4223 18.75 15.0109 18.5052 15.5005 18.0156C15.9901 17.526 16.2348 16.9375 16.2348 16.25C16.2348 15.5625 15.9901 14.974 15.5005 14.4844C15.0109 13.9948 14.4223 13.75 13.7348 13.75C13.0473 13.75 12.4588 13.9948 11.9692 14.4844C11.4796 14.974 11.2348 15.5625 11.2348 16.25C11.2348 16.9375 11.4796 17.526 11.9692 18.0156C12.4588 18.5052 13.0473 18.75 13.7348 18.75ZM10.2036 8.75H17.2348L13.7036 3.5L10.2036 8.75Z" fill="#c62828"/>
                         </svg>
                     </div>
                 </div>
-                <div style={{alignSelf: 'stretch', height: 179, padding: 24, position: 'relative', background: '#12080A', boxShadow: '0px 8px 10px -6px rgba(0, 0, 0, 0.10), 0px 20px 25px -5px rgba(0, 0, 0, 0.10)', overflow: 'hidden', borderRadius: 8, outline: '2px #FF2E62 solid', outlineOffset: '-2px', justifyContent: 'space-between', alignItems: 'center', display: 'inline-flex'}}>
+                <div style={{alignSelf: 'stretch', height: 179, padding: 24, position: 'relative', background: '#12080A', boxShadow: '0px 8px 10px -6px rgba(0, 0, 0, 0.10), 0px 20px 25px -5px rgba(0, 0, 0, 0.10)', overflow: 'hidden', borderRadius: 8, outline: '2px #c62828 solid', outlineOffset: '-2px', justifyContent: 'space-between', alignItems: 'center', display: 'inline-flex'}}>
                     <div style={{flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
                         <div style={{alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
-                            <div style={{width: 182.27, height: 32, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#FF2E62', fontSize: 24, fontFamily: 'Space Grotesk', fontWeight: '900', textTransform: 'uppercase', lineHeight: 32, wordWrap: 'break-word'}}>Request Service</div>
+                            <div style={{width: 182.27, height: 32, justifyContent: 'center', display: 'flex', flexDirection: 'column', color: '#c62828', fontSize: 24, fontFamily: 'Space Grotesk', fontWeight: '900', textTransform: 'uppercase', lineHeight: 32, wordWrap: 'break-word'}}>Request Service</div>
                         </div>
                         <div style={{alignSelf: 'stretch', paddingTop: 4, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
                             <div style={{alignSelf: 'stretch', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'flex'}}>
@@ -124,11 +124,11 @@
                     </div>
                     <div data-svg-wrapper>
                         <svg width="62" height="55" viewBox="0 0 62 55" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="62" height="54.5" rx="12" fill="#FF2E62" fill-opacity="0.2"/>
-                        <path d="M16 38.5V35.5H46V38.5H16ZM17.5 34V32.5C17.5 29.3 18.4812 26.475 20.4437 24.025C22.4062 21.575 24.925 20.025 28 19.375V19C28 18.175 28.2938 17.4688 28.8813 16.8813C29.4688 16.2938 30.175 16 31 16C31.825 16 32.5312 16.2938 33.1187 16.8813C33.7062 17.4688 34 18.175 34 19V19.375C37.1 20.025 39.625 21.575 41.575 24.025C43.525 26.475 44.5 29.3 44.5 32.5V34H17.5ZM20.575 31H41.425C41.075 28.4 39.9125 26.25 37.9375 24.55C35.9625 22.85 33.65 22 31 22C28.35 22 26.0437 22.85 24.0813 24.55C22.1188 26.25 20.95 28.4 20.575 31Z" fill="#FF2E62"/>
+                        <rect width="62" height="54.5" rx="12" fill="#c62828" fill-opacity="0.2"/>
+                        <path d="M16 38.5V35.5H46V38.5H16ZM17.5 34V32.5C17.5 29.3 18.4812 26.475 20.4437 24.025C22.4062 21.575 24.925 20.025 28 19.375V19C28 18.175 28.2938 17.4688 28.8813 16.8813C29.4688 16.2938 30.175 16 31 16C31.825 16 32.5312 16.2938 33.1187 16.8813C33.7062 17.4688 34 18.175 34 19V19.375C37.1 20.025 39.625 21.575 41.575 24.025C43.525 26.475 44.5 29.3 44.5 32.5V34H17.5ZM20.575 31H41.425C41.075 28.4 39.9125 26.25 37.9375 24.55C35.9625 22.85 33.65 22 31 22C28.35 22 26.0437 22.85 24.0813 24.55C22.1188 26.25 20.95 28.4 20.575 31Z" fill="#c62828"/>
                         </svg>
                     </div>
-                    <div style={{width: 128, height: 128, left: -30, top: 81, position: 'absolute', background: 'rgba(255, 46, 98, 0.20)', boxShadow: '64px 64px 64px ', borderRadius: 12, filter: 'blur(32px)'}} />
+                    <div style={{width: 128, height: 128, left: -30, top: 81, position: 'absolute', background: 'rgba(198, 40, 40, 0.20)', boxShadow: '64px 64px 64px ', borderRadius: 12, filter: 'blur(32px)'}} />
                 </div>
             </div>
             <div style={{width: 358, padding: 4, left: 16, top: 960, position: 'absolute', background: '#1E293B', overflow: 'hidden', borderRadius: 8, outline: '1px #334155 solid', outlineOffset: '-1px', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', display: 'inline-flex'}}>
@@ -137,7 +137,7 @@
                     <div style={{width: 348, height: 160, left: 0, top: 0, position: 'absolute', justifyContent: 'center', alignItems: 'center', display: 'inline-flex'}}>
                         <div data-svg-wrapper>
                             <svg width="24" height="30" viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 15C12.825 15 13.5312 14.7062 14.1187 14.1187C14.7062 13.5312 15 12.825 15 12C15 11.175 14.7062 10.4688 14.1187 9.88125C13.5312 9.29375 12.825 9 12 9C11.175 9 10.4688 9.29375 9.88125 9.88125C9.29375 10.4688 9 11.175 9 12C9 12.825 9.29375 13.5312 9.88125 14.1187C10.4688 14.7062 11.175 15 12 15ZM12 26.025C15.05 23.225 17.3125 20.6812 18.7875 18.3937C20.2625 16.1062 21 14.075 21 12.3C21 9.575 20.1312 7.34375 18.3937 5.60625C16.6562 3.86875 14.525 3 12 3C9.475 3 7.34375 3.86875 5.60625 5.60625C3.86875 7.34375 3 9.575 3 12.3C3 14.075 3.7375 16.1062 5.2125 18.3937C6.6875 20.6812 8.95 23.225 12 26.025ZM12 30C7.975 26.575 4.96875 23.3937 2.98125 20.4562C0.99375 17.5187 0 14.8 0 12.3C0 8.55 1.20625 5.5625 3.61875 3.3375C6.03125 1.1125 8.825 0 12 0C15.175 0 17.9688 1.1125 20.3813 3.3375C22.7938 5.5625 24 8.55 24 12.3C24 14.8 23.0062 17.5187 21.0187 20.4562C19.0312 23.3937 16.025 26.575 12 30Z" fill="#FF2E62"/>
+                            <path d="M12 15C12.825 15 13.5312 14.7062 14.1187 14.1187C14.7062 13.5312 15 12.825 15 12C15 11.175 14.7062 10.4688 14.1187 9.88125C13.5312 9.29375 12.825 9 12 9C11.175 9 10.4688 9.29375 9.88125 9.88125C9.29375 10.4688 9 11.175 9 12C9 12.825 9.29375 13.5312 9.88125 14.1187C10.4688 14.7062 11.175 15 12 15ZM12 26.025C15.05 23.225 17.3125 20.6812 18.7875 18.3937C20.2625 16.1062 21 14.075 21 12.3C21 9.575 20.1312 7.34375 18.3937 5.60625C16.6562 3.86875 14.525 3 12 3C9.475 3 7.34375 3.86875 5.60625 5.60625C3.86875 7.34375 3 9.575 3 12.3C3 14.075 3.7375 16.1062 5.2125 18.3937C6.6875 20.6812 8.95 23.225 12 26.025ZM12 30C7.975 26.575 4.96875 23.3937 2.98125 20.4562C0.99375 17.5187 0 14.8 0 12.3C0 8.55 1.20625 5.5625 3.61875 3.3375C6.03125 1.1125 8.825 0 12 0C15.175 0 17.9688 1.1125 20.3813 3.3375C22.7938 5.5625 24 8.55 24 12.3C24 14.8 23.0062 17.5187 21.0187 20.4562C19.0312 23.3937 16.025 26.575 12 30Z" fill="#c62828"/>
                             </svg>
                         </div>
                     </div>
@@ -152,14 +152,14 @@
                 </div>
             </div>
         </div>
-        <div style={{width: 128, height: 256, left: 326, top: 665, position: 'absolute', background: 'rgba(255, 46, 98, 0.05)', boxShadow: '80px 80px 80px ', borderRadius: 12, filter: 'blur(40px)'}} />
-        <div style={{width: 128, height: 256, left: -64, top: 741.50, position: 'absolute', background: 'rgba(255, 46, 98, 0.05)', boxShadow: '80px 80px 80px ', borderRadius: 12, filter: 'blur(40px)'}} />
+        <div style={{width: 128, height: 256, left: 326, top: 665, position: 'absolute', background: 'rgba(198, 40, 40, 0.05)', boxShadow: '80px 80px 80px ', borderRadius: 12, filter: 'blur(40px)'}} />
+        <div style={{width: 128, height: 256, left: -64, top: 741.50, position: 'absolute', background: 'rgba(198, 40, 40, 0.05)', boxShadow: '80px 80px 80px ', borderRadius: 12, filter: 'blur(40px)'}} />
     </div>
 </div>
 
 Text Styles:
 // VHDSGN
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 14;
  fontFamily: 'Space Grotesk';
  fontWeight: '700';
@@ -201,7 +201,7 @@ color: '#0F172A';
  wordWrap: 'break-word'
 ---
 // Until Oct 24, 2023
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 12;
  fontFamily: 'Space Grotesk';
  fontWeight: '700';
@@ -209,7 +209,7 @@ color: '#FF2E62';
  wordWrap: 'break-word'
 ---
 // Your Sanctuary
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 10;
  fontFamily: 'Space Grotesk';
  fontWeight: '700';
@@ -251,7 +251,7 @@ color: 'white';
  wordWrap: 'break-word'
 ---
 // Request Service
-color: '#FF2E62';
+color: '#c62828';
  fontSize: 24;
  fontFamily: 'Space Grotesk';
  fontWeight: '900';

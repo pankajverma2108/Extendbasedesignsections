@@ -1,24 +1,24 @@
 # Summary
 
-**VIBE HOUSE**
+**The Daily Social**
 
 **Stay. Mix. Repeat.**
 
 **1\. Brand Overview**
 
-Welcome to Vibe House—your passport to transforming ordinary trips into extraordinary adventures. Whether you're on a city break, business trip, backpacking adventure, family holiday, or school class trip, your stay with us will be incredible\!
+Welcome to The Daily Social—your passport to transforming ordinary trips into extraordinary adventures. Whether you're on a city break, business trip, backpacking adventure, family holiday, or school class trip, your stay with us will be incredible\!
 
 Our unique mix of hotel comfort and hostel vibes means you get the best of both worlds. What sets us apart? Our unbeatable central locations, budget-friendly rates, Cleanliness, Safety and awesome amenities that make stay fun. Our spaces are all about having fun, meeting new people, and creating fantastic memories. 
 
-Vibe House is a social co-living / mixed-gender Global standard hosteller brand designed for modern travellers who seek connection, energy, and safety—not just a bed for the night. Vibe House blends hospitality, community, and curated social experiences under one roof.
+The Daily Social is a social co-living / mixed-gender Global standard hosteller brand designed for modern travellers who seek connection, energy, and safety—not just a bed for the night. The Daily Social blends hospitality, community, and curated social experiences under one roof.
 
-Vibe House is built for people who travel solo but never want to feel alone.
+The Daily Social is built for people who travel solo but never want to feel alone.
 
 ---
 
 **2\. Brand Philosophy**
 
-At its core, Vibe House stands for:
+At its core, The Daily Social stands for:
 
 * **Interaction** – spaces and programming that naturally bring people together
 
@@ -36,13 +36,13 @@ The brand removes the anxiety of:
 
 * *“Is this place safe and clean?”*
 
-At Vibe House, the vibe is built-in.
+At The Daily Social, the vibe is built-in.
 
 ---
 
 **3\. Target Audience**
 
-Vibe House is designed for:
+The Daily Social is designed for:
 
 * Solo travellers (Indian & international)
 
@@ -59,7 +59,7 @@ Mindset: Social, open, experience-driven, global
 
 ---
 
-**4\. The Vibe House Experience**
+**4\. The Daily Social Experience**
 
 a) Stay
 
@@ -75,7 +75,7 @@ b) Social Life (Core Differentiator)
 
 Guests never have to plan their evening.
 
-Every Vibe House property curates:
+Every The Daily Social property curates:
 
 * Daily evening social hours
 
@@ -93,7 +93,7 @@ Social interaction is facilitated but not forced.
 
 **5\. Safety & House Rules (Brand Backbone)**
 
-Vibe House balances freedom with structure.
+The Daily Social balances freedom with structure.
 
 Safety Measures:
 
@@ -127,7 +127,7 @@ This ensures:
 
 **6\. Design & Spaces**
 
-Vibe House is designed to make interaction effortless.
+The Daily Social is designed to make interaction effortless.
 
 Key spaces:
 
@@ -165,7 +165,7 @@ Cleanliness is treated like a hotel, not a backpacker dorm.
 
 * Hygiene audits & SOPs
 
-This allows Vibe House to appeal to:
+This allows The Daily Social to appeal to:
 
 * First-time hostel users
 
@@ -177,7 +177,7 @@ This allows Vibe House to appeal to:
 
 **8\. Brand Promise**
 
-At Vibe House, no one feels like a stranger.
+At The Daily Social, no one feels like a stranger.
 
 Guests arrive alone.  
 They sleep well.  
@@ -188,7 +188,7 @@ They leave with stories, friends, and memories.
 
 **9\. One-Line Brand Definition**
 
-Vibe House is a social co-living hosteller where safety, music, and community turn every stay into an experience.
+The Daily Social is a social co-living hosteller where safety, music, and community turn every stay into an experience.
 
 ---
 
@@ -781,9 +781,9 @@ Automated notifications:
 
 ![an orange and white building in a city at The Hosteller Bangalore, Manyata Tech Park in Bengaluru][image19]
 
-# Automated KYC for Vibe House
+# Automated KYC for The Daily Social
 
-## **Automated KYC for Vibe House**
+## **Automated KYC for The Daily Social**
 
 ## **1\. Summary**
 
@@ -906,7 +906,7 @@ The application will be deployed as a PWA to ensure:
 
 ## **1\. Summary**
 
-A cloud-based web module designed to increase ancillary revenue before guest arrival by offering commodities and services (Upsells). The system allows signed-in guests to seamlessly purchase add-ons via Razorpay, which are then automatically synchronized with the eZee PMS and internal Vibe House databases.
+A cloud-based web module designed to increase ancillary revenue before guest arrival by offering commodities and services (Upsells). The system allows signed-in guests to seamlessly purchase add-ons via Razorpay, which are then automatically synchronized with the eZee PMS and internal The Daily Social databases.
 
 ## **2\. Use Case: Pre-Arrival Add-on Cart (Remote Guest Portal)**
 
@@ -945,18 +945,18 @@ The following catalog is standard for the Upsell Engine:
 ### **4.1 Integration Architecture**
 
 * **Inventory Master:** eZee PMS tracks maximum available physical commodities (e.g., total safe locks).  
-* **Payment Master:** Vibe House custom backend via Razorpay. All small-item transactions strictly enforce a prepaid, instant payment model (no "pay-later" options) .  
-* **Folio Sync:** Once Razorpay confirms the payment, the Vibe House backend makes a POST request to the eZee PMS API to append the items to the guest's invoice and update the ledger to reflect the external payment.
+* **Payment Master:** The Daily Social custom backend via Razorpay. All small-item transactions strictly enforce a prepaid, instant payment model (no "pay-later" options) .  
+* **Folio Sync:** Once Razorpay confirms the payment, The Daily Social backend makes a POST request to the eZee PMS API to append the items to the guest's invoice and update the ledger to reflect the external payment.
 
 ### **4.2 Edge Case Handlers**
 
 * **Payment Drop-off / Failure:** If Razorpay returns a FAILED status or the user abandons the cart, the temporary inventory hold is released after 10 minutes. The PMS folio is *not* updated.  
-* **PMS Sync Failure:** If the payment succeeds on Razorpay but the eZee PMS API is unresponsive, log the transaction in the Vibe House DB as SYNC\_PENDING. A cron job will retry the API call every 5 minutes until a 200 OK response is received from eZee.  
+* **PMS Sync Failure:** If the payment succeeds on Razorpay but the eZee PMS API is unresponsive, log the transaction in The Daily Social DB as SYNC\_PENDING. A cron job will retry the API call every 5 minutes until a 200 OK response is received from eZee.  
 * **Inventory Conflict:** If an item goes out of stock between cart addition and payment, Razorpay initialization is blocked, and the user is prompted with an "Item Unavailable" toast notification.
 
 ## **5\. Security & Compliance**
 
-* **Payment Data:** Vibe House backend does not store any sensitive card or UPI data; tokenization and processing are fully offloaded to Razorpay.  
+* **Payment Data:** The Daily Social backend does not store any sensitive card or UPI data; tokenization and processing are fully offloaded to Razorpay.  
 * **Invoice Integrity:** To prevent revenue leakage, operational tasks (like handing over a towel or assigning early check-in) are strictly gated and cannot be generated for staff until the payment webhook validates the transaction.
 
 # During Stay Service Engine BRD
@@ -965,7 +965,7 @@ The following catalog is standard for the Upsell Engine:
 
 ## **1\. Summary**
 
-A cloud-based web module accessible via the Vibe House Guest Interface (PWA) designed to automate in-house guest requests. The system handles free operational requests, dynamically checks inventory for borrowable items, and enforces a strict prepaid flow for chargeable commodities and services before routing tasks to the operational staff.
+A cloud-based web module accessible via The Daily Social Guest Interface (PWA) designed to automate in-house guest requests. The system handles free operational requests, dynamically checks inventory for borrowable items, and enforces a strict prepaid flow for chargeable commodities and services before routing tasks to the operational staff.
 
 *(Note: Bed/Room upgrades and third-party luggage storage are handled manually on-site and are excluded from this automated flow).*
 
@@ -1012,7 +1012,7 @@ These requests bypass the payment gateway and immediately trigger a ticket in th
 These items are free but heavily restricted by inventory limits.
 
 * **Items:** Iron, Hair dryer, Umbrella .  
-* **Logic:** The PWA checks the internal Vibe House Database. If stock exists, the request is allowed, and stock is temporarily decremented (-1) while checked out to the guest. Once staff verifies the item is returned, the stock is incremented (+1).
+* **Logic:** The PWA checks the internal The Daily Social Database. If stock exists, the request is allowed, and stock is temporarily decremented (-1) while checked out to the guest. Once staff verifies the item is returned, the stock is incremented (+1).
 
 ## **4\. Payment System Requirements**
 
@@ -1054,7 +1054,7 @@ To ensure revenue integrity and service accountability, all chargeable transacti
 
 ## **1\. Summary**
 
-A mobile-first web application (and potential WhatsApp integration) designed for Vibe House staff to access on their personal smartphones. It digitizes, routes, and monitors all operational service requests, eliminating verbal coordination and ensuring service consistency through strict SLA enforcement and load-balanced assignment.
+A mobile-first web application (and potential WhatsApp integration) designed for The Daily Social staff to access on their personal smartphones. It digitizes, routes, and monitors all operational service requests, eliminating verbal coordination and ensuring service consistency through strict SLA enforcement and load-balanced assignment.
 
 ## **2\. Task Lifecycle & Statuses**
 
@@ -1128,7 +1128,7 @@ Since staff will use their personal smartphones, the UI will be lightweight, hig
 
 ## **1\. Summary**
 
-A centralized, cloud-based reporting dashboard designed to provide Vibe House management with actionable operational and revenue intelligence . The module aggregates data from the eZee PMS, Razorpay payment gateway, and the internal Staff Task Dashboard to monitor financial performance, track staff efficiency, and prevent internal leakage and shrinkage.
+A centralized, cloud-based reporting dashboard designed to provide The Daily Social management with actionable operational and revenue intelligence . The module aggregates data from the eZee PMS, Razorpay payment gateway, and the internal Staff Task Dashboard to monitor financial performance, track staff efficiency, and prevent internal leakage and shrinkage.
 
 ## **2\. Use Case: Manager Analytics & Inventory Control**
 
@@ -1140,7 +1140,7 @@ Managers and supervisors access this dashboard via a secure web portal (desktop 
 
 | Step | User Action (Click/Type) | System Response / Backend Logic |
 | :---- | :---- | :---- |
-| **1\. Auth** | Log into Vibe House Admin Portal with Manager credentials. | Validate role-based access control (RBAC); Grant session access to the Analytics module. |
+| **1\. Auth** | Log into The Daily Social Admin Portal with Manager credentials. | Validate role-based access control (RBAC); Grant session access to the Analytics module. |
 | **2\. Navigation** | Click "Revenue & Ops Analytics" tab. | Aggregate and fetch live data from eZee PMS API and internal Staff Task DB . |
 | **3\. Data Filtering** | Select Date Range (e.g., "Last 7 Days") and Department. | Query DB; Refresh graphs for Daily Add-on Revenue, SLA compliance %, and Peak Request timings. |
 | **4\. Staff Review** | Click on "Staff Performance Scoring". | Calculate and display total SLAs successfully completed by each staff member within the selected timeframe. |
@@ -1220,7 +1220,7 @@ To ensure lean engineering and avoid duplicating existing systems, the technical
 
 ### **3.1 Overview**
 
-A guest currently staying at Vibe House decides they want to extend their trip by 1 or more days. Instead of going to the front desk, they open the PWA, view the live price (which includes any PMS-generated weekend/surge premiums), and pay instantly to confirm .
+A guest currently staying at The Daily Social decides they want to extend their trip by 1 or more days. Instead of going to the front desk, they open the PWA, view the live price (which includes any PMS-generated weekend/surge premiums), and pay instantly to confirm .
 
 ### **3.2 Detailed Action Sequence**
 
@@ -1264,13 +1264,13 @@ Consistent with the entire PWA architecture, extensions are treated as **strict 
 👉 **Your core system MUST be SQL-first**  
  👉 **You should add NoSQL only as a supporting layer (not the backbone)**
 
-If you tried to build Vibe House purely on NoSQL, you’d hit **revenue leaks, inventory mismatch, and operational chaos** within weeks.
+If you tried to build The Daily Social purely on NoSQL, you’d hit **revenue leaks, inventory mismatch, and operational chaos** within weeks.
 
 Let me explain why, mapped exactly to your real flows.
 
 ---
 
-# **Why SQL is non-negotiable for Vibe House**
+# **Why SQL is non-negotiable for The Daily Social**
 
 Your business is **hospitality \+ money \+ inventory \+ SLAs**.  
  That combination screams *relational integrity*.
@@ -1449,7 +1449,7 @@ You’ll ask questions like:
 
 Now the important nuance: **you should not be SQL-only**.
 
-There *are* parts of Vibe House that benefit massively from NoSQL.
+There *are* parts of The Daily Social that benefit massively from NoSQL.
 
 ---
 
@@ -1851,13 +1851,13 @@ This setup matches **exactly** how serious hospitality tech stacks work.
 
 # Technical Proposal: eZee PMS Integration
 
-# Vibe House: eZee PMS API Requirements Document
+# The Daily Social: eZee PMS API Requirements Document
 
-# **Vibe House: eZee PMS API Requirements Document**
+# **The Daily Social: eZee PMS API Requirements Document**
 
 **Project:** Custom PWA (Guest Interface) & Automation Engine 
 
-**Objective:** To integrate Vibe House's custom middleware with eZee PMS to automate web check-ins, add-on sales, and dynamic inventory management.
+**Objective:** To integrate The Daily Social's custom middleware with eZee PMS to automate web check-ins, add-on sales, and dynamic inventory management.
 
 Please provide the corresponding API Endpoints, HTTP Methods, and sample JSON payloads (Request/Response) for the following functional requirements:
 
@@ -1873,14 +1873,14 @@ Please provide the corresponding API Endpoints, HTTP Methods, and sample JSON pa
 
 ### **2\. Unit-Level (Room or Bed) Inventory & Availability**
 
-**Context:** Vibe House operates a hybrid model with both private rooms and dormitories (1 room, *n* beds). The custom engine will dynamically handle stay extensions and upgrades . **Required APIs:**
+**Context:** The Daily Social operates a hybrid model with both private rooms and dormitories (1 room, *n* beds). The custom engine will dynamically handle stay extensions and upgrades . **Required APIs:**
 
 * **Live Availability Sync:** Fetch real-time availability of rooms and individual beds to support the dynamic pricing engine and automated extension requests.  
 * **Bed Assignment/Modification:** Retrieve the specific bed number assigned to a guest within a dorm, and update this assignment if the guest purchases a "Lower Bunk Upgrade".
 
 ### **3\. Commodities, Add-ons & Financial Folio (The Billing Flow)**
 
-**Context:** Guests will purchase physical items (water bottles, towels) and services (early check-in, late checkout) via the custom PWA. Payment is processed externally by Vibe House, but the transactions must be synced to the eZee invoice . 
+**Context:** Guests will purchase physical items (water bottles, towels) and services (early check-in, late checkout) via the custom PWA. Payment is processed externally by The Daily Social, but the transactions must be synced to the eZee invoice . 
 
 **Required APIs:**
 
@@ -1929,17 +1929,17 @@ CRUD Ops
 
 # eZee PMS API Requirements Document
 
-# **Vibe House: eZee PMS API Requirements Document**
+# **The Daily Social: eZee PMS API Requirements Document**
 
 **Project:** Custom PWA (Guest Interface) & Automation Engine 
 
-**Objective:** To integrate Vibe House's custom middleware with eZee PMS to automate web check-ins, add-on sales, and dynamic inventory management.
+**Objective:** To integrate The Daily Social's custom middleware with eZee PMS to automate web check-ins, add-on sales, and dynamic inventory management.
 
 Please provide the corresponding API Endpoints, HTTP Methods, and sample JSON payloads (Request/Response) for the following functional requirements:
 
 ### **1\. Listing & Availability: Unit-Level (Room or Bed)**
 
-**Context:** Vibe House operates a hybrid model with both private rooms and dormitories (1 room, *n* beds). The custom engine will dynamically handle stay extensions, availability syncs, and bed-level upgrades. **Required APIs (CRUD Operations):**
+**Context:** The Daily Social operates a hybrid model with both private rooms and dormitories (1 room, *n* beds). The custom engine will dynamically handle stay extensions, availability syncs, and bed-level upgrades. **Required APIs (CRUD Operations):**
 
 * **Create/Update Unit:** APIs to add or modify individual physical beds or rooms within the PMS.  
 * **Read (Live Availability Sync):** Fetch real-time availability of specific rooms and individual beds to support the dynamic pricing engine and automated extension requests.  
@@ -1966,7 +1966,7 @@ Please provide the corresponding API Endpoints, HTTP Methods, and sample JSON pa
 
 ### **4\. Services, Commodities & Inventory**
 
-**Context:** Guests will purchase physical items (water bottles, towels) and services (early check-in, late checkout) via the custom PWA. Payment is processed externally by Vibe House, but the transactions must be synced. **Required APIs (CRUD Operations):**
+**Context:** Guests will purchase physical items (water bottles, towels) and services (early check-in, late checkout) via the custom PWA. Payment is processed externally by The Daily Social, but the transactions must be synced. **Required APIs (CRUD Operations):**
 
 * **Read (Service/Commodity Listing):** Fetch Catalog / Master Data to retrieve the list of active commodities and services with their base prices from eZee.  
 * **Create/Book Service with Payment (Single/Group):** \* Post Extra Charge (Services): Add a financial line item to the folio for time-based services like Early Check-in.  
@@ -1990,7 +1990,7 @@ Add Room shift (ops and API both)
 
 **Project:** Custom PWA (Guest Interface) & Automation Engine 
 
-**Objective:** To integrate Vibe House's middleware with MyGate's smart lock ecosystem to completely automate property management, manager assignments, and guest access (PIN generation/revocation).
+**Objective:** To integrate The Daily Social's middleware with MyGate's smart lock ecosystem to completely automate property management, manager assignments, and guest access (PIN generation/revocation).
 
 Please provide the corresponding API Endpoints, HTTP Methods, and sample JSON payloads (Request/Response) for the following functional requirements:
 
@@ -2052,7 +2052,7 @@ To the MyGate Integration Team: For each of the above requirements, kindly outli
 
 ![][image29]         ![][image30]         **![][image31]**
 
-**Vibe House System Architecture Proposal** 
+**The Daily Social System Architecture Proposal** 
 
 **1\. Load & Scale Assessment**
 
@@ -2085,8 +2085,8 @@ Expected Load: 500 Requests Per Second (RPS) ≈ 30,000 Requests Per Minute (RPM
 * Caching & Rate Limiting: Redis Cluster (AWS ElastiCache).  
   * Heavy reliance: Cache all eZee inventory reads for a few seconds. Do not query eZee at 500 RPS.  
 * Payment & Commodity Gateway:  
-  * The PWA queries our DB for commodity prices (Water Bottle \= ₹50). Vibe House uses Razorpay/Stripe to collect payment directly.  
-  * Only after Vibe House's payment webhook confirms the payment, do we use a background job to post the charge to eZee's folios.
+  * The PWA queries our DB for commodity prices (Water Bottle \= ₹50). The Daily Social uses Razorpay/Stripe to collect payment directly.  
+  * Only after The Daily Social's payment webhook confirms the payment, do we use a background job to post the charge to eZee's folios.
 
 **D. Asynchronous Workers & Message Queues**
 
@@ -2100,7 +2100,7 @@ Expected Load: 500 Requests Per Second (RPS) ≈ 30,000 Requests Per Minute (RPM
 **A. The Booking & Check-in Flow**
 
 1. Booking: Guest books via OTA. eZee PMS receives the booking.  
-2. Background Sync: Vibe House Workers poll/receive webhooks from eZee and create guest entries in PostgreSQL.  
+2. Background Sync: The Daily Social Workers poll/receive webhooks from eZee and create guest entries in PostgreSQL.  
 3. Web Check-in: Guest authenticates and uploads KYC via PWA.  
 4. Automation Trigger:  
 * Operations pushed to Queue.  
@@ -2111,20 +2111,20 @@ Expected Load: 500 Requests Per Second (RPS) ≈ 30,000 Requests Per Minute (RPM
 
 Addressing the specific requirement: Custom Payment Gateway \+ eZee Inventory
 
-1. **Catalog Load:** PWA fetches the catalog/prices from the Vibe House PostgreSQL DB (cached in Redis for extreme speed).  
+1. **Catalog Load:** PWA fetches the catalog/prices from The Daily Social PostgreSQL DB (cached in Redis for extreme speed).  
 2. Purchase Intent: Guest selects "1x Toilet Kit" (₹150).  
 3. **Payment:** PWA initiates a payment through Razorpay/PhonePe.  
 4. Webhook Confirmation: Razorpay sends a payment.captured webhook to our backend.  
 5. **Atomic Transaction:**  
    * Backend verifies the webhook signature.  
-   * Backend deducts 1 from the Vibe House inventory table.  
+   * Backend deducts 1 from The Daily Social inventory table.  
    * Backend creates an operational task for Housekeeping to deliver the kit.  
 6. PMS Ledger Sync (Background): A queue worker safely calls the eZee AddExtraCharge API and the eZee Inventory API to deduct the stock over there, preventing any race conditions or 503 errors from eZee.
 
 **4\. Addressing Infrastructure Reliability**
 
 * Deployments without Downtime: AWS CodePipeline triggering ECS Rolling Updates. Old containers remain alive until new containers are confirmed healthy and serving traffic.  
-* eZee / MyGate Rate Limits: BullMQ processes the background queues at a controlled pace (e.g., max 5 requests per second to eZee), even if Vibe House is receiving 500 RPS.  
+* eZee / MyGate Rate Limits: BullMQ processes the background queues at a controlled pace (e.g., max 5 requests per second to eZee), even if The Daily Social is receiving 500 RPS.  
 * Database Load: Read replicas for PostgreSQL to offload heavy reporting queries from the Staff Dashboard.
 
 **5\. Summary of the Essential Tech Stack**
@@ -2801,16 +2801,16 @@ User Pages
 
 Great question — let me walk you through exactly what happens in the DB, step by step.
 
-### **The Flow: ABC books on MMT → Gets eZee reservation ID → Signs up on Vibe House**
+### **The Flow: ABC books on MMT → Gets eZee reservation ID → Signs up on The Daily Social**
 
-**Step 1: Booking happens on MMT (Before Vibe House knows anything)**
+**Step 1: Booking happens on MMT (Before The Daily Social knows anything)**
 
 At this point, nothing exists in our database. The booking lives entirely in eZee PMS because MMT pushed it there via eZee’s channel manager. Our DB has zero rows for ABC.
 
 | Our DB:       \[empty\]eZee PMS:     Reservation \#RES-12345 → ABC, Room Dorm-LB, Mar 15-18 |
 | :---- |
 
-**Step 2: ABC opens the Vibe House PWA and signs up**
+**Step 2: ABC opens The Daily Social PWA and signs up**
 
 ABC signs up via Google OAuth or phone OTP. Now our DB has:
 
@@ -2915,7 +2915,7 @@ When any guest enters a booking ID, the backend runs this check:
 
 → ABC can now see DEF’s PENDING\_APPROVAL and approve/reject it
 
-### **What if ABC never signs up on Vibe House?**
+### **What if ABC never signs up on The Daily Social?**
 
 This is the tricky case. DEF is stuck as PENDING\_APPROVAL forever waiting for ABC to approve. Two options:
 
@@ -2941,6 +2941,6 @@ The key is fetching booker\_email and booker\_phone from eZee when the reservati
 | ABC (booker) signs up first, enters booking ID | ✅ PRIMARY — email matches |
 | DEF enters booking ID before ABC | ✅ SECONDARY — no email match, wait for ABC’s OTP approval |
 | ABC’s email on MMT was different from PWA email | ⚠️ Falls back to phone match. If both differ, DEF gets SECONDARY — staff can manually override via Zoho |
-| ABC never signs up on Vibe House before check-in | ⚠️ DEF stays PENDING. Front desk promotes manually via Zoho at the kiosk |
+| ABC never signs up on The Daily Social before check-in | ⚠️ DEF stays PENDING. Front desk promotes manually via Zoho at the kiosk |
 
 The two new columns — booker\_email and booker\_phone — are your source of truth for this matching logic. No additional tables needed.

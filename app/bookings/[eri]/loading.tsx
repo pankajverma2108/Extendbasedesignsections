@@ -6,7 +6,7 @@ export default function Loading() {
       <div className="mx-auto w-full max-w-[1400px] px-4 md:px-6 lg:px-10">
         <div className="space-y-6">
           <div className="h-1 overflow-hidden rounded-full bg-white/10">
-            <div className="h-full w-1/5 animate-pulse rounded-full bg-[linear-gradient(90deg,#00d1ff,#ff2e62)]" />
+            <div className="h-full w-1/5 animate-pulse rounded-full bg-[linear-gradient(90deg,#00d1ff,#c62828)]" />
           </div>
           <div className="grid gap-8 lg:grid-cols-[minmax(0,390px)_minmax(0,1fr)]">
             <div className="space-y-6">

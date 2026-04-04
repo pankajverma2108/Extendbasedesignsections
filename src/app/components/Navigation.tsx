@@ -13,13 +13,13 @@ export default function Navigation() {
       <div className="max-w-screen-xl mx-auto px-4 md:px-6 py-3 md:py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center">
-            <img src={logoImage} alt="Vibe House" className="h-8 md:h-10 w-auto" />
+            <img src={logoImage} alt="The Daily Social" className="h-8 md:h-10 w-auto" />
           </Link>
           <div className="hidden md:flex gap-6">
             <Link 
               to="/" 
               className={`font-['Space_Grotesk'] text-[14px] transition-colors ${
-                isActive('/') ? 'text-[#ff2e62]' : 'text-white hover:text-[#ff2e62]'
+                isActive('/') ? 'text-[#c62828]' : 'text-white hover:text-[#c62828]'
               }`}
             >
               Home
@@ -27,7 +27,7 @@ export default function Navigation() {
             <Link 
               to="/rooms" 
               className={`font-['Space_Grotesk'] text-[14px] transition-colors ${
-                isActive('/rooms') ? 'text-[#ff2e62]' : 'text-white hover:text-[#ff2e62]'
+                isActive('/rooms') ? 'text-[#c62828]' : 'text-white hover:text-[#c62828]'
               }`}
             >
               Rooms
@@ -35,7 +35,7 @@ export default function Navigation() {
             <Link 
               to="/events" 
               className={`font-['Space_Grotesk'] text-[14px] transition-colors ${
-                isActive('/events') ? 'text-[#ff2e62]' : 'text-white hover:text-[#ff2e62]'
+                isActive('/events') ? 'text-[#c62828]' : 'text-white hover:text-[#c62828]'
               }`}
             >
               Events
@@ -43,7 +43,7 @@ export default function Navigation() {
             <Link 
               to="/about" 
               className={`font-['Space_Grotesk'] text-[14px] transition-colors ${
-                isActive('/about') ? 'text-[#ff2e62]' : 'text-white hover:text-[#ff2e62]'
+                isActive('/about') ? 'text-[#c62828]' : 'text-white hover:text-[#c62828]'
               }`}
             >
               About

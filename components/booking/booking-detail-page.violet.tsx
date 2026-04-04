@@ -215,7 +215,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
 
   const booking = bookingDetail?.booking;
   const roomSummary = booking?.room_type_name ?? snapshotFallback?.roomSummary ?? "Room details pending";
-  const propertyName = snapshotFallback?.propertyName ?? "Vibe House";
+  const propertyName = snapshotFallback?.propertyName ?? "The Daily Social";
   const roomNumber = booking?.room_number || "Assigned at check-in";
   const totalGuests = slots.length || booking?.no_of_guests || 1;
   const amountPaid = snapshotFallback?.amountPaid ?? 0;

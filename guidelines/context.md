@@ -1,4 +1,4 @@
-# Vibe House Project Context Log
+# The Daily Social Project Context Log
 
 Last updated: 2026-03-19 (Asia/Calcutta)
 Owner: `pankajverma2108`
@@ -22,10 +22,10 @@ Goal:
 
 ## 2) Product and business context summary
 
-Primary source: `guidelines/Eval_ Vibe House Concept Note.md`
+Primary source: `guidelines/Eval_ The Daily Social Concept Note.md`
 
 Working product definition:
-- Vibe House is a social co-living / mixed-gender hostel brand.
+- The Daily Social is a social co-living / mixed-gender hostel brand.
 - Core promise: social energy + safety + cleanliness + community.
 - Brand line: "Stay. Mix. Repeat."
 
@@ -94,7 +94,7 @@ Current flow called out in feedback:
 
 Suggested leaner mobile flow:
 - Hero + Header (Hostels, Partner with us, Contact us, Long Stays)
-- Why Vibe House / Experience
+- Why The Daily Social / Experience
 - Room + Amenities
 - Activities
 - Reviews
@@ -168,7 +168,7 @@ Config and build:
 - `next.config.mjs`
 - `tsconfig.json`
 - `postcss.config.mjs` using `@tailwindcss/postcss`
-- `app/globals.css` with Vibe House token-style classes
+- `app/globals.css` with The Daily Social token-style classes
 
 ---
 
@@ -279,7 +279,7 @@ Potential tune-up based on feedback:
 ## 12) Git and push history relevant to this phase
 
 Observed repo short history:
-- `e363206` Migrate Vibe House to Next.js
+- `e363206` Migrate The Daily Social to Next.js
 - `e5e7cd3` Update files from Figma Make
 - `2bf309c` Update files from Figma Make
 - `abe49c3` Add files from Figma Make
@@ -347,7 +347,7 @@ Integration later:
 
 If another AI continues work, it should:
 - Read this file first (`guidelines/context.md`).
-- Read business doc second (`guidelines/Eval_ Vibe House Concept Note.md`).
+- Read business doc second (`guidelines/Eval_ The Daily Social Concept Note.md`).
 - Read feedback doc third (`guidelines/Mobile review.docx`).
 - Confirm current branch and latest pushed commit.
 - Avoid reworking architecture blindly; build on modular sections and content-driven ordering.
@@ -382,4 +382,4 @@ They can be removed in a cleanup step when permitted by tooling/policy.
 
 ## 19) Short plain-English project snapshot
 
-Vibe House is being built as a high-energy, safety-first hostel product with strong operational rigor behind the scenes. The codebase has been migrated from Vite to Next.js and restructured around reusable, reorderable sections and content modules. The business design expects strict transactional handling for payments, inventory, folios, and SLAs, but current implementation intentionally focuses on marketing UX and frontend modularity. Mobile review feedback asks for a shorter, cleaner, more conversion-focused experience, which is now feasible due to the new modular architecture.
+The Daily Social is being built as a high-energy, safety-first hostel product with strong operational rigor behind the scenes. The codebase has been migrated from Vite to Next.js and restructured around reusable, reorderable sections and content modules. The business design expects strict transactional handling for payments, inventory, folios, and SLAs, but current implementation intentionally focuses on marketing UX and frontend modularity. Mobile review feedback asks for a shorter, cleaner, more conversion-focused experience, which is now feasible due to the new modular architecture.

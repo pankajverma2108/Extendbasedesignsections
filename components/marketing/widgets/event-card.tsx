@@ -45,7 +45,7 @@ export function EventCard({
           </div>
         </div>
 
-        <CardContent className="space-y-4 py-5">
+        <CardContent className="space-y-4 py-3.5">
           <div className="grid grid-cols-2 gap-2">
             {details.map((item) => {
               const Icon = item.icon;

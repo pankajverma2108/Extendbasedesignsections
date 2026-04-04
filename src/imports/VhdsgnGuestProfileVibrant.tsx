@@ -9,7 +9,7 @@ function Container1() {
     <div className="relative shrink-0 size-[16px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
         <g id="Container">
-          <path d={svgPaths.p300a1100} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p300a1100} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -39,7 +39,7 @@ function Container3() {
     <div className="relative shrink-0 size-[18px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 18">
         <g id="Container">
-          <path d={svgPaths.p2cd8680} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p2cd8680} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -98,7 +98,7 @@ function Container5() {
           <div className="absolute inset-0 overflow-hidden rounded-[12px]">
             <img alt="" className="absolute left-[3.13%] max-w-none size-[93.75%] top-[3.13%]" src={imgImageBorder} />
           </div>
-          <div aria-hidden="true" className="absolute border-4 border-[#ff2e62] border-solid inset-0 rounded-[12px]" />
+          <div aria-hidden="true" className="absolute border-4 border-[#c62828] border-solid inset-0 rounded-[12px]" />
         </div>
         <BackgroundBorder1 />
       </div>
@@ -109,7 +109,7 @@ function Container5() {
 function Container7() {
   return (
     <div className="content-stretch flex flex-col items-center relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Medium',sans-serif] font-medium h-[20px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[14px] text-center tracking-[2.8px] uppercase w-[137.27px]">
+      <div className="flex flex-col font-['Space_Grotesk:Medium',sans-serif] font-medium h-[20px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[14px] text-center tracking-[2.8px] uppercase w-[137.27px]">
         <p className="leading-[20px]">Global Nomad</p>
       </div>
     </div>
@@ -183,7 +183,7 @@ function Container11() {
 function OverlayBorder1() {
   return (
     <div className="bg-[rgba(35,15,20,0.5)] flex-[1_0_0] min-h-px min-w-px relative rounded-[4px] self-stretch" data-name="Overlay+Border">
-      <div aria-hidden="true" className="absolute border border-[rgba(255,46,98,0.1)] border-solid inset-0 pointer-events-none rounded-[4px]" />
+      <div aria-hidden="true" className="absolute border border-[rgba(198,40,40,0.1)] border-solid inset-0 pointer-events-none rounded-[4px]" />
       <div className="flex flex-col items-center size-full">
         <div className="content-stretch flex flex-col items-center p-[13px] relative size-full">
           <Container10 />
@@ -221,7 +221,7 @@ function Container13() {
 function OverlayBorder2() {
   return (
     <div className="bg-[rgba(35,15,20,0.5)] flex-[1_0_0] min-h-px min-w-px relative rounded-[4px] self-stretch" data-name="Overlay+Border">
-      <div aria-hidden="true" className="absolute border border-[rgba(255,46,98,0.1)] border-solid inset-0 pointer-events-none rounded-[4px]" />
+      <div aria-hidden="true" className="absolute border border-[rgba(198,40,40,0.1)] border-solid inset-0 pointer-events-none rounded-[4px]" />
       <div className="flex flex-col items-center size-full">
         <div className="content-stretch flex flex-col items-center p-[13px] relative size-full">
           <Container12 />
@@ -236,7 +236,7 @@ function Container14() {
   return (
     <div className="relative shrink-0" data-name="Container">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex flex-col items-start relative">
-        <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[28px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[20px] w-[32.2px]">
+        <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[28px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[20px] w-[32.2px]">
           <p className="leading-[28px]">12k</p>
         </div>
       </div>
@@ -259,7 +259,7 @@ function Container15() {
 function OverlayBorder3() {
   return (
     <div className="bg-[rgba(35,15,20,0.5)] flex-[1_0_0] min-h-px min-w-px relative rounded-[4px] self-stretch" data-name="Overlay+Border">
-      <div aria-hidden="true" className="absolute border border-[rgba(255,46,98,0.1)] border-solid inset-0 pointer-events-none rounded-[4px]" />
+      <div aria-hidden="true" className="absolute border border-[rgba(198,40,40,0.1)] border-solid inset-0 pointer-events-none rounded-[4px]" />
       <div className="flex flex-col items-center size-full">
         <div className="content-stretch flex flex-col items-center p-[13px] relative size-full">
           <Container14 />
@@ -292,16 +292,16 @@ function Margin2() {
 
 function OverlayBorder() {
   return (
-    <div className="bg-[rgba(255,46,98,0.05)] relative rounded-[8px] shrink-0 w-full" data-name="Overlay+Border">
+    <div className="bg-[rgba(198,40,40,0.05)] relative rounded-[8px] shrink-0 w-full" data-name="Overlay+Border">
       <div className="flex flex-col items-center overflow-clip rounded-[inherit] size-full">
         <div className="content-stretch flex flex-col gap-[24px] items-center p-[33px] relative w-full">
-          <div className="absolute bg-gradient-to-r from-[#00f0ff] h-[4px] left-px right-px to-[#39ff14] top-px via-1/2 via-[#ff2e62]" data-name="Gradient" />
+          <div className="absolute bg-gradient-to-r from-[#00f0ff] h-[4px] left-px right-px to-[#39ff14] top-px via-1/2 via-[#c62828]" data-name="Gradient" />
           <Container5 />
           <Container6 />
           <Margin2 />
         </div>
       </div>
-      <div aria-hidden="true" className="absolute border border-[rgba(255,46,98,0.2)] border-solid inset-0 pointer-events-none rounded-[8px]" />
+      <div aria-hidden="true" className="absolute border border-[rgba(198,40,40,0.2)] border-solid inset-0 pointer-events-none rounded-[8px]" />
     </div>
   );
 }
@@ -309,11 +309,11 @@ function OverlayBorder() {
 function ParagraphBackgroundBorderShadow() {
   return (
     <div className="bg-[#1e293b] content-stretch flex flex-col h-[40px] items-start pb-[11.005px] pt-[8.995px] px-[26px] relative rounded-[12px]" data-name="Paragraph+Background+Border+Shadow">
-      <div aria-hidden="true" className="absolute border-2 border-[rgba(255,46,98,0.4)] border-dashed inset-0 pointer-events-none rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]" />
+      <div aria-hidden="true" className="absolute border-2 border-[rgba(198,40,40,0.4)] border-dashed inset-0 pointer-events-none rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]" />
       <div className="flex flex-col font-['Caveat:Regular',sans-serif] font-normal h-[20px] justify-center leading-[0] relative shrink-0 text-[#cbd5e1] text-[14px] w-[133.84px]">
         <p className="leading-[20px]">Member since Autumn 2021</p>
       </div>
-      <div className="-translate-y-1/2 absolute flex flex-col font-['Material_Symbols_Outlined:Thin',sans-serif] h-[25.998px] justify-center leading-[0] left-[-10.07px] not-italic text-[#ff2e62] text-[24px] top-[2.99px] w-[24.167px]">
+      <div className="-translate-y-1/2 absolute flex flex-col font-['Material_Symbols_Outlined:Thin',sans-serif] h-[25.998px] justify-center leading-[0] left-[-10.07px] not-italic text-[#c62828] text-[24px] top-[2.99px] w-[24.167px]">
         <p className="leading-[24px]">workspace_premium</p>
       </div>
     </div>
@@ -380,8 +380,8 @@ function Heading1() {
 
 function Overlay() {
   return (
-    <div className="bg-[rgba(255,46,98,0.2)] content-stretch flex flex-col items-start px-[8px] py-[2px] relative rounded-[2px] shrink-0" data-name="Overlay">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[10px] w-[42.89px]">
+    <div className="bg-[rgba(198,40,40,0.2)] content-stretch flex flex-col items-start px-[8px] py-[2px] relative rounded-[2px] shrink-0" data-name="Overlay">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[10px] w-[42.89px]">
         <p className="leading-[15px]">VIEW ALL</p>
       </div>
     </div>
@@ -449,7 +449,7 @@ function Container23() {
   return (
     <div className="absolute bottom-[-15px] left-[-7.07px]" data-name="Container">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex flex-col items-start pb-[0.999px] relative">
-        <div className="flex flex-col font-['Material_Symbols_Outlined:Thin',sans-serif] h-[32px] justify-center leading-[0] not-italic relative shrink-0 text-[#ff2e62] text-[24px] w-[24.167px]">
+        <div className="flex flex-col font-['Material_Symbols_Outlined:Thin',sans-serif] h-[32px] justify-center leading-[0] not-italic relative shrink-0 text-[#c62828] text-[24px] w-[24.167px]">
           <p className="leading-[32px]">favorite</p>
         </div>
       </div>
@@ -557,7 +557,7 @@ function Container25() {
 
 function Background() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex flex-col items-start px-[8px] py-[4px] relative rounded-[2px] shrink-0" data-name="Background">
+    <div className="bg-[#c62828] content-stretch flex flex-col items-start px-[8px] py-[4px] relative rounded-[2px] shrink-0" data-name="Background">
       <div className="absolute bg-[rgba(255,255,255,0)] inset-0 rounded-[2px] shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)]" data-name="Overlay+Shadow" />
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[10px] text-white w-[51.547px]">
         <p className="leading-[15px]">TOP GUEST</p>
@@ -610,7 +610,7 @@ function BackgroundBorder() {
         <Header />
         <Main />
       </div>
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.1)] border-l border-r border-solid inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.1)] border-l border-r border-solid inset-0 pointer-events-none" />
     </div>
   );
 }
@@ -653,7 +653,7 @@ function Container29() {
     <div className="h-[19.067px] relative shrink-0 w-[20.038px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20.0385 19.0667">
         <g id="Container">
-          <path d={svgPaths.p77fe800} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p77fe800} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -663,7 +663,7 @@ function Container29() {
 function Container30() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[10px] tracking-[-0.5px] uppercase w-[44.84px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[10px] tracking-[-0.5px] uppercase w-[44.84px]">
         <p className="leading-[15px]">Passport</p>
       </div>
     </div>
@@ -750,7 +750,7 @@ function Link3() {
 function BackgroundHorizontalBorderOverlayBlur() {
   return (
     <div className="backdrop-blur-[8px] bg-[#230f14] h-[76px] relative shrink-0 w-full" data-name="Background+HorizontalBorder+OverlayBlur">
-      <div aria-hidden="true" className="absolute border-[rgba(255,46,98,0.2)] border-solid border-t inset-0 pointer-events-none" />
+      <div aria-hidden="true" className="absolute border-[rgba(198,40,40,0.2)] border-solid border-t inset-0 pointer-events-none" />
       <div className="flex flex-row justify-center size-full">
         <div className="content-stretch flex gap-[8px] items-start justify-center pb-[24px] pt-[13px] px-[16px] relative size-full">
           <Link />

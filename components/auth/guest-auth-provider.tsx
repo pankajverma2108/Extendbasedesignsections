@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { GuestAuthModal } from "@/components/auth/guest-auth-modal";
 import {
@@ -188,9 +189,15 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
       setStoredGuestToken(response.access_token, payload.rememberMe);
       const me = await getGuestMe(response.access_token).catch(() => response.guest);
       setGuest(mergeWithOverrides(me));
+      setIsRestoringSession(false);
+      toast.success("Signed in successfully", {
+        description: `Welcome back, ${me.name.split(" ")[0] ?? "Guest"}.`,
+      });
       closeAuthModal();
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to sign in right now.");
+      const message = error instanceof Error ? error.message : "Unable to sign in right now.";
+      setErrorMessage(message);
+      toast.error("Sign in failed", { description: message });
     } finally {
       setIsPending(false);
     }
@@ -205,9 +212,15 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
       setStoredGuestToken(response.access_token);
       const me = await getGuestMe(response.access_token).catch(() => response.guest);
       setGuest(mergeWithOverrides(me));
+      setIsRestoringSession(false);
+      toast.success("Account created", {
+        description: `Great to have you here, ${me.name.split(" ")[0] ?? "Guest"}.`,
+      });
       closeAuthModal();
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to sign up right now.");
+      const message = error instanceof Error ? error.message : "Unable to sign up right now.";
+      setErrorMessage(message);
+      toast.error("Sign up failed", { description: message });
     } finally {
       setIsPending(false);
     }

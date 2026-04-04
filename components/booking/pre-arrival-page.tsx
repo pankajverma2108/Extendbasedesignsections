@@ -17,6 +17,7 @@ import {
   Upload,
   Users,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { Button } from "@/components/ui/button";
@@ -232,6 +233,26 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!successMessage) {
+      return;
+    }
+
+    toast.success("Pre-arrival update", {
+      description: successMessage,
+    });
+  }, [successMessage]);
+
+  useEffect(() => {
+    if (!errorMessage) {
+      return;
+    }
+
+    toast.error("Pre-arrival action failed", {
+      description: errorMessage,
+    });
+  }, [errorMessage]);
 
   const activeSlot = useMemo(
     () => slots.find((slot) => slot.slot_id === activeSlotId) ?? null,

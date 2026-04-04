@@ -4,7 +4,7 @@ Global Responsive Mandate: All generated designs must be treated as a Mobile-Fir
 Generate layouts that scale seamlessly across Mobile (320px - 480px), Tablet (768px - 1024px), Laptop (1280px - 1440px), and Desktop (1920px+).
 On mobile, stack grids vertically, enlarge touch targets (minimum 48x48px for CTAs), and use horizontal swipe carousels.
 On desktop, expand into CSS Grid/Flexbox multi-column layouts to utilize whitespace effectively.
-Maintain the exact color palette, typography (headers, body text, weight), border-radii, and drop-shadows found in the reference design Vibehouse Design 4.jpg.
+Maintain the exact color palette, typography (headers, body text, weight), border-radii, and drop-shadows found in the reference design The Daily Social Design 4.jpg.
 
 Prompt 1 : UI Extension & Component Generation for Property PLP
 
@@ -69,8 +69,8 @@ Final Constraint Check: Ensure visual hierarchy prioritizes the "Check Dates" CT
 
 
 Prompt 2: Events Page
-System Prompt: UI Generation for Vibe House Events PLP
-CRITICAL DIRECTIVE: You are generating the "Events & Experiences" page based on the provided reference vhdsgn - Event Booking (Vibrant).jpg and the global style guide Vibehouse Design 4.jpg. The aesthetic must feel like a high-energy nightlife and social hub. Use dark mode sections or high-contrast vibrant cards to emphasize the "evening vibe."
+System Prompt: UI Generation for The Daily Social Events PLP
+CRITICAL DIRECTIVE: You are generating the "Events & Experiences" page based on the provided reference vhdsgn - Event Booking (Vibrant).jpg and the global style guide The Daily Social Design 4.jpg. The aesthetic must feel like a high-energy nightlife and social hub. Use dark mode sections or high-contrast vibrant cards to emphasize the "evening vibe."
 Build the following sections strictly in this order:
 1. Events Hero:
 Layout: Full-width immersive background (darker overlay on a high-energy party/social image).
@@ -88,13 +88,13 @@ Layout: A tight masonry image grid.
 Content: High-quality, authentic-looking photos of guests having fun.
 Component: Include an "Follow our Vibe on Instagram" floating button overlay or section footer.
 Prompt 3: About (Property) Page
-System Prompt: UI Generation for Vibe House About Page
-CRITICAL DIRECTIVE: You are generating the "About Us" page. Extract the core design system from Vibehouse Design 4.jpg. This is a trust-building and SEO-optimized page. The tone is professional but welcoming.
+System Prompt: UI Generation for The Daily Social About Page
+CRITICAL DIRECTIVE: You are generating the "About Us" page. Extract the core design system from The Daily Social Design 4.jpg. This is a trust-building and SEO-optimized page. The tone is professional but welcoming.
 Build the following sections strictly in this order:
 1. Hero:
 Layout: Split layout (desktop) or stacked (mobile) with an inviting exterior or vibrant common area photo.
 Content: Headline "More than just a bed."
-2. Main Content / The Vibe House Story:
+2. Main Content / The Daily Social Story:
 Layout: A mix of typography-heavy blocks and supporting images. Use a Z-pattern layout for desktop.
 Content: Text placeholders detailing the brand philosophy, focus on safety, mixed-gender co-living, and central locations.
 3. Feature Grid / Accordion:
@@ -106,8 +106,8 @@ Content: "Ready to find your vibe?" with a primary "Search Availability" button.
 5. Standard Footer:
 Layout: Multi-column (desktop) or accordion (mobile). Includes social links, newsletter signup, and sub-page links.
  Prompt 4: Legal & Payment Pages (Standardized Template)
-System Prompt: UI Generation for Vibe House Legal & Policy Pages
-CRITICAL DIRECTIVE: You are generating a standardized template to be used across multiple text-heavy pages: Guest Policies, Privacy Policy, Refund Policy, and Terms & Conditions. Use the global style guide from Vibehouse Design 4.jpg but optimize strictly for maximum readability.
+System Prompt: UI Generation for The Daily Social Legal & Policy Pages
+CRITICAL DIRECTIVE: You are generating a standardized template to be used across multiple text-heavy pages: Guest Policies, Privacy Policy, Refund Policy, and Terms & Conditions. Use the global style guide from The Daily Social Design 4.jpg but optimize strictly for maximum readability.
 Build the following sections strictly in this order:
 1. Simple Page Header:
 Layout: Compact, text-only or subtle patterned background.

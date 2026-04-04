@@ -6,7 +6,7 @@ import imgCityMap from "figma:asset/6462d66f55c464162eda5e46c113359fc82acb93.png
 function Container2() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[20px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[14px] tracking-[1.4px] uppercase w-[62.7px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[20px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[14px] tracking-[1.4px] uppercase w-[62.7px]">
         <p className="leading-[20px]">VHDSGN</p>
       </div>
     </div>
@@ -48,7 +48,7 @@ function Border() {
       <div className="content-stretch flex flex-col items-start overflow-clip p-[2px] relative rounded-[inherit] size-full">
         <UserProfile />
       </div>
-      <div aria-hidden="true" className="absolute border-2 border-[#ff2e62] border-solid inset-0 pointer-events-none rounded-[12px]" />
+      <div aria-hidden="true" className="absolute border-2 border-[#c62828] border-solid inset-0 pointer-events-none rounded-[12px]" />
     </div>
   );
 }
@@ -71,7 +71,7 @@ function Container3() {
     <div className="h-[18px] relative shrink-0 w-[20px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 20 18">
         <g id="Container">
-          <path d={svgPaths.p20d1fa00} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p20d1fa00} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -130,7 +130,7 @@ function Container6() {
 function Container7() {
   return (
     <div className="content-stretch flex flex-col items-start pt-[4.002px] relative shrink-0 w-full" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[12px] w-full">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#c62828] text-[12px] w-full">
         <p className="leading-[16px]">Until Oct 24, 2023</p>
       </div>
     </div>
@@ -162,7 +162,7 @@ function Container8() {
     <div className="h-[25.5px] relative shrink-0 w-[22.5px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 22.5 25.5">
         <g id="Container">
-          <path d={svgPaths.p1097f780} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p1097f780} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -172,7 +172,7 @@ function Container8() {
 function Container9() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[10px] tracking-[-0.5px] uppercase w-[77.926px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[10px] tracking-[-0.5px] uppercase w-[77.926px]">
         <p className="leading-[15px]">Your Sanctuary</p>
       </div>
     </div>
@@ -190,7 +190,7 @@ function HandDrawnStyleArrowAnnotation() {
 
 function BackgroundShadow() {
   return (
-    <div className="bg-[#ff2e62] content-stretch flex flex-col items-start px-[12px] py-[4px] relative rounded-[9999px] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]" data-name="Background+Shadow">
+    <div className="bg-[#c62828] content-stretch flex flex-col items-start px-[12px] py-[4px] relative rounded-[9999px] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]" data-name="Background+Shadow">
       <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[18px] justify-center leading-[0] relative shrink-0 text-[12px] text-white uppercase w-[66.266px]">
         <p className="leading-[18px]">Confirmed</p>
       </div>
@@ -265,7 +265,7 @@ function Margin() {
 
 function BackgroundShadow1() {
   return (
-    <div className="bg-[#ff2e62] relative rounded-[8px] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] shrink-0 w-full" data-name="Background+Shadow">
+    <div className="bg-[#c62828] relative rounded-[8px] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] shrink-0 w-full" data-name="Background+Shadow">
       <div className="flex flex-col justify-end overflow-clip rounded-[inherit] size-full">
         <div className="content-stretch flex flex-col isolate items-start justify-end pb-[16px] pt-[126.25px] px-[16px] relative w-full">
           <Container11 />
@@ -318,7 +318,7 @@ function Container15() {
     <div className="h-[20px] relative shrink-0 w-full" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 135 20">
         <g id="Container">
-          <path d={svgPaths.p2d8e4cc0} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p2d8e4cc0} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -342,15 +342,15 @@ function BuyAddOnsCard() {
         <div className="content-stretch flex flex-col items-start justify-end pb-[18px] pt-[124.25px] px-[18px] relative w-full">
           <Container14 />
           <Margin1 />
-          <div className="absolute bg-[rgba(255,46,98,0.1)] right-[-14px] rounded-[12px] size-[96px] top-[-14px]" data-name="Overlay" />
+          <div className="absolute bg-[rgba(198,40,40,0.1)] right-[-14px] rounded-[12px] size-[96px] top-[-14px]" data-name="Overlay" />
           <div className="absolute h-[23.75px] left-[19.27px] top-[23.5px] w-[27.47px]" data-name="Icon">
             <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 27.4697 23.75">
-              <path d={svgPaths.p2d6ea180} fill="var(--fill-0, #FF2E62)" id="Icon" />
+              <path d={svgPaths.p2d6ea180} fill="var(--fill-0, #c62828)" id="Icon" />
             </svg>
           </div>
         </div>
       </div>
-      <div aria-hidden="true" className="absolute border-2 border-[rgba(255,46,98,0.2)] border-solid inset-0 pointer-events-none rounded-[8px] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]" />
+      <div aria-hidden="true" className="absolute border-2 border-[rgba(198,40,40,0.2)] border-solid inset-0 pointer-events-none rounded-[8px] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]" />
     </div>
   );
 }
@@ -358,7 +358,7 @@ function BuyAddOnsCard() {
 function Container17() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[32px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[24px] tracking-[-1.2px] uppercase w-[182.27px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[32px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[24px] tracking-[-1.2px] uppercase w-[182.27px]">
         <p className="leading-[32px]">Request Service</p>
       </div>
     </div>
@@ -399,8 +399,8 @@ function Overlay() {
     <div className="h-[54.5px] relative shrink-0 w-[62px]" data-name="Overlay">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 62 54.5">
         <g id="Overlay">
-          <rect fill="var(--fill-0, #FF2E62)" fillOpacity="0.2" height="54.5" rx="12" width="62" />
-          <path d={svgPaths.p11d1aa40} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <rect fill="var(--fill-0, #c62828)" fillOpacity="0.2" height="54.5" rx="12" width="62" />
+          <path d={svgPaths.p11d1aa40} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -414,10 +414,10 @@ function RequestServiceCardFullWidthInCollage() {
         <div className="content-stretch flex items-center justify-between p-[26px] relative size-full">
           <Container16 />
           <Overlay />
-          <div className="absolute bg-[rgba(255,46,98,0.2)] blur-[32px] bottom-[-30px] left-[-30px] rounded-[12px] size-[128px]" data-name="Spray Paint Aesthetic Background Element" />
+          <div className="absolute bg-[rgba(198,40,40,0.2)] blur-[32px] bottom-[-30px] left-[-30px] rounded-[12px] size-[128px]" data-name="Spray Paint Aesthetic Background Element" />
         </div>
       </div>
-      <div aria-hidden="true" className="absolute border-2 border-[#ff2e62] border-solid inset-0 pointer-events-none rounded-[8px] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)]" />
+      <div aria-hidden="true" className="absolute border-2 border-[#c62828] border-solid inset-0 pointer-events-none rounded-[8px] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)]" />
     </div>
   );
 }
@@ -447,7 +447,7 @@ function Container20() {
     <div className="h-[30px] relative shrink-0 w-[24px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 30">
         <g id="Container">
-          <path d={svgPaths.p2e497c80} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p2e497c80} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -525,8 +525,8 @@ function Container() {
     <div className="content-stretch flex flex-col items-start min-h-[1330px] overflow-clip relative shrink-0 w-full" data-name="Container">
       <HeaderSection />
       <MainContent />
-      <div className="-translate-y-1/2 absolute bg-[rgba(255,46,98,0.05)] blur-[40px] h-[256px] right-[-64px] rounded-[12px] top-[calc(50%+128px)] w-[128px]" data-name="Floating Decorative Element (Spray Effect)" />
-      <div className="absolute bg-[rgba(255,46,98,0.05)] blur-[40px] bottom-1/4 left-[-64px] rounded-[12px] top-[55.75%] w-[128px]" data-name="Overlay+Blur" />
+      <div className="-translate-y-1/2 absolute bg-[rgba(198,40,40,0.05)] blur-[40px] h-[256px] right-[-64px] rounded-[12px] top-[calc(50%+128px)] w-[128px]" data-name="Floating Decorative Element (Spray Effect)" />
+      <div className="absolute bg-[rgba(198,40,40,0.05)] blur-[40px] bottom-1/4 left-[-64px] rounded-[12px] top-[55.75%] w-[128px]" data-name="Overlay+Blur" />
     </div>
   );
 }
@@ -536,7 +536,7 @@ function Container23() {
     <div className="h-[18px] relative shrink-0 w-[16px]" data-name="Container">
       <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 18">
         <g id="Container">
-          <path d={svgPaths.p12a32500} fill="var(--fill-0, #FF2E62)" id="Icon" />
+          <path d={svgPaths.p12a32500} fill="var(--fill-0, #c62828)" id="Icon" />
         </g>
       </svg>
     </div>
@@ -554,7 +554,7 @@ function Container22() {
 function Container24() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0" data-name="Container">
-      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#ff2e62] text-[10px] tracking-[1px] uppercase w-[31.69px]">
+      <div className="flex flex-col font-['Space_Grotesk:Bold',sans-serif] font-bold h-[15px] justify-center leading-[0] relative shrink-0 text-[#c62828] text-[10px] tracking-[1px] uppercase w-[31.69px]">
         <p className="leading-[15px]">Home</p>
       </div>
     </div>
