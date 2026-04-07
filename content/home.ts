@@ -21,13 +21,11 @@ export const heroImages = [
 export const assurances = [
   { label: "Clean Rooms", color: "#00d1ff" },
   { label: "Safe & Secure", color: "#c62828" },
-  { label: "AC Dorms", color: "#39ff14" },
   { label: "Night Managers", color: "#facc15" },
   { label: "Secure Lockers", color: "#c62828" },
 ];
 
 export const amenities = [
-  { label: "Fast Wi-Fi", color: "#00d1ff", icon: "wifi", tilt: "-rotate-2" },
   { label: "Hot Showers", color: "#c62828", icon: "droplets", tilt: "rotate-0" },
   { label: "Cafe & Bar", color: "#facc15", icon: "coffee", tilt: "rotate-2" },
   { label: "Laundry", color: "#39ff14", icon: "shirt", tilt: "-rotate-2" },
@@ -37,18 +35,14 @@ export const amenities = [
   { label: "Privacy Pods", color: "#00d1ff", icon: "bed", tilt: "-rotate-2" },
   { label: "Hotel-Grade Beds", color: "#c62828", icon: "moon", tilt: "rotate-0" },
   { label: "DJ Nights", color: "#facc15", icon: "music", tilt: "rotate-2" },
-  { label: "Co-working", color: "#39ff14", icon: "laptop", tilt: "-rotate-2" },
   { label: "Rooftop Zones", color: "#00d1ff", icon: "sunset", tilt: "rotate-0" },
   { label: "Social Hours", color: "#c62828", icon: "users", tilt: "rotate-2" },
   { label: "Reading Lights", color: "#39ff14", icon: "lamp", tilt: "rotate-0" },
   { label: "Luggage Storage", color: "#facc15", icon: "briefcase", tilt: "rotate-2" },
   { label: "First Aid", color: "#c62828", icon: "cross", tilt: "rotate-0" },
-  { label: "Superfast Wi-Fi", color: "#00d1ff", icon: "wifi", tilt: "rotate-0" },
-  { label: "AC Rooms", color: "#c62828", icon: "snowflake", tilt: "-rotate-2" },
   { label: "Smart Check-in", color: "#facc15", icon: "calendar-check", tilt: "rotate-2" },
   { label: "Daily Housekeeping", color: "#39ff14", icon: "sparkles", tilt: "rotate-0" },
   { label: "Hangout Lounge", color: "#00d1ff", icon: "sunset", tilt: "-rotate-2" },
-  { label: "Work Corners", color: "#facc15", icon: "laptop", tilt: "rotate-0" },
   { label: "Social Vibes", color: "#c62828", icon: "music", tilt: "rotate-2" },
   { label: "Community Meetups", color: "#00d1ff", icon: "users", tilt: "-rotate-2" },
   { label: "Power Backup", color: "#39ff14", icon: "shield-check", tilt: "rotate-0" },
