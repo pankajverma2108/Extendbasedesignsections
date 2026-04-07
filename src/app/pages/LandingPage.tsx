@@ -576,10 +576,10 @@ export default function LandingPage() {
                   123 Backpacker Street<br />Mumbai 400001
                 </p>
                 <p className="font-['Space_Grotesk'] text-[rgba(255,255,255,0.6)]">
-                  +91 98765 43210
+                  +91 88849 73328
                 </p>
                 <p className="font-['Space_Grotesk'] text-[rgba(255,255,255,0.6)]">
-                  hello@thedailysocial.com
+                  thedailysocial01@gmail.com
                 </p>
               </div>
             </div>

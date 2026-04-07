@@ -3,127 +3,262 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { BedDouble, CalendarDays, Ticket, X } from "lucide-react";
 
-import type { NavItem } from "@/content/types";
-import iconArrow from "@/src/assets/icons/Icon-2.svg";
-import iconMyStay from "@/src/assets/icons/Icon-1.svg";
-import iconProfile from "@/src/assets/icons/Icon.svg";
 import { StickerTag } from "@/components/shared/sticker-tag";
+import { hostelNavItems, primaryHostelHref } from "@/content/nav-menu";
+import { navFontStyles } from "@/content/typography";
+import { cn } from "@/lib/utils";
 
-type FigmaMenuCard = {
+type MobileNavTile = {
+  id: string;
   href: string;
   title: string;
   subtitle: string;
-  bg: string;
-  text: string;
-  mutedText: string;
-  rotate: string;
-  iconType: "rooms" | "events" | "social";
-  iconBg?: string;
-  badge?: string;
+  icon: string;
+  colSpan: 1 | 2;
+  bgClass: string;
+  overlayClass: string;
+  borderClass: string;
+  titleClass: string;
+  subtitleClass: string;
+  iconBgClass: string;
+  rotationClass: string;
+  isDropdown?: boolean;
+  requiresAuth?: boolean;
+  external?: boolean;
+  badgeNew?: string;
+  stickerLabel?: string;
+  stickerBg?: string;
+  stickerText?: string;
+  stickerRotate?: string;
 };
 
-const figmaMenuCards: FigmaMenuCard[] = [
+const navIcons = {
+  about: "/nav_design/icon-about.svg",
+  chevron: "/nav_design/icon-chevron-down.svg",
+  colive: "/nav_design/icon-colive.svg",
+  contact: "/nav_design/icon-contact.svg",
+  events: "/nav_design/icon-events.svg",
+  hostels: "/nav_design/icon-hostels.svg",
+  invest: "/nav_design/icon-invest.svg",
+  myStay: "/nav_design/icon-my-stay.svg",
+  profile: "/nav_design/icon-profile.svg",
+} as const;
+
+const navTiles: MobileNavTile[] = [
   {
-    href: "/property",
-    title: "Rooms",
+    id: "hostels",
+    href: primaryHostelHref,
+    title: "HOSTELS",
     subtitle: "find your corner...",
-    bg: "#c62828",
-    text: "#FFFFFF",
-    mutedText: "rgba(255,255,255,0.8)",
-    rotate: "-rotate-[1.5deg]",
-    iconType: "rooms",
-    badge: "New",
+    icon: navIcons.hostels,
+    colSpan: 2,
+    bgClass: "bg-[#ff2e62]",
+    overlayClass: "bg-[rgba(35,15,20,0.1)]",
+    borderClass: "border-2 border-dashed border-[rgba(255,255,255,0.3)]",
+    titleClass: "text-white",
+    subtitleClass: "text-[rgba(255,255,255,0.8)]",
+    iconBgClass: "bg-[rgba(255,255,255,0.2)]",
+    rotationClass: "-rotate-1",
+    badgeNew: "NEW",
+    isDropdown: true,
+    stickerLabel: "Book Now!",
+    stickerBg: "#FEF08A",
+    stickerText: "#230f14",
+    stickerRotate: "rotate-[9deg]",
   },
   {
+    id: "colive",
+    href: "/rooms",
+    title: "COLIVE",
+    subtitle: "stay a while",
+    icon: navIcons.colive,
+    colSpan: 1,
+    bgClass: "bg-[#facc15]",
+    overlayClass: "bg-[rgba(35,15,20,0.05)]",
+    borderClass: "border-2 border-dashed border-[rgba(0,0,0,0.1)]",
+    titleClass: "text-[#230f14]",
+    subtitleClass: "text-[rgba(35,15,20,0.6)]",
+    iconBgClass: "bg-[rgba(0,0,0,0.08)]",
+    rotationClass: "rotate-1",
+    // stickerLabel: "Stay Longer",
+    // stickerBg: "#FB7185",
+    // stickerText: "#230f14",
+    // stickerRotate: "rotate-[0deg]",
+  },
+  {
+    id: "experiences",
     href: "/events",
-    title: "Events",
+    title: "EXPERIENCES",
     subtitle: "what's poppin?",
-    bg: "#00D1FF",
-    text: "#FFFFFF",
-    mutedText: "rgba(255,255,255,0.82)",
-    rotate: "rotate-[1.5deg]",
-    iconType: "events",
-    iconBg: "rgba(255,255,255,0.2)",
+    icon: navIcons.events,
+    colSpan: 1,
+    bgClass: "bg-[#00d1ff]",
+    overlayClass: "bg-[rgba(35,15,20,0.1)]",
+    borderClass: "border-2 border-dashed border-[rgba(255,255,255,0.3)]",
+    titleClass: "text-white",
+    subtitleClass: "text-[rgba(255,255,255,0.8)]",
+    iconBgClass: "bg-[rgba(255,255,255,0.2)]",
+    rotationClass: "-rotate-1",
+    // stickerLabel: "Tonight",
+    // stickerBg: "#FDE68A",
+    // stickerText: "#230f14",
+    // stickerRotate: "rotate-[0deg]",
   },
   {
+    id: "invest",
+    href: "mailto:thedailysocial01@gmail.com?subject=Invest%20%26%20Partner%20Inquiry",
+    title: "INVEST",
+    subtitle: "partner up",
+    icon: navIcons.invest,
+    colSpan: 1,
+    bgClass: "bg-[#39ff14]",
+    overlayClass: "bg-[rgba(35,15,20,0.1)]",
+    borderClass: "border-2 border-dashed border-[rgba(0,0,0,0.1)]",
+    titleClass: "text-[#230f14]",
+    subtitleClass: "text-[rgba(35,15,20,0.6)]",
+    iconBgClass: "bg-[rgba(0,0,0,0.08)]",
+    rotationClass: "rotate-1",
+    external: true,
+    // stickerLabel: "Partner Up",
+    // stickerBg: "#DCFCE7",
+    // stickerText: "#0f172a",
+    // stickerRotate: "rotate-[0deg]",
+  },
+  {
+    id: "contact",
+    href: "mailto:thedailysocial01@gmail.com",
+    title: "CONTACT",
+    subtitle: "get in touch",
+    icon: navIcons.contact,
+    colSpan: 1,
+    bgClass: "bg-[#ff2e62]",
+    overlayClass: "bg-[rgba(35,15,20,0.1)]",
+    borderClass: "border-2 border-dashed border-[rgba(255,255,255,0.3)]",
+    titleClass: "text-white",
+    subtitleClass: "text-[rgba(255,255,255,0.8)]",
+    iconBgClass: "bg-[rgba(255,255,255,0.2)]",
+    rotationClass: "-rotate-2",
+    external: true,
+    // stickerLabel: "Say Hi",
+    // stickerBg: "#BFDBFE",
+    // stickerText: "#0f172a",
+    // stickerRotate: "rotate-[0deg]",
+  },
+  {
+    id: "my-stay",
+    href: "/bookings?status=current",
+    title: "MY STAY",
+    subtitle: "your experience",
+    icon: navIcons.myStay,
+    colSpan: 1,
+    bgClass: "bg-[#1e293b]",
+    overlayClass: "bg-[rgba(51,65,85,0.5)]",
+    borderClass: "border border-dashed border-[#64748b]",
+    titleClass: "text-white",
+    subtitleClass: "text-[rgba(255,255,255,0.6)]",
+    iconBgClass: "bg-[rgba(255,255,255,0.2)]",
+    rotationClass: "rotate-1",
+    requiresAuth: true,
+    // stickerLabel: "Trip Log",
+    // stickerBg: "#FBCFE8",
+    // stickerText: "#0f172a",
+    // stickerRotate: "-rotate-[0deg]",
+  },
+  {
+    id: "profile",
+    href: "/profile",
+    title: "PROFILE",
+    subtitle: "your details",
+    icon: navIcons.profile,
+    colSpan: 1,
+    bgClass: "bg-white",
+    overlayClass: "bg-[#f1f5f9]",
+    borderClass: "border border-dashed border-[#cbd5e1]",
+    titleClass: "text-[#1e293b]",
+    subtitleClass: "text-[#64748b]",
+    iconBgClass: "bg-[rgba(100,116,139,0.18)]",
+    rotationClass: "-rotate-1",
+    requiresAuth: true,
+    // stickerLabel: "You",
+    // stickerBg: "#E2E8F0",
+    // stickerText: "#0f172a",
+    // stickerRotate: "rotate-[0deg]",
+  },
+  {
+    id: "about",
     href: "/about",
-    title: "Social",
-    subtitle: "meet the crew",
-    bg: "#39FF14",
-    text: "#230F14",
-    mutedText: "rgba(35,15,20,0.6)",
-    rotate: "-rotate-[1.5deg]",
-    iconType: "social",
+    title: "ABOUT US",
+    subtitle: "our story",
+    icon: navIcons.about,
+    colSpan: 2,
+    bgClass: "bg-[#00d1ff]",
+    overlayClass: "bg-[rgba(35,15,20,0.1)]",
+    borderClass: "border-2 border-dashed border-[rgba(255,255,255,0.3)]",
+    titleClass: "text-white",
+    subtitleClass: "text-[rgba(255,255,255,0.8)]",
+    iconBgClass: "bg-[rgba(255,255,255,0.2)]",
+    rotationClass: "rotate-1",
+    // stickerLabel: "Meet Us",
+    // stickerBg: "#FEF08A",
+    // stickerText: "#0f172a",
+    // stickerRotate: "-rotate-[0deg]",
   },
 ];
 
-function DotsMorphButton({
+const hostelProperties = hostelNavItems;
+
+function MenuToggleButton({
   open,
   onClick,
 }: {
   open: boolean;
   onClick: () => void;
 }) {
-  const dots = Array.from({ length: 9 }, (_, index) => index);
+  const dotIndexes = [0, 1, 2, 3] as const;
 
-  const activeDots = open ? [0, 2, 4, 6, 8] : dots;
+  const getPosition = (dotIndex: number) => {
+    if (!open) {
+      const row = Math.floor(dotIndex / 2);
+      const col = dotIndex % 2;
+      return { x: col * 8, y: row * 8 };
+    }
+
+    const openPositions: Record<number, { x: number; y: number }> = {
+      0: { x: 0, y: 0 },
+      1: { x: 8, y: 8 },
+      2: { x: 0, y: 8 },
+      3: { x: 8, y: 0 },
+    };
+
+    return openPositions[dotIndex];
+  };
 
   return (
     <button
       aria-expanded={open}
       aria-label={open ? "Close menu" : "Open menu"}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--vh-surface-2)] text-white"
+      className="relative inline-flex h-10 w-10 items-center justify-center text-[#F1F5F9]"
       onClick={onClick}
       type="button"
     >
-      <span className="relative h-4 w-4">
-        {dots.map((dot) => {
-          const row = Math.floor(dot / 3);
-          const col = dot % 3;
-
-          const closedX = col * 6;
-          const closedY = row * 6;
-
-          const openPositions: Record<number, { x: number; y: number; rotate?: number }> = {
-            0: { x: 0, y: 0, rotate: 45 },
-            2: { x: 12, y: 0, rotate: -45 },
-            4: { x: 6, y: 6 },
-            6: { x: 0, y: 12, rotate: -45 },
-            8: { x: 12, y: 12, rotate: 45 },
-          };
-
-          const target = openPositions[dot] ?? { x: 6, y: 6 };
-          const visible = activeDots.includes(dot);
+      <span className="relative h-3.5 w-3.5">
+        {dotIndexes.map((dotIndex) => {
+          const { x, y } = getPosition(dotIndex);
 
           return (
             <motion.span
-              key={dot}
-              animate={
-                open
-                  ? {
-                      x: target.x,
-                      y: target.y,
-                      opacity: visible ? 1 : 0,
-                      scaleX: dot === 4 ? 0.35 : 1.55,
-                      scaleY: dot === 4 ? 0.35 : 0.45,
-                      rotate: target.rotate ?? 0,
-                      borderRadius: 999,
-                    }
-                  : {
-                      x: closedX,
-                      y: closedY,
-                      opacity: 1,
-                      scaleX: 1,
-                      scaleY: 1,
-                      rotate: 0,
-                      borderRadius: 999,
-                    }
-              }
-              className="absolute left-0 top-0 h-[4px] w-[4px] bg-white"
+              key={dotIndex}
+              animate={{
+                x,
+                y,
+                opacity: 1,
+                scale: open ? 0.92 : 1,
+              }}
+              className="absolute left-0 top-0 h-[5px] w-[5px] rounded-full bg-white"
               initial={false}
               transition={{ duration: 0.24, ease: "easeOut" }}
             />
@@ -135,13 +270,13 @@ function DotsMorphButton({
 }
 
 type MobileStaggeredMenuProps = {
-  items: NavItem[];
   isAuthenticated: boolean;
   onOpenSignIn: () => void;
 };
 
-export function MobileStaggeredMenu({ items, isAuthenticated, onOpenSignIn }: MobileStaggeredMenuProps) {
+export function MobileStaggeredMenu({ isAuthenticated, onOpenSignIn }: MobileStaggeredMenuProps) {
   const [open, setOpen] = useState(false);
+  const [hostelsExpanded, setHostelsExpanded] = useState(false);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -155,27 +290,39 @@ export function MobileStaggeredMenu({ items, isAuthenticated, onOpenSignIn }: Mo
     };
   }, [open]);
 
-  const propertyLink = items.find((item) => item.href === "/property")?.href ?? "/property";
-  const eventLink = items.find((item) => item.href === "/events")?.href ?? "/events";
-  const aboutLink = items.find((item) => item.href === "/about")?.href ?? "/about";
-
-  const cards = figmaMenuCards.map((card) => {
-    if (card.title === "Rooms") {
-      return { ...card, href: propertyLink };
+  useEffect(() => {
+    if (!open) {
+      return;
     }
 
-    if (card.title === "Events") {
-      return { ...card, href: eventLink };
-    }
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
 
-    return { ...card, href: aboutLink };
-  });
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [open]);
 
-  const closeMenu = () => setOpen(false);
+  const closeMenu = () => {
+    setOpen(false);
+    setHostelsExpanded(false);
+  };
 
   return (
     <div className="md:hidden">
-      <DotsMorphButton open={open} onClick={() => setOpen((value) => !value)} />
+      <MenuToggleButton
+        open={open}
+        onClick={() => {
+          if (open) {
+            closeMenu();
+            return;
+          }
+
+          setOpen(true);
+        }}
+      />
 
       {typeof document !== "undefined"
         ? createPortal(
@@ -192,137 +339,184 @@ export function MobileStaggeredMenu({ items, isAuthenticated, onOpenSignIn }: Mo
 
                   <motion.aside
                     animate={{ opacity: 1, y: 0 }}
-                    className="fixed inset-0 z-[100] overflow-hidden bg-[radial-gradient(130%_100%_at_10%_0%,rgba(198,40,40,0.18),transparent_52%),radial-gradient(120%_100%_at_85%_18%,rgba(0,209,255,0.12),transparent_58%),linear-gradient(170deg,#1A0B12_0%,#230F14_62%,#140912_100%)]"
-                    exit={{ opacity: 0, y: 6 }}
-                    initial={{ opacity: 0, y: 12 }}
-                    transition={{ duration: 0.22, ease: "easeOut" }}
+                    className="fixed inset-0 z-[100] overflow-hidden bg-[radial-gradient(130%_100%_at_10%_0%,rgba(198,40,40,0.2),transparent_52%),radial-gradient(120%_100%_at_85%_18%,rgba(0,209,255,0.12),transparent_58%),linear-gradient(170deg,#1A0B12_0%,#230F14_62%,#140912_100%)]"
+                    exit={{ opacity: 0, y: "-10%" }}
+                    initial={{ opacity: 0, y: "-8%" }}
+                    transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <div className="mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden bg-transparent px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-[max(8px,env(safe-area-inset-top))]">
-                      {/* Section: Header */}
-                      <div className="flex items-center justify-between px-1 pb-3">
-                        <button
-                          aria-label="Close menu"
-                          className="inline-flex h-11 w-11 items-center justify-center"
-                          onClick={closeMenu}
-                          type="button"
-                        >
-                          <X className="h-[18px] w-[18px] text-[#F1F5F9]" />
-                        </button>
+                    <div className="mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-y-auto px-4 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(8px,env(safe-area-inset-top))]">
+                      <div className="pb-2 pt-1">
+                        <div className="relative flex h-[78px] items-center justify-between px-1">
+                          <button
+                            aria-label="Close menu"
+                            className="inline-flex h-10 w-10 items-center justify-center text-[#F1F5F9] transition hover:text-white"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              closeMenu();
+                            }}
+                            type="button"
+                          >
+                            <X className="h-7 w-7" strokeWidth={2.4} />
+                          </button>
 
-                        <div className="flex-1 text-center">
-                          <span className="text-center text-[38px] font-bold uppercase leading-[34px] tracking-[-0.5px] text-slate-100" style={{ fontFamily: "var(--font-bebas)" }}>
-                            Menu
-                          </span>
+                          <div className="pointer-events-none absolute inset-x-0 flex items-center justify-center">
+                            <span className="text-[24px] leading-9 text-[#F1F5F9]" style={navFontStyles.menuHeading}>
+                              Menu
+                            </span>
+                          </div>
+
+                          <span aria-hidden="true" className="inline-flex h-10 w-10" />
                         </div>
-
-                        <span aria-hidden="true" className="inline-flex h-11 w-11" />
                       </div>
 
-                      {/* Section: Menu Content */}
                       <motion.div
                         animate="show"
-                        className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto] gap-3"
+                        className="w-full"
                         initial="hidden"
-                        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
+                        variants={{
+                          hidden: {},
+                          show: {
+                            transition: {
+                              staggerChildren: 0.05,
+                              delayChildren: 0.06,
+                            },
+                          },
+                        }}
                       >
-                        {/* Section: Primary Navigation Cards */}
-                        <motion.div className="grid min-h-0 grid-rows-3 gap-3" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.07 } } }}>
-                          {cards.map((card) => (
-                            <motion.div key={card.title} className={`min-h-0 ${card.rotate}`} variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
-                              <Link
-                                className="relative flex h-full min-h-[96px] flex-col rounded-[8px] p-1 shadow-[0_14px_30px_rgba(0,0,0,0.26)]"
-                                href={card.href}
-                                onClick={closeMenu}
-                                style={{ background: card.bg }}
-                              >
-                                <div className={`flex h-full flex-col justify-between rounded-[4px] border-2 border-dashed p-3 ${card.title === "Social" ? "border-black/10 bg-[rgba(35,15,20,0.1)]" : "border-white/30 bg-[rgba(35,15,20,0.1)]"}`}>
-                                  <div className="relative flex items-start justify-between">
-                                    {card.iconType === "rooms" ? (
-                                      <BedDouble className="h-7 w-7 text-white sm:h-8 sm:w-8" strokeWidth={1.8} />
-                                    ) : null}
-                                    {card.iconType === "events" ? (
-                                      <Ticket className="h-7 w-7 text-white sm:h-8 sm:w-8" strokeWidth={1.8} />
-                                    ) : null}
-                                    {card.iconType === "social" ? (
-                                      <CalendarDays className="h-7 w-7 text-[#230F14] sm:h-8 sm:w-8" strokeWidth={2.2} />
-                                    ) : null}
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-3 pb-6">
+                          {navTiles.map((tile) => {
+                            const isHostels = tile.id === "hostels";
+                            const spanClass = tile.colSpan === 2 ? "col-span-2" : "col-span-1";
+                            const minHeightClass = "min-h-[132px]";
 
-                                    {card.badge ? (
-                                      <StickerTag
-                                        bg="#FFFFFF"
-                                        className="rounded-xl border border-white/20 px-2 py-1 text-[10px] font-bold not-italic uppercase tracking-[1px]"
-                                        label={card.badge}
-                                        rotate="rotate-0"
-                                        text="#c62828"
-                                      />
-                                    ) : card.title === "Events" ? (
-                                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: card.iconBg ?? "transparent" }}>
-                                        <Image alt="open" className="h-[10px] w-[10px]" src={iconArrow} style={{ filter: "brightness(1.2)" }} />
-                                      </span>
-                                    ) : null}
-                                  </div>
+                            const content = (
+                              <>
+                                <div className="flex items-start justify-between">
+                                  <span className={cn("inline-flex h-10 w-10 items-center justify-center rounded-xl", tile.iconBgClass)}>
+                                    <Image alt={tile.title} className="h-6 w-6 object-contain" height={24} src={tile.icon} width={24} />
+                                  </span>
 
-                                  <div>
-                                    <p className="text-[24px] font-bold uppercase leading-7 tracking-[-1px] sm:text-[28px] sm:leading-8" style={{ color: card.text }}>
-                                      {card.title}
-                                    </p>
-                                    <p className="text-xs italic leading-5 sm:text-sm" style={{ color: card.mutedText }}>
-                                      {card.subtitle}
-                                    </p>
-                                  </div>
+                                  {tile.badgeNew ? (
+                                    <span className="inline-flex rounded-[12px] bg-white px-2 py-1 text-[10px] text-[#ff2e62]" style={navFontStyles.badgeCaps}>
+                                      {tile.badgeNew}
+                                    </span>
+                                  ) : null}
                                 </div>
-                              </Link>
 
-                              {card.title === "Rooms" ? (
-                                <StickerTag className="absolute -right-1 -top-3" label="Book Now!" rotate="rotate-[10deg]" />
-                              ) : null}
-                            </motion.div>
-                          ))}
-                        </motion.div>
+                                <div className="mt-2.5">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <span className={cn("text-[22px] leading-8", tile.titleClass)} style={navFontStyles.tileTitle}>
+                                      {tile.title}
+                                    </span>
+                                    {isHostels ? (
+                                      <Image
+                                        alt="expand"
+                                        className={cn("h-4 w-4 shrink-0 object-contain transition-transform duration-300", hostelsExpanded && "rotate-180")}
+                                        height={16}
+                                        src={navIcons.chevron}
+                                        width={16}
+                                      />
+                                    ) : null}
+                                  </div>
+                                  <p className={cn("text-[14px] leading-5", tile.subtitleClass)} style={navFontStyles.tileSubtitle}>
+                                    {tile.subtitle}
+                                  </p>
+                                </div>
+                              </>
+                            );
 
-                        {/* Section: Account Cards */}
-                        <motion.div className="grid grid-cols-2 gap-3 pb-1" variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}>
-                          <Link
-                            className="flex h-[120px] w-full rotate-[1deg] flex-col rounded-[6px] bg-[#1E293B] p-1"
-                            href="/bookings"
-                            onClick={(event) => {
-                              if (!isAuthenticated) {
-                                event.preventDefault();
-                                closeMenu();
-                                onOpenSignIn();
-                                return;
-                              }
+                            return (
+                              <motion.div
+                                key={tile.id}
+                                className={cn(spanClass, tile.rotationClass)}
+                                variants={{ hidden: { opacity: 0, scale: 0.92, y: 18 }, show: { opacity: 1, scale: 1, y: 0 } }}
+                              >
+                                <div className={cn("relative rounded-[4px] p-1 shadow-lg", tile.bgClass)}>
+                                  <div className={cn("relative rounded-[2px] px-[15px] pb-[15px] pt-[15px]", tile.overlayClass, tile.borderClass, minHeightClass)}>
+                                    {isHostels ? (
+                                      <button
+                                        className="flex h-full w-full cursor-pointer flex-col items-start justify-between text-left"
+                                        onClick={() => setHostelsExpanded((value) => !value)}
+                                        type="button"
+                                      >
+                                        {content}
+                                      </button>
+                                    ) : tile.external ? (
+                                      <a
+                                        className="flex h-full w-full cursor-pointer flex-col items-start justify-between text-left"
+                                        href={tile.href}
+                                        onClick={closeMenu}
+                                        rel="noreferrer"
+                                        target="_blank"
+                                      >
+                                        {content}
+                                      </a>
+                                    ) : (
+                                      <Link
+                                        className="flex h-full w-full cursor-pointer flex-col items-start justify-between text-left"
+                                        href={tile.href}
+                                        onClick={(event) => {
+                                          if (tile.requiresAuth && !isAuthenticated) {
+                                            event.preventDefault();
+                                            closeMenu();
+                                            onOpenSignIn();
+                                            return;
+                                          }
 
-                              closeMenu();
-                            }}
-                          >
-                            <div className="flex h-full flex-col justify-between rounded-[4px] border border-[#64748B] bg-[#334155]/50 p-3.5">
-                              <Image alt="My Stay icon" className="h-9 w-9 object-contain" src={iconMyStay} />
-                              <p className="text-[20px] font-bold uppercase leading-7 text-white">My Stay</p>
-                            </div>
-                          </Link>
+                                          closeMenu();
+                                        }}
+                                      >
+                                        {content}
+                                      </Link>
+                                    )}
 
-                          <Link
-                            className="flex h-[120px] w-full -rotate-[1deg] flex-col rounded-[6px] bg-white p-1"
-                            href="/profile"
-                            onClick={(event) => {
-                              if (!isAuthenticated) {
-                                event.preventDefault();
-                                closeMenu();
-                                onOpenSignIn();
-                                return;
-                              }
+                                    {isHostels ? (
+                                      <AnimatePresence>
+                                        {hostelsExpanded ? (
+                                          <motion.div
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            className="overflow-hidden"
+                                            exit={{ height: 0, opacity: 0 }}
+                                            initial={{ height: 0, opacity: 0 }}
+                                          >
+                                            <div className="pb-1 pt-3">
+                                              <div className="mb-3 h-px w-full bg-white/25" />
+                                              <div className="flex flex-col gap-2">
+                                                {hostelProperties.map((property) => (
+                                                  <Link
+                                                    key={property.id}
+                                                    href={property.href}
+                                                    className="text-[15px] text-white/92 transition hover:text-white"
+                                                    onClick={closeMenu}
+                                                    style={navFontStyles.tileSubtitle}
+                                                  >
+                                                    • {property.label}
+                                                  </Link>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          </motion.div>
+                                        ) : null}
+                                      </AnimatePresence>
+                                    ) : null}
+                                  </div>
 
-                              closeMenu();
-                            }}
-                          >
-                            <div className="flex h-full flex-col justify-between rounded-[4px] border border-[#CBD5E1] bg-[#F1F5F9] p-3.5">
-                              <Image alt="Profile icon" className="h-9 w-9 object-contain" src={iconProfile} />
-                              <p className="text-[20px] font-bold uppercase leading-7 text-[#1E293B]">{isAuthenticated ? "Profile" : "Sign-in"}</p>
-                            </div>
-                          </Link>
-                        </motion.div>
-
+                                  {isHostels && tile.stickerLabel && tile.stickerBg ? (
+                                    <div className="absolute -right-[8px] -top-[14px] z-10">
+                                      <StickerTag
+                                        bg={tile.stickerBg}
+                                        className="rounded-[4px] border border-black/10 px-2.5 py-1 text-[10px] font-bold not-italic uppercase tracking-[0.08em] shadow-md"
+                                        label={tile.stickerLabel}
+                                        rotate={tile.stickerRotate ?? "rotate-[8deg]"}
+                                        text={tile.stickerText ?? "#230f14"}
+                                      />
+                                    </div>
+                                  ) : null}
+                                </div>
+                              </motion.div>
+                            );
+                          })}
+                        </div>
                       </motion.div>
                     </div>
                   </motion.aside>

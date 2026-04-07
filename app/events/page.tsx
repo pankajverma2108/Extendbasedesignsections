@@ -22,7 +22,7 @@ export default async function EventsPage() {
       <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <ImageWithFallback
-            alt="Events hero"
+            alt="Experiences hero"
             className="h-full w-full object-cover"
             src="https://images.unsplash.com/photo-1758179764880-7513421d202a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1400"
           />
@@ -59,7 +59,7 @@ export default async function EventsPage() {
 
       <section className="vh-section vh-section-alt">
         <div className="vh-container">
-          <SectionHeading align="left" subtitle={eventPageContent.weeklySubtitle} title="Standard Weekly Lineup" />
+          <SectionHeading align="left" subtitle={eventPageContent.weeklySubtitle} title="Standard Weekly Experiences" />
           <Stagger className="grid grid-cols-2 gap-6 md:grid-cols-2 lg:grid-cols-6">
             {weeklyLineup.map((item) => (
               <StaggerItem key={item.day} className="lg:col-span-2">
@@ -92,7 +92,7 @@ export default async function EventsPage() {
                   style={{ transform: `rotate(${(index % 3) - 1}deg)` }}
                 >
                   <ImageWithFallback
-                    alt={`Past event ${index + 1}`}
+                    alt={`Past experience ${index + 1}`}
                     className="aspect-square w-full object-cover hover:scale-110"
                     src={image}
                   />
@@ -103,7 +103,7 @@ export default async function EventsPage() {
           <FadeIn className="mt-10 text-center">
             <a
               className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-md px-6 text-base font-bold uppercase text-white transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-white/30 bg-[var(--vh-pink)] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.18)] hover:-translate-y-0.5"
-              href="https://instagram.com/thedailysocial"
+              href="https://instagram.com/thedailysocial01"
             >
               Follow on Instagram
             </a>

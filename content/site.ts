@@ -3,7 +3,7 @@ import type { NavItem } from "@/content/types";
 export const navItems: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "Property", href: "/property" },
-  { label: "Events", href: "/events" },
+  { label: "Experiences", href: "/events" },
   { label: "About", href: "/about" },
 ];
 
@@ -23,16 +23,16 @@ export const siteMeta = {
   description:
     "A vibrant hostel marketing site for travelers looking for community, safe stays, and memorable nights.",
   contact: {
-    phoneDisplay: "+91 98765 43210",
-    phoneHref: "tel:+919876543210",
-    email: "hello@thedailysocial.com",
-    emailHref: "mailto:hello@thedailysocial.com",
+    phoneDisplay: "+91 88849 73328",
+    phoneHref: "tel:+918884973328",
+    email: "thedailysocial01@gmail.com",
+    emailHref: "mailto:thedailysocial01@gmail.com",
     addressLines: [
       "The Daily Social Koramangala",
       "13/14, Bank Officer Housing Co-operative Society",
       "Bengaluru Urban, Karnataka, India",
     ],
-    instagramHref: "https://instagram.com/thedailysocial",
+    instagramHref: "https://instagram.com/thedailysocial01",
     mapsHref: "https://maps.app.goo.gl/jJKJUUKzdmFJGbCG6?g_st=aw",
   },
 };

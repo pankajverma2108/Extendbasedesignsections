@@ -16,7 +16,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const propertyDestinationHref = propertyId
     ? `/property?property_id=${encodeURIComponent(propertyId)}`
     : "/property";
-  const roomTypes = await getRoomAvailability({ propertyId });
+  let roomTypes = await getRoomAvailability({ propertyId });
+  const usedFallbackRooms = roomTypes.every((room) => room.id.startsWith("fallback-"));
+
+  if (propertyId && usedFallbackRooms) {
+    roomTypes = await getRoomAvailability();
+  }
+
   const dynamicHomeRooms = roomTypesToHomeCards(roomTypes);
   const dynamicHomeEvents = await getPublicEvents({ propertyId, limit: 3 });
 

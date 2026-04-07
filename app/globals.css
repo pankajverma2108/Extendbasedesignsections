@@ -266,38 +266,57 @@ body {
   --rdp-accent-color: #c62828;
   --rdp-accent-background-color: #c62828;
   --rdp-day_button-border-radius: 0;
-  --rdp-day_button-border: 1px solid rgba(51, 69, 103, 0.58);
+  --rdp-day_button-border: 1px solid #232636;
   --rdp-selected-border: 1px solid transparent;
   --rdp-disabled-opacity: 0.3;
   --rdp-outside-opacity: 0.35;
   --rdp-today-color: #f8ff7a;
-  --rdp-range_middle-background-color: rgba(0, 209, 255, 0.2);
+  --rdp-range_middle-background-color: #1b2436;
   --rdp-range_middle-color: #ffffff;
   --rdp-range_start-color: #ffffff;
   --rdp-range_end-color: #ffffff;
-  --rdp-nav-height: 38px;
+  --rdp-nav-height: 34px;
   color: #ffffff;
-  background:
-    radial-gradient(110% 92% at 12% 0%, rgba(198, 40, 40, 0.1) 0%, rgba(198, 40, 40, 0) 50%),
-    radial-gradient(120% 100% at 84% 16%, rgba(58, 95, 132, 0.11) 0%, rgba(58, 95, 132, 0) 54%),
-    linear-gradient(180deg, #0b1430 0%, #091329 100%);
+  background: #10111a;
 }
 
 .vh-calendar-dark .rdp-months {
   justify-content: center;
 }
 
+.vh-calendar-dark .rdp-month {
+  position: relative;
+  width: 100%;
+}
+
 .vh-calendar-dark .rdp-month_caption {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 30px;
   color: #ffffff;
-  font-size: 1.42rem;
+  font-size: 1.24rem;
   font-weight: 700;
   text-transform: uppercase;
 }
 
 .vh-calendar-dark .rdp-caption_label {
-  color: #c62828;
+  color: #ffffff;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+}
+
+.vh-calendar-dark .rdp-nav {
+  position: absolute;
+  top: 8px;
+  right: 0;
+  left: 0;
+  height: 24px;
+  display: flex;
+  align-items: flex-start;
+  pointer-events: none;
 }
 
 .vh-calendar-dark .rdp-weekday {
@@ -309,10 +328,27 @@ body {
 
 .vh-calendar-dark .rdp-button_previous,
 .vh-calendar-dark .rdp-button_next {
-  border-radius: 999px;
+  position: absolute;
+  top: 0;
+  pointer-events: auto;
+  display: inline-flex;
+  height: 24px;
+  width: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
   color: #c62828;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.vh-calendar-dark .rdp-button_previous {
+  left: 0;
+}
+
+.vh-calendar-dark .rdp-button_next {
+  right: 0;
 }
 
 .vh-calendar-dark .rdp-chevron {
@@ -321,7 +357,20 @@ body {
 
 .vh-calendar-dark .rdp-month_grid {
   border-collapse: separate;
-  border-spacing: 2px;
+  border-spacing: 1px;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.vh-calendar-dark .rdp-weekdays,
+.vh-calendar-dark .rdp-week {
+  width: 100%;
+}
+
+.vh-calendar-dark .rdp-weekday,
+.vh-calendar-dark .rdp-day {
+  width: calc(100% / 7);
+  text-align: center;
 }
 
 .vh-calendar-dark .rdp-day {
@@ -329,10 +378,11 @@ body {
 }
 
 .vh-calendar-dark .rdp-day_button {
-  height: 44px;
-  width: 44px;
-  font-size: 1.24rem;
-  background: rgba(9, 19, 41, 0.65);
+  height: 40px;
+  width: 100%;
+  max-width: none;
+  font-size: 1.1rem;
+  background: #161722;
 }
 
 .vh-calendar-dark .rdp-day_button:hover:not(:disabled) {

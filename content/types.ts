@@ -17,11 +17,13 @@ export type RoomCardProps = {
   images?: string[];
   badge?: Badge;
   features: string[];
+  amenitiesLegend?: string[];
   href: string;
 };
 
 export type EventCardProps = {
   title: string;
+  description?: string;
   date: string;
   time: string;
   location: string;

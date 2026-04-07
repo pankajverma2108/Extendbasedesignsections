@@ -2,7 +2,7 @@ export const aboutPillars = [
   {
     title: "Community",
     description:
-      "Meet travelers from around the world. Daily events and activities bring people together.",
+      "Meet travelers from around the world. Daily experiences and activities bring people together.",
     color: "#c62828",
   },
   {

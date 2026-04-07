@@ -12,13 +12,17 @@ export function EventCard({
   badge,
   capacity,
   date,
-  href,
+  description,
+  href: _href,
   image,
   location,
   price,
   time,
   title,
 }: EventCardProps) {
+  const whatsappText = `Hi, I'd like to RSVP for ${title} at The Daily Social. Date: ${date}, Time: ${time}, Location: ${location}.`;
+  const whatsappHref = `https://wa.me/918884973328?text=${encodeURIComponent(whatsappText)}`;
+
   const details = [
     { icon: CalendarDays, label: date, tone: "text-[var(--vh-pink)]" },
     { icon: Clock3, label: time, tone: "text-[var(--vh-cyan)]" },
@@ -28,7 +32,7 @@ export function EventCard({
 
   return (
     <FloatCard style={{ rotate: "1deg" }}>
-      <Card className="overflow-hidden border-white/12 bg-[linear-gradient(180deg,rgba(33,17,34,0.98),rgba(17,10,17,0.98))] hover:border-white/30">
+      <Card className="overflow-hidden border-white/12 bg-[linear-gradient(180deg,rgba(33,17,34,0.98),rgba(17,10,17,0.98))] hover:border-[var(--vh-pink)]">
         <div className="relative h-[220px] overflow-hidden">
           <ImageWithFallback alt={title} className="h-full w-full object-cover hover:scale-105" src={image} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
@@ -46,6 +50,9 @@ export function EventCard({
         </div>
 
         <CardContent className="space-y-4 py-3.5">
+          <p className="text-sm leading-6 text-white/72">
+            {description ?? "Experience details will be available from API soon. Stay tuned for full lineup info."}
+          </p>
           <div className="grid grid-cols-2 gap-2">
             {details.map((item) => {
               const Icon = item.icon;
@@ -67,7 +74,7 @@ export function EventCard({
             {price}
           </div>
           <Button asChild className="flex w-full">
-            <Link href={href}>RSVP / Book</Link>
+            <Link href={whatsappHref} rel="noreferrer" target="_blank">RSVP / Book</Link>
           </Button>
         </CardContent>
       </Card>

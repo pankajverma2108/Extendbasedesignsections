@@ -30,37 +30,39 @@ export function Footer() {
             </div>
           </div>
 
-          <div>
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-[1px] text-white">
-              Quick Links
-            </h3>
-            <div className="space-y-2">
-              {footerLinks.quickLinks.map((item) => (
-                <Link
-                  key={item.href}
-                  className="block text-sm text-white/65 hover:text-white"
-                  href={item.href}
-                >
-                  {item.label}
-                </Link>
-              ))}
+          <div className="grid grid-cols-2 gap-8 md:col-span-2 md:grid-cols-2">
+            <div>
+              <h3 className="mb-4 text-sm font-bold uppercase tracking-[1px] text-white">
+                Quick Links
+              </h3>
+              <div className="space-y-2">
+                {footerLinks.quickLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    className="block text-sm text-white/65 hover:text-white"
+                    href={item.href}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-[1px] text-white">
-              Policies
-            </h3>
-            <div className="space-y-2">
-              {footerLinks.legal.map((item) => (
-                <Link
-                  key={item.href}
-                  className="block text-sm text-white/65 hover:text-white"
-                  href={item.href}
-                >
-                  {item.label}
-                </Link>
-              ))}
+            <div>
+              <h3 className="mb-4 text-sm font-bold uppercase tracking-[1px] text-white">
+                Policies
+              </h3>
+              <div className="space-y-2">
+                {footerLinks.legal.map((item) => (
+                  <Link
+                    key={item.href}
+                    className="block text-sm text-white/65 hover:text-white"
+                    href={item.href}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -79,7 +79,7 @@ export default async function PolicyPage({ params }: PolicyPageProps) {
                 <a href={siteMeta.contact.emailHref}>Email Us</a>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <a href="https://wa.me/919876543210">WhatsApp</a>
+                <a href="https://wa.me/918884973328">WhatsApp</a>
               </Button>
             </div>
             <div className="mt-10 flex flex-wrap justify-center gap-3">

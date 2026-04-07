@@ -33,6 +33,7 @@ export const rooms: RoomCardProps[] = [
       "USB charging ports",
       "Individual lockers",
     ],
+    amenitiesLegend: ["AC", "Locker", "Fresh linen", "Housekeeping"],
     href: "/property",
   },
   {
@@ -48,6 +49,7 @@ export const rooms: RoomCardProps[] = [
       "Reading lights",
       "Privacy curtains",
     ],
+    amenitiesLegend: ["AC", "Locker", "Fresh linen", "Housekeeping"],
     href: "/property",
   },
   {
@@ -63,6 +65,7 @@ export const rooms: RoomCardProps[] = [
       "Work desk",
       "Mini-fridge",
     ],
+    amenitiesLegend: ["AC", "Private bath", "Fresh linen", "Housekeeping"],
     href: "/property",
   },
 ];

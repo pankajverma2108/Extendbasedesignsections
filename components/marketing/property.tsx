@@ -41,6 +41,10 @@ import { toast } from "sonner";
 import { buildBookingSignature, saveBookingDraft, type BookingDraftRoom } from "@/lib/booking-session";
 import type { CxRoomCategory } from "@/lib/cx-api";
 import {
+  homePageContent,
+  upsellBentoItems,
+} from "@/content/home";
+import {
   bookingSummary,
   locationMap,
   nearbyAttractions,
@@ -168,25 +172,6 @@ function getNightCount(checkIn: string, checkOut: string): number {
   return Math.max(1, Math.round((end - start) / 86400000));
 }
 
-function buildPropertyHref(checkIn: string, checkOut: string, propertyId?: string): string {
-  const params = new URLSearchParams();
-
-  if (checkIn) {
-    params.set("checkin", checkIn);
-  }
-
-  if (checkOut) {
-    params.set("checkout", checkOut);
-  }
-
-  if (propertyId) {
-    params.set("property_id", propertyId);
-  }
-
-  const query = params.toString();
-  return query ? `/property?${query}` : "/property";
-}
-
 const bookingEssentials = [
   {
     id: "dinner",
@@ -254,7 +239,7 @@ function DateRangePicker({
       <PopoverTrigger asChild>
         <button
           aria-expanded={open}
-          className="flex w-full items-center justify-center gap-3 rounded-full border border-[var(--vh-pink)] bg-[rgba(198,40,40,0.18)] px-4 py-3 text-center text-white shadow-[0_10px_26px_rgba(0,0,0,0.28)]"
+          className="flex w-full items-center justify-center gap-3 rounded-full border border-[var(--vh-pink)] bg-[#10111a] px-4 py-3 text-center text-white shadow-[0_10px_26px_rgba(0,0,0,0.28)]"
           type="button"
         >
           <div className="inline-flex min-w-0 items-center gap-3">
@@ -274,7 +259,7 @@ function DateRangePicker({
       </PopoverTrigger>
       <PopoverContent
         align={align === "left" ? "start" : "end"}
-        className="z-[200] w-[min(100vw-2rem,420px)] border-white/10 bg-[var(--vh-panel-strong)] p-3"
+        className="z-[200] w-fit max-w-[calc(100vw-1rem)] border-white/12 bg-[#10111a] p-2"
       >
         <Calendar
           className="vh-calendar-dark rounded-[20px]"
@@ -306,7 +291,6 @@ function DesktopBookingSummary({
   selectedCounts,
   roomCategoryList,
   onContinue,
-  propertyId,
 }: {
   checkIn: string;
   checkOut: string;
@@ -322,20 +306,17 @@ function DesktopBookingSummary({
   selectedCounts: Record<string, number>;
   roomCategoryList: RoomCategory[];
   onContinue: () => void;
-  propertyId?: string;
 }) {
-  const propertyHref = useMemo(
-    () => buildPropertyHref(checkIn, checkOut, propertyId),
-    [checkIn, checkOut, propertyId],
-  );
   const nights = getNightCount(checkIn, checkOut);
   const selectedRooms = roomCategoryList.filter((room) => (selectedCounts[room.slug] ?? 0) > 0);
   const roomTotal = selectedRooms.reduce(
     (sum, room) => sum + room.basePrice * (selectedCounts[room.slug] ?? 0) * nights,
     0,
   );
-  const roomTaxes = Math.round(roomTotal * 0.12);
-  const addonTaxes = Math.round(essentialsTotal * 0.18);
+  const roomTaxExact = roomTotal * 0.12;
+  const addonTaxExact = essentialsTotal * 0.18;
+  const roomTaxes = Math.round(roomTaxExact);
+  const addonTaxes = Math.round(addonTaxExact);
   const taxes = roomTaxes + addonTaxes;
   const grandTotal = roomTotal + essentialsTotal + taxes;
   const hasSelection = selectedRooms.length > 0;
@@ -405,10 +386,18 @@ function DesktopBookingSummary({
             <p className="font-semibold text-white">Rs. {essentialsTotal}</p>
           </div>
           <div className="mt-2 flex items-center justify-between">
-            <p className="inline-flex items-center gap-1">
+            <p className="group relative inline-flex items-center gap-1">
               Total taxes
-              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/25 text-white/75">
+              <button
+                aria-label="View tax breakdown"
+                className="inline-flex items-center text-white/75 hover:text-white"
+                type="button"
+              >
                 <Info className="h-3 w-3" />
+              </button>
+              <span className="pointer-events-none absolute left-0 top-[calc(100%+6px)] z-20 hidden min-w-[180px] rounded-md border border-white/15 bg-[#10111a] px-2.5 py-2 text-[11px] leading-4 text-white/85 shadow-[0_10px_28px_rgba(0,0,0,0.35)] group-hover:block">
+                <span className="block">Room tax - {roomTaxExact.toFixed(2)}</span>
+                <span className="mt-1 block">Add-on tax - {addonTaxExact.toFixed(2)}</span>
               </span>
             </p>
             <p className="font-semibold text-white">Rs. {taxes}</p>
@@ -435,15 +424,9 @@ function DesktopBookingSummary({
           </span>
         </div>
 
-        {hasSelection ? (
-          <Button className="mt-5 w-full" disabled={!isAgeConfirmed} onClick={onContinue} type="button">
-            Review Booking
-          </Button>
-        ) : (
-          <Button asChild className="mt-5 w-full">
-            <Link href={`${propertyHref}#availability`}>View rooms</Link>
-          </Button>
-        )}
+        <Button className="mt-5 w-full" disabled={!isAgeConfirmed || !hasSelection} onClick={onContinue} type="button">
+          Review Booking
+        </Button>
       </div>
     </aside>
   );
@@ -478,7 +461,7 @@ function AddEssentialsPanel({
           const quantity = selectedEssentials[item.id] ?? 0;
 
           return (
-            <div key={item.id} className="bg-transparent p-0">
+            <div key={item.id} className="rounded-[14px] border border-white/10 bg-white/[0.04] p-3 md:rounded-none md:border-0 md:bg-transparent md:p-0">
               <div className="flex items-start gap-3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center text-[var(--vh-cyan)]">
                   <Icon className="h-7 w-7" />
@@ -495,13 +478,12 @@ function AddEssentialsPanel({
                     </div>
                   </div>
                   <div className="mt-3 flex items-center justify-between gap-3">
-                    <p className="text-xs text-white/60">Add while you are booking the room.</p>
                     {quantity === 0 ? (
-                      <Button className="h-8 rounded-full px-4 text-xs" onClick={() => onIncrement(item.id)} type="button" variant="outline">
+                      <Button className="h-8 rounded-full px-4 text-xs md:ml-auto" onClick={() => onIncrement(item.id)} type="button" variant="outline">
                         {item.actionLabel}
                       </Button>
                     ) : (
-                      <div className="ml-auto flex items-center gap-2">
+                      <div className="ml-auto flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2 py-1">
                         <button
                           aria-label={`Remove ${item.title}`}
                           className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)]"
@@ -651,12 +633,6 @@ function MobileStickySummary({
               </Button>
             </div>
           </div>
-        ) : !hasSelection ? (
-          <div className="p-4 text-center">
-            <Button asChild className="mt-4 w-full rounded-full">
-              <Link href="#availability">View rooms</Link>
-            </Button>
-          </div>
         ) : null}
 
         <div className={cn("flex items-center justify-between gap-4 p-4", open && hasSelection ? "border-t border-white/10" : "")}>
@@ -676,16 +652,60 @@ function MobileStickySummary({
               </Button>
             </div>
           ) : (
-            <a
-              className="inline-flex h-10 items-center justify-center rounded-[16px] bg-[var(--vh-pink)] px-5 py-2.5 text-sm font-semibold text-white shadow-[4px_4px_0px_0px_rgba(255,255,255,0.18)]"
-              href="#availability"
-            >
-              Select Rooms
-            </a>
+            <Button className="h-10 min-w-[120px] rounded-[16px] px-3 py-2.5 text-xs font-black sm:px-4 sm:text-sm" disabled type="button">
+              Review Booking
+            </Button>
           )}
         </div>
       </div>
     </div>
+  );
+}
+
+function BuildYourStaySection() {
+  const toneStyles = {
+    pink: { accent: "#c62828", sticker: "#FEF08A", text: "#0f172a" },
+    blue: { accent: "#00d1ff", sticker: "#00d1ff", text: "#0f172a" },
+    green: { accent: "#39ff14", sticker: "#39ff14", text: "#0f172a" },
+  } as const;
+
+  return (
+    <section id="build-your-stay" className="scroll-mt-28">
+      <SectionTitle title={homePageContent.upsellTitle} />
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {upsellBentoItems.map((item, index) => {
+          const tone = toneStyles[item.tone];
+
+          return (
+            <div
+              key={item.id}
+              className="group relative rounded-[12px] border-2 bg-[#1e293b] p-5 text-left transition-all hover:border-white"
+              style={{ borderColor: "#334155", transform: `rotate(${index % 2 === 0 ? -1 : 1}deg)` }}
+            >
+              <StickerTag
+                bg={tone.sticker}
+                className="absolute left-3 top-3 rounded-[3px] border-2 border-[var(--vh-surface-2)] px-2 py-1 text-[9px] font-bold not-italic uppercase"
+                label={item.kicker}
+                rotate={index % 2 === 0 ? "rotate-[2deg]" : "rotate-[-2deg]"}
+                text={tone.text}
+              />
+
+              <div className="mb-3 mt-8 flex items-center gap-3">
+                <div
+                  className="inline-flex rounded-full p-2.5 transition-transform group-hover:scale-110"
+                  style={{ backgroundColor: `${tone.accent}22`, color: tone.accent }}
+                >
+                  <span className="h-3.5 w-3.5 rounded-full" style={{ backgroundColor: tone.accent }} />
+                </div>
+                <h3 className="text-lg font-bold uppercase text-white">{item.title}</h3>
+              </div>
+
+              <p className="text-sm leading-6 text-white/80">{item.body}</p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -1280,7 +1300,7 @@ export function Property({
                       width={224}
                     />
                     <p className="mt-4 text-base font-semibold text-white">Oh Sorry! There are no available rooms for this date.</p>
-                    <p className="mt-2 text-sm text-white/75">Please choose another day or mail us for booking@thedailysocial.in</p>
+                    <p className="mt-2 text-sm text-white/75">Please choose another day or mail us at thedailysocial01@gmail.com</p>
                   </div>
                 ) : (
                   roomCategoryList.map((room) => {
@@ -1405,6 +1425,12 @@ export function Property({
                   })
                 )}
                 </div>
+
+                <AddEssentialsPanel
+                  onDecrement={decrementEssential}
+                  onIncrement={incrementEssential}
+                  selectedEssentials={selectedEssentials}
+                />
                 </div>
                 <div className="space-y-6">
                   <DesktopBookingSummary
@@ -1415,23 +1441,19 @@ export function Property({
                     isAgeConfirmed={isAgeConfirmed}
                     onContinue={continueToCheckout}
                     onAgeConfirmChange={setIsAgeConfirmed}
-                    propertyId={resolvedPropertyId}
                     selectedCounts={selectedCounts}
                     roomCategoryList={roomCategoryList}
                   />
                 </div>
               </div>
-              <AddEssentialsPanel
-                onDecrement={decrementEssential}
-                onIncrement={incrementEssential}
-                selectedEssentials={selectedEssentials}
-              />
             </section>
+
+            <BuildYourStaySection />
 
             <section id="guidelines">
               <SectionTitle title="Guidelines" />
               <div className="mt-6 max-w-4xl">
-                <div className="mb-5 flex flex-wrap justify-between gap-x-4 gap-y-3 rounded-[16px] bg-white/6 p-4 text-white/84">
+                <div className="mb-3 flex flex-wrap justify-between gap-x-4 gap-y-2 rounded-[16px] bg-white/6 p-3 text-white/84">
                   <div className="flex min-w-[180px] items-center gap-3">
                     <CalendarDays className="h-5 w-5 text-[var(--vh-cyan)]" />
                     <span>
@@ -1448,10 +1470,10 @@ export function Property({
                   </div>
                 </div>
 
-                <Accordion className="space-y-4" defaultValue={["general-guidelines"]} type="multiple">
+                <Accordion className="space-y-2" defaultValue={["general-guidelines"]} type="multiple">
                   <AccordionItem className="overflow-hidden rounded-lg border border-white/10 bg-white/5 px-4" value="general-guidelines">
                     <AccordionTrigger className="text-base">General guidelines</AccordionTrigger>
-                    <AccordionContent className="space-y-3 border-t border-white/10 pt-4 text-sm leading-7">
+                    <AccordionContent className="space-y-2 border-t border-white/10 pt-2 text-sm leading-6">
                       {propertyGuidelines.summary.map((item) => (
                         <p key={item}>- {item}</p>
                       ))}
@@ -1465,7 +1487,7 @@ export function Property({
                       value={`guideline-${index}`}
                     >
                       <AccordionTrigger className="text-base">{section.title}</AccordionTrigger>
-                      <AccordionContent className="space-y-3 border-t border-white/10 pt-4 text-sm leading-7">
+                      <AccordionContent className="space-y-2 border-t border-white/10 pt-2 text-sm leading-6">
                         {section.content.map((item) => (
                           <p key={item}>- {item}</p>
                         ))}

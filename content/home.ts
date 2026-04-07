@@ -43,13 +43,23 @@ export const amenities = [
   { label: "Reading Lights", color: "#39ff14", icon: "lamp", tilt: "rotate-0" },
   { label: "Luggage Storage", color: "#facc15", icon: "briefcase", tilt: "rotate-2" },
   { label: "First Aid", color: "#c62828", icon: "cross", tilt: "rotate-0" },
+  { label: "Superfast Wi-Fi", color: "#00d1ff", icon: "wifi", tilt: "rotate-0" },
+  { label: "AC Rooms", color: "#c62828", icon: "snowflake", tilt: "-rotate-2" },
+  { label: "Smart Check-in", color: "#facc15", icon: "calendar-check", tilt: "rotate-2" },
+  { label: "Daily Housekeeping", color: "#39ff14", icon: "sparkles", tilt: "rotate-0" },
+  { label: "Hangout Lounge", color: "#00d1ff", icon: "sunset", tilt: "-rotate-2" },
+  { label: "Work Corners", color: "#facc15", icon: "laptop", tilt: "rotate-0" },
+  { label: "Social Vibes", color: "#c62828", icon: "music", tilt: "rotate-2" },
+  { label: "Community Meetups", color: "#00d1ff", icon: "users", tilt: "-rotate-2" },
+  { label: "Power Backup", color: "#39ff14", icon: "shield-check", tilt: "rotate-0" },
+  { label: "The Daily Cafe", color: "#facc15", icon: "coffee", tilt: "rotate-2" },
 ];
 
 export const experienceCards = [
   {
     title: "High Energy",
     body:
-      "Daily events, pub crawls, and game nights keep the energy alive. Meet travelers from around the world and create memories that last.",
+      "Daily experiences, pub crawls, and game nights keep the energy alive. Meet travelers from around the world and create memories that last.",
     color: "#c62828",
   },
   {
@@ -97,7 +107,7 @@ export const testimonials = [
     platform: "MakeMyTrip",
     logo: "/testimonials logos/MakeMyTrip_ideTNivz-j_1.png",
     review:
-      "The events were incredible with great vibes, and the location made every city plan easy to execute.",
+      "The experiences were incredible with great vibes, and the location made every city plan easy to execute.",
   },
   {
     name: "Rohan Kulkarni",
@@ -130,8 +140,8 @@ export const homePageContent = {
   roomsTagline: "Pick your perch, drop your bag, and settle into the stay like you own the soundtrack.",
   upsellTitle: "Build Your Stay",
   upsellSubtitle: "Elevate your nights",
-  eventsTitle: "Tonight at The Daily Social",
-  eventsSubtitle: "What's on the agenda",
+  eventsTitle: "Tonight's Experiences",
+  eventsSubtitle: "What's in the lineup",
   experienceTitle: "The Daily Social Experience",
   experienceSubtitle: "Why we're unforgettable",
   energyTitle: "The Energy",
@@ -204,7 +214,6 @@ export const upsellBentoItems = [
 export const homeSectionOrder: HomeSectionId[] = [
   "amenities",
   "rooms",
-  "upsell",
   "events",
   "experience",
   "energy",

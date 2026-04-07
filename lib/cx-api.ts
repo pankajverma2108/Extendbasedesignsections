@@ -306,6 +306,7 @@ async function fetchUnknownJson(path: string): Promise<unknown> {
 function fallbackEvents(count = 3): EventCardProps[] {
   return Array.from({ length: count }, (_, index) => ({
     title: index === 0 ? "Details TBA" : `Experience Drop ${index + 1}`,
+    description: "Event details will be available from API soon. Stay tuned for full lineup info.",
     date: "TBA",
     time: "Details on arrival",
     location: "The Daily Social",
@@ -350,6 +351,7 @@ function normalizeEvent(event: RawEvent): EventCardProps {
 
   return {
     title,
+    description: ensureString(event.description, "Event details will be available from API soon. Stay tuned for full lineup info."),
     date,
     time,
     location,
@@ -481,23 +483,39 @@ export async function getRoomAvailabilitySnapshot(options?: {
   tomorrow.setDate(tomorrow.getDate() + 1);
   const checkout = ensureString(options?.checkout) || tomorrow.toISOString().slice(0, 10);
 
-  const params = new URLSearchParams({
-    checkin,
-    checkout,
-  });
-  if (propertyId) {
-    params.set("property_id", propertyId);
+  async function fetchSnapshot(includePropertyId: boolean) {
+    const params = new URLSearchParams({
+      checkin,
+      checkout,
+    });
+
+    if (includePropertyId && propertyId) {
+      params.set("property_id", propertyId);
+    }
+
+    const path = `/guest/booking/rooms?${params.toString()}`;
+    return (await fetchUnknownJson(path)) as RawRoomAvailability | null;
   }
 
-  const path = `/guest/booking/rooms?${params.toString()}`;
-  const raw = (await fetchUnknownJson(path)) as RawRoomAvailability | null;
-  const resolvedPropertyId = ensureString(raw?.property_id, propertyId);
+  let raw = await fetchSnapshot(true);
+  let resolvedPropertyId = ensureString(raw?.property_id, propertyId);
 
   if (!raw) {
     recordTelemetry({ type: "null_payload", source: "room" });
   }
 
-  const list = ensureArray(raw?.room_types) as RawRoomType[];
+  let list = ensureArray(raw?.room_types) as RawRoomType[];
+
+  if (propertyId && list.length === 0) {
+    const retryRaw = await fetchSnapshot(false);
+    const retryList = ensureArray(retryRaw?.room_types) as RawRoomType[];
+
+    if (retryList.length > 0) {
+      raw = retryRaw;
+      list = retryList;
+      resolvedPropertyId = ensureString(retryRaw?.property_id, resolvedPropertyId);
+    }
+  }
 
   if (list.length === 0) {
     recordTelemetry({ type: "empty_array", source: "room" });
@@ -523,6 +541,7 @@ export function roomTypesToHomeCards(roomTypes: NormalizedRoomType[]): RoomCardP
       ? `${Math.max(room.bedsPerRoom, 1)} Guests`
       : `${Math.max(room.bedsPerRoom, 1)} Bed${room.bedsPerRoom > 1 ? "s" : ""}`;
     const images = pickStaticRoomGallery(room.slug || room.name, index);
+    const presentation = getHardcodedRoomPresentation(room);
 
     return {
       title: room.name,
@@ -531,7 +550,8 @@ export function roomTypesToHomeCards(roomTypes: NormalizedRoomType[]): RoomCardP
       image: images[0] ?? FALLBACK_ROOM_IMAGE,
       images,
       badge: roomBadge(room.availableBeds),
-      features: room.amenities.length > 0 ? room.amenities : ["Details on arrival"],
+      features: presentation.features,
+      amenitiesLegend: presentation.amenitiesLegend,
       href: "/property",
     };
   });

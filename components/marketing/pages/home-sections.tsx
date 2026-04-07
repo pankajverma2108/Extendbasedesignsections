@@ -85,7 +85,7 @@ const sectionHeaderStickers = {
   amenities: { label: "Live better, stay better", bg: "#00d1ff", text: "#0f172a", rotate: "rotate-[-2deg]" },
   rooms: { label: "Your sanctuary", bg: "#c62828", text: "#ffffff", rotate: "rotate-[2deg]" },
   upsell: { label: "Elevate your nights", bg: "#facc15", text: "#0f172a", rotate: "rotate-[-2deg]" },
-  events: { label: "Agenda", bg: "#39ff14", text: "#0f172a", rotate: "rotate-[2deg]" },
+  events: { label: "Experiences", bg: "#39ff14", text: "#0f172a", rotate: "rotate-[2deg]" },
   experience: { label: "We're unforgettable", bg: "#c62828", text: "#ffffff", rotate: "rotate-[-1deg]" },
   energy: { label: "Reel moments", bg: "#00d1ff", text: "#0f172a", rotate: "rotate-[1deg]" },
 } as const;
@@ -356,8 +356,8 @@ function EnergySection() {
         </Stagger>
         <FadeIn className="text-center">
           <Button asChild size="lg">
-            <Link href="https://instagram.com/thedailysocial" rel="noreferrer" target="_blank">
-              @TheDailySocial
+            <Link href="https://instagram.com/thedailysocial01" rel="noreferrer" target="_blank">
+              Follow on Instagram
             </Link>
           </Button>
         </FadeIn>
@@ -367,11 +367,7 @@ function EnergySection() {
 }
 
 function ReviewsSection() {
-  return (
-    <SectionFrame alt>
-      <TestimonialsMarquee />
-    </SectionFrame>
-  );
+  return <TestimonialsMarquee />;
 }
 
 function CtaSection({ destinationHref = "/property" }: { destinationHref?: string }) {

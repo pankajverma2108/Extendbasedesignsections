@@ -201,7 +201,6 @@ const ReviewCard: React.FC<{ review: Review }> = ({ review }) => {
             alt="logo"
             width={20}
             height={20}
-            style={{ width: '20px', height: 'auto' }}
             className="object-contain"
           />
           <span className="text-xs text-white/70 hidden md:block">{review.source}</span>
@@ -273,8 +272,7 @@ const PlatformCard: React.FC<{ platform: PlatformRating }> = ({ platform }) => {
         alt={`${platform.name} logo`}
         width={78}
         height={68}
-        style={{ width: '78px', height: 'auto', transition: 'transform 300ms ease' }}
-        className="object-contain mb-2"
+        className="mb-2 object-contain transition-transform duration-300"
       />
       <h3 className="text-sm md:text-lg font-bold text-white mb-1">{platform.name}</h3>
       <div className="flex items-baseline gap-1 mb-2">
@@ -310,8 +308,8 @@ const CountCard: React.FC<{ count: RatingCount }> = ({ count }) => {
           alt={`${count.platform} logo`}
           width={96}
           height={72}
-          className="object-contain"
-          style={{ width: '96px', height: 'auto', transition: 'transform 300ms ease', zIndex: 2 }}
+          className="object-contain transition-transform duration-300"
+          style={{ zIndex: 2 }}
         />
       </div>
 
@@ -422,7 +420,7 @@ export default function TestimonialsMarquee() {
   const row3 = buildPatternedRowFixedPlatform(photosRow3, REVIEWS, platformRow3, countRow3, ROW_LENGTH);
 
   return (
-    <section className="pt-0 pb-8 overflow-hidden bg-[radial-gradient(100%_80%_at_15%_0%,rgba(198,40,40,0.1),transparent_55%),radial-gradient(80%_75%_at_85%_18%,rgba(58,95,132,0.13),transparent_56%)]">
+    <section className="overflow-hidden bg-[#10111a] pb-8 pt-0">
       <div className="mx-auto w-[95vw] max-w-[1400px] px-1 md:px-3">
         <div className="text-center mb-3 px-4">
           <h2 className="vh-title text-[2rem] md:text-[2.7rem] text-white">Guests keep talking. We keep hosting.</h2>

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
 export function RoomCard({
+  amenitiesLegend,
   badge,
   features,
   href,
@@ -23,6 +24,7 @@ export function RoomCard({
   const gallery = images && images.length > 0 ? images : [image];
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const activeImage = gallery[activeImageIndex] ?? gallery[0] ?? image;
+  const detailLabels = Array.from(new Set([...(features ?? []), ...(amenitiesLegend ?? [])]));
 
   const goPrevious = () => {
     setActiveImageIndex((current) => (current - 1 + gallery.length) % gallery.length);
@@ -89,15 +91,21 @@ export function RoomCard({
         <CardContent className="pt-3">
           <h3 className="text-2xl font-bold uppercase text-white">{title}</h3>
 
-          <ul className="mt-3 flex flex-wrap gap-2 text-xs text-white/85">
-            {features.slice(0, 10).map((feature, index) => (
-              <li
-                key={`${feature}-${index}`}
-                className="rounded-full border border-white/12 bg-white/7 px-2.5 py-1 leading-5"
-              >
-                {feature}
-              </li>
-            ))}
+          <ul className="mt-3 flex flex-wrap gap-1 text-xs text-white/85">
+            {detailLabels.slice(0, 10).map((feature, index) => {
+              const colorIndex = index % 4;
+              const colors = ["#00d1ff", "#c62828", "#39ff14", "#facc15"];
+
+              return (
+                <li
+                  key={`${feature}-${index}`}
+                  className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-1"
+                  style={{ color: colors[colorIndex] }}
+                >
+                  <span className="text-white/70">{feature}</span>
+                </li>
+              );
+            })}
           </ul>
         </CardContent>
 

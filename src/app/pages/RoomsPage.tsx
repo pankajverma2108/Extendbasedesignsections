@@ -260,10 +260,10 @@ export default function RoomsPage() {
                     WhatsApp / Phone
                   </p>
                   <a
-                    href="tel:+919876543210"
+                    href="tel:+918884973328"
                     className="font-['Space_Grotesk'] text-[18px] text-[#00d1ff] hover:text-[#c62828] transition-colors"
                   >
-                    +91 98765 43210
+                    +91 88849 73328
                   </a>
                 </div>
 
@@ -272,10 +272,10 @@ export default function RoomsPage() {
                     Email
                   </p>
                   <a
-                    href="mailto:hello@thedailysocial.com"
+                    href="mailto:thedailysocial01@gmail.com"
                     className="font-['Space_Grotesk'] text-[18px] text-[#00d1ff] hover:text-[#c62828] transition-colors"
                   >
-                    hello@thedailysocial.com
+                    thedailysocial01@gmail.com
                   </a>
                 </div>
 

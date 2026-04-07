@@ -134,7 +134,7 @@ function validateKycPayload(payload: KycSubmitPayload): string[] {
   }
 
   if (!/^\+\d{10,15}$/.test(trimmedContact)) {
-    errors.push("Contact number must include country code, for example +919876543210.");
+    errors.push("Contact number must include country code, for example +918884973328.");
   }
 
   if (trimmedComingFrom.length === 0) {

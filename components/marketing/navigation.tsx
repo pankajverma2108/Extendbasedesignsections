@@ -1,16 +1,73 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { usePathname } from "next/navigation";
-import { CircleUserRound } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowUpRight, CircleUserRound } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { MobileStaggeredMenu } from "./mobile-staggered-menu";
-import { navItems, siteMeta } from "@/content/site";
+import { hostelNavItems, primaryHostelHref } from "@/content/nav-menu";
+import { siteMeta } from "@/content/site";
+import { navFontStyles } from "@/content/typography";
 import { cn } from "@/lib/utils";
+
+type DesktopNavLink = {
+  label: string;
+  href: string;
+  description?: string;
+  external?: boolean;
+  requiresAuth?: boolean;
+};
+
+type DesktopNavCard = {
+  label: string;
+  bgColor: string;
+  textColor: string;
+  links: DesktopNavLink[];
+};
+
+const hostelCardLinks: DesktopNavLink[] = hostelNavItems.map((property) => ({
+  label: property.label,
+  href: property.href,
+  description: "Koramangala",
+}));
+
+const desktopNavCards: DesktopNavCard[] = [
+  {
+    label: "Hostels",
+    bgColor: "var(--vh-pink)",
+    textColor: "#FFFFFF",
+    links: [
+      ...hostelCardLinks,
+      { label: "Colive", href: "/rooms?type=colive", description: "Long stay setup" },
+    ],
+  },
+  {
+    label: "Experiences",
+    bgColor: "var(--vh-cyan)",
+    textColor: "#0f172a",
+    links: [
+      { label: "Experience Calendar", href: "/events", description: "Weekly highlights" },
+      { label: "RSVP", href: "/events?tab=rsvp", description: "Save your seat" },
+      { label: "About Us", href: "/about", description: "The Daily Social story" },
+      { label: "Contact Us", href: siteMeta.contact.emailHref, description: "Say hello", external: true },
+    ],
+  },
+  {
+    label: "Guest Hub",
+    bgColor: "var(--vh-lime)",
+    textColor: "#0f172a",
+    links: [
+      { label: "My Stay - Current", href: "/bookings?status=current", requiresAuth: true },
+      { label: "My Stay - Past", href: "/bookings?status=past", requiresAuth: true },
+      { label: "My Stay - Cancelled", href: "/bookings?status=cancelled", requiresAuth: true },
+      { label: "Profile", href: "/profile", requiresAuth: true },
+      { label: "Invest & Partner", href: `${siteMeta.contact.emailHref}?subject=Invest%20%26%20Partner%20Inquiry`, external: true },
+    ],
+  },
+];
 
 export function Navigation() {
   const pathname = usePathname();
@@ -18,8 +75,11 @@ export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const { guest, isAuthenticated, isRestoringSession, openAuthModal, signOut } = useGuestAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
+  const desktopMenuRef = useRef<HTMLDivElement | null>(null);
   const shouldShowSignedInState = isAuthenticated || isRestoringSession;
+  const guestFirstName = useMemo(() => guest?.name.split(" ")[0] ?? "Profile", [guest]);
 
   useEffect(() => {
     let lastY = window.scrollY;
@@ -61,6 +121,32 @@ export function Navigation() {
     return () => window.removeEventListener("mousedown", onWindowClick);
   }, [isProfileMenuOpen]);
 
+  useEffect(() => {
+    if (!isDesktopMenuOpen) {
+      return;
+    }
+
+    const onWindowClick = (event: MouseEvent) => {
+      if (!desktopMenuRef.current?.contains(event.target as Node)) {
+        setIsDesktopMenuOpen(false);
+      }
+    };
+
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsDesktopMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("mousedown", onWindowClick);
+    window.addEventListener("keydown", onEscape);
+
+    return () => {
+      window.removeEventListener("mousedown", onWindowClick);
+      window.removeEventListener("keydown", onEscape);
+    };
+  }, [isDesktopMenuOpen]);
+
   return (
     <motion.nav
       animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : -110 }}
@@ -71,135 +157,204 @@ export function Navigation() {
       <div className="vh-container">
         <div className="mx-auto hidden max-w-7xl lg:block">
           <div
+            ref={desktopMenuRef}
             className={cn(
-              "grid grid-cols-3 items-center rounded-full px-4 py-2 transition-all duration-200",
-              isScrolled ? "border border-white/12 bg-[rgba(15,16,26,0.88)] shadow-[0_20px_50px_rgba(0,0,0,0.28)] backdrop-blur-xl" : "bg-transparent",
+              "relative overflow-hidden rounded-2xl transition-all duration-200",
+              isScrolled
+                ? "border border-white/12 bg-[rgba(15,16,26,0.92)] shadow-[0_20px_50px_rgba(0,0,0,0.34)] backdrop-blur-xl"
+                : "border border-transparent bg-[rgba(15,16,26,0.72)]",
             )}
           >
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center px-2 py-1">
-                <Image
-                  alt={siteMeta.name}
-                  className="h-auto w-[138px] object-contain opacity-95"
-                  height={180}
-                  priority
-                  src="/logo/logo_design_whiteOnRed.jpg-Photoroom.png"
-                  width={180}
-                />
-              </Link>
-            </div>
-
-            <div className="flex items-center justify-center gap-1.5">
-              {navItems.map((item) => {
-                const active = pathname === item.href;
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium text-white/85 transition hover:bg-white/10 hover:text-white",
-                      active && "bg-white text-[var(--vh-surface-2)] hover:bg-white hover:text-[var(--vh-surface-2)]",
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-
-            <div className="flex items-center justify-end gap-3">
-              <Link
-                href="/policies/guest"
-                className="rounded-full px-4 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
+            <div className="relative grid h-[60px] grid-cols-[auto_1fr_auto] items-center px-3">
+              <button
+                aria-expanded={isDesktopMenuOpen}
+                aria-label={isDesktopMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                className="group inline-flex h-10 w-10 items-center justify-center rounded-lg text-white"
+                onClick={() => setIsDesktopMenuOpen((value) => !value)}
+                type="button"
               >
-                Policies
-              </Link>
-              <div className="relative" ref={profileMenuRef}>
-                {!shouldShowSignedInState ? (
-                  <button
-                    className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[var(--vh-pink)] px-4 py-2 text-sm font-semibold text-white shadow-[0px_-1px_0px_0px_#FFFFFF40_inset,_0px_1px_0px_0px_#FFFFFF40_inset] transition hover:bg-[var(--vh-pink-soft)]"
-                    onClick={() => openAuthModal("signin")}
-                    type="button"
-                  >
-                    Sign In
-                  </button>
-                ) : (
-                  <button
-                    className="inline-flex items-center gap-2 rounded-full border border-[var(--vh-pink)]/45 bg-[rgba(35,15,20,0.82)] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[rgba(198,40,40,0.16)]"
-                    disabled={isRestoringSession && !isAuthenticated}
-                    onClick={() => setIsProfileMenuOpen((value) => !value)}
-                    type="button"
-                  >
-                    <CircleUserRound className="h-5 w-5" />
-                    <span>{isRestoringSession && !isAuthenticated ? "Profile" : guest?.name.split(" ")[0] ?? "Profile"}</span>
-                  </button>
-                )}
+                <span className={cn("relative h-3.5 w-3.5 transition-transform duration-300", isDesktopMenuOpen && "rotate-45")}> 
+                  <span className={cn("absolute left-0 top-0 h-[5px] w-[5px] rounded-full bg-current transition-all duration-200", isDesktopMenuOpen && "scale-90")} />
+                  <span className={cn("absolute right-0 top-0 h-[5px] w-[5px] rounded-full bg-current transition-all duration-200", isDesktopMenuOpen && "scale-90")} />
+                  <span className={cn("absolute bottom-0 left-0 h-[5px] w-[5px] rounded-full bg-current transition-all duration-200", isDesktopMenuOpen && "scale-90")} />
+                  <span className={cn("absolute bottom-0 right-0 h-[5px] w-[5px] rounded-full bg-current transition-all duration-200", isDesktopMenuOpen && "scale-90")} />
+                </span>
+              </button>
 
-                {isAuthenticated && isProfileMenuOpen ? (
-                  <div className="absolute right-0 top-[calc(100%+10px)] w-[216px] rounded-[22px] border border-white/15 bg-[#06090f] p-2 shadow-[0_20px_48px_rgba(0,0,0,0.45)]">
-                    <Link
-                      href="/bookings"
-                      className="block rounded-xl px-4 py-3 text-base font-semibold text-white/90 transition hover:bg-white/8"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                    >
-                      My Bookings
-                    </Link>
-                    <Link
-                      href="/profile"
-                      className="block rounded-xl px-4 py-3 text-base font-semibold text-white/90 transition hover:bg-white/8"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                    >
-                      My Profile
-                    </Link>
+              <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap">
+                <span className="sr-only">{siteMeta.name}</span>
+                <span aria-hidden="true" className="vh-retro-sign-flat block text-center text-[16px] leading-none text-[var(--vh-ice)]">
+                  THE DAILY SOCIAL
+                </span>
+              </Link>
+
+              <div className="ml-auto flex items-center gap-2.5">
+                <div className="relative" ref={profileMenuRef}>
+                  {!shouldShowSignedInState ? (
                     <button
-                      className="block w-full rounded-xl px-4 py-3 text-left text-base font-semibold text-[#f6b3c8] transition hover:bg-white/8"
-                      onClick={() => {
-                        signOut();
-                        setIsProfileMenuOpen(false);
-                      }}
+                      className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/20 bg-[var(--vh-pink)] px-3.5 text-sm font-semibold text-white shadow-[0px_-1px_0px_0px_#FFFFFF40_inset,_0px_1px_0px_0px_#FFFFFF40_inset] transition hover:bg-[var(--vh-pink-soft)]"
+                      onClick={() => openAuthModal("signin")}
                       type="button"
                     >
-                      Logout
+                      Sign In
                     </button>
-                  </div>
-                ) : null}
-              </div>
+                  ) : (
+                    <button
+                      className="inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--vh-pink)]/45 bg-[rgba(35,15,20,0.82)] px-3 text-sm font-semibold text-white transition hover:bg-[rgba(198,40,40,0.16)]"
+                      disabled={isRestoringSession && !isAuthenticated}
+                      onClick={() => setIsProfileMenuOpen((value) => !value)}
+                      type="button"
+                    >
+                      <CircleUserRound className="h-4.5 w-4.5" />
+                      <span>{isRestoringSession && !isAuthenticated ? "Profile" : guestFirstName}</span>
+                    </button>
+                  )}
+
+                  {isAuthenticated && isProfileMenuOpen ? (
+                    <div className="absolute right-0 top-[calc(100%+10px)] z-30 w-[216px] rounded-[20px] border border-white/15 bg-[#06090f] p-2 shadow-[0_20px_48px_rgba(0,0,0,0.45)]">
+                      <Link
+                        href="/bookings"
+                        className="block rounded-xl px-4 py-3 text-base font-semibold text-white/90 transition hover:bg-white/8"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                      >
+                        My Bookings
+                      </Link>
+                      <Link
+                        href="/profile"
+                        className="block rounded-xl px-4 py-3 text-base font-semibold text-white/90 transition hover:bg-white/8"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                      >
+                        My Profile
+                      </Link>
+                      <button
+                        className="block w-full rounded-xl px-4 py-3 text-left text-base font-semibold text-[#f6b3c8] transition hover:bg-white/8"
+                        onClick={() => {
+                          signOut();
+                          setIsProfileMenuOpen(false);
+                          setIsDesktopMenuOpen(false);
+                        }}
+                        type="button"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+
               <Link
-                href="/property"
-                className="rounded-full bg-[var(--vh-pink)] px-4 py-2 text-sm font-medium text-white shadow-[0px_-1px_0px_0px_#FFFFFF40_inset,_0px_1px_0px_0px_#FFFFFF40_inset] transition hover:bg-[var(--vh-pink-soft)]"
+                href={primaryHostelHref}
+                className="inline-flex h-9 items-center rounded-lg bg-[var(--vh-pink)] px-3.5 text-sm font-semibold text-white shadow-[0px_-1px_0px_0px_#FFFFFF40_inset,_0px_1px_0px_0px_#FFFFFF40_inset] transition hover:bg-[var(--vh-pink-soft)]"
               >
                 Book Now
               </Link>
             </div>
+            </div>
+
+            <AnimatePresence initial={false}>
+              {isDesktopMenuOpen ? (
+                <motion.div
+                  animate={{ height: "auto", opacity: 1 }}
+                  className="overflow-hidden border-t border-white/10"
+                  exit={{ height: 0, opacity: 0 }}
+                  initial={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <motion.div
+                    animate="show"
+                    className="grid grid-cols-3 gap-3 p-3"
+                    initial="hidden"
+                    variants={{
+                      hidden: {},
+                      show: {
+                        transition: {
+                          staggerChildren: 0.08,
+                        },
+                      },
+                    }}
+                  >
+                    {desktopNavCards.map((card) => (
+                      <motion.article
+                        key={card.label}
+                        className="flex min-h-[206px] flex-col rounded-[14px] border border-black/15 p-4"
+                        style={{ backgroundColor: card.bgColor, color: card.textColor }}
+                        variants={{
+                          hidden: { opacity: 0, y: 18 },
+                          show: { opacity: 1, y: 0 },
+                        }}
+                      >
+                        <h3 className="text-[30px] leading-[34px]" style={navFontStyles.desktopCardTitle}>
+                          {card.label}
+                        </h3>
+
+                        <div className="mt-4 flex flex-col gap-2.5">
+                          {card.links.map((link, linkIndex) => {
+                            if (link.external) {
+                              return (
+                                <a
+                                  key={`${card.label}-${link.href}-${linkIndex}`}
+                                  className="inline-flex items-center gap-1.5 text-[15px] transition-opacity hover:opacity-100"
+                                  href={link.href}
+                                  rel="noreferrer"
+                                  style={{ ...navFontStyles.desktopCardLink, color: card.textColor, opacity: 0.88 }}
+                                  target="_blank"
+                                  onClick={() => setIsDesktopMenuOpen(false)}
+                                >
+                                  <ArrowUpRight className="h-4 w-4 shrink-0" />
+                                  <span>{link.label}</span>
+                                </a>
+                              );
+                            }
+
+                            const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+
+                            return (
+                              <Link
+                                key={`${card.label}-${link.href}-${linkIndex}`}
+                                className="inline-flex items-center gap-1.5 text-[15px] transition-opacity hover:opacity-100"
+                                href={link.href}
+                                style={{ ...navFontStyles.desktopCardLink, color: card.textColor, opacity: active ? 1 : 0.88 }}
+                                onClick={(event) => {
+                                  if (link.requiresAuth && !shouldShowSignedInState) {
+                                    event.preventDefault();
+                                    setIsDesktopMenuOpen(false);
+                                    openAuthModal("signin");
+                                    return;
+                                  }
+
+                                  setIsDesktopMenuOpen(false);
+                                }}
+                              >
+                                <ArrowUpRight className="h-4 w-4 shrink-0" />
+                                <span>{link.label}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </motion.article>
+                    ))}
+                  </motion.div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
           </div>
         </div>
 
         <div className="mx-auto flex max-w-7xl items-center lg:hidden">
           <div className="flex w-full items-center justify-between rounded-full border border-white/12 bg-[rgba(15,16,26,0.88)] px-2.5 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.28)] backdrop-blur-xl">
-            <Link href="/" className="flex items-center px-2 py-1">
-              <Image
-                alt={siteMeta.name}
-                className="h-auto w-[114px] object-contain opacity-95"
-                height={160}
-                priority
-                src="/logo/logo_design_whiteOnRed.jpg-Photoroom.png"
-                width={160}
-              />
+            <Link href="/" className="flex items-center justify-center whitespace-nowrap px-2 py-0.5 leading-none" aria-label={siteMeta.name}>
+              <span aria-hidden="true" className="vh-retro-sign-flat text-[14px] font-bold tracking-[0.12em] text-[var(--vh-ice)]">
+                THE DAILY SOCIAL
+              </span>
             </Link>
 
             <div className="flex items-center gap-2">
               <Link
-                href="/property"
+                href={primaryHostelHref}
                 className="rounded-full bg-[var(--vh-pink)] px-3.5 py-2 text-xs font-medium whitespace-nowrap text-white shadow-[0px_-1px_0px_0px_#FFFFFF40_inset,_0px_1px_0px_0px_#FFFFFF40_inset]"
               >
                 Book Now
               </Link>
-              <MobileStaggeredMenu
-                isAuthenticated={shouldShowSignedInState}
-                items={navItems}
-                onOpenSignIn={() => openAuthModal("signin")}
-              />
+              <MobileStaggeredMenu isAuthenticated={shouldShowSignedInState} onOpenSignIn={() => openAuthModal("signin")} />
             </div>
           </div>
         </div>

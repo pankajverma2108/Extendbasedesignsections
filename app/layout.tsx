@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://thedailysocial.co.in"),
   title: {
     default: siteMeta.name,
     template: `%s | ${siteMeta.name}`,
