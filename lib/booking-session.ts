@@ -31,6 +31,19 @@ export type BookingDraft = {
   createdAt: number;
 };
 
+export type BookingReviewGuest = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  coupon: string;
+  acceptedTerms: boolean;
+  additionalGuests: Array<{
+    name: string;
+    phone: string;
+  }>;
+};
+
 export type PendingBookingSnapshot = {
   signature: string;
   order: {
@@ -68,6 +81,10 @@ const CONFIRMED_BOOKING_PREFIX = "vh_confirmed_booking:";
 type StoredBookingState = {
   draft: BookingDraft;
   pendingOrder?: PendingBookingSnapshot | null;
+  review?: {
+    signature: string;
+    guest: BookingReviewGuest;
+  } | null;
 };
 
 function isBrowser(): boolean {
@@ -115,6 +132,7 @@ export function getStoredBookingState(): StoredBookingState | null {
     return {
       draft: parsed.draft as BookingDraft,
       pendingOrder: parsed.pendingOrder ?? null,
+      review: parsed.review ?? null,
     };
   } catch {
     return null;
@@ -130,6 +148,7 @@ export function saveBookingDraft(draft: BookingDraft): void {
   const nextState: StoredBookingState = {
     draft,
     pendingOrder: current?.pendingOrder?.signature === draft.signature ? current.pendingOrder : null,
+    review: current?.review?.signature === draft.signature ? current.review : null,
   };
 
   window.localStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
@@ -148,6 +167,7 @@ export function savePendingBookingOrder(snapshot: PendingBookingSnapshot): void 
   const nextState: StoredBookingState = {
     draft: current.draft,
     pendingOrder: snapshot,
+    review: current.review ?? null,
   };
 
   window.localStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
@@ -166,6 +186,29 @@ export function clearPendingBookingOrder(): void {
   const nextState: StoredBookingState = {
     draft: current.draft,
     pendingOrder: null,
+    review: current.review ?? null,
+  };
+
+  window.localStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
+}
+
+export function saveBookingReviewGuest(signature: string, guest: BookingReviewGuest): void {
+  if (!isBrowser()) {
+    return;
+  }
+
+  const current = getStoredBookingState();
+  if (!current?.draft || current.draft.signature !== signature) {
+    return;
+  }
+
+  const nextState: StoredBookingState = {
+    draft: current.draft,
+    pendingOrder: current.pendingOrder ?? null,
+    review: {
+      signature,
+      guest,
+    },
   };
 
   window.localStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));

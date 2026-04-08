@@ -432,88 +432,6 @@ function DesktopBookingSummary({
   );
 }
 
-function AddEssentialsPanel({
-  selectedEssentials,
-  onIncrement,
-  onDecrement,
-}: {
-  selectedEssentials: Record<string, number>;
-  onIncrement: (id: string) => void;
-  onDecrement: (id: string) => void;
-}) {
-  return (
-    <section className="mt-6 lg:mt-10" id="essentials">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <SectionTitle title="Essentials" />
-          <p className="mt-3 max-w-[640px] text-[15px] font-medium leading-7 text-white/84 md:text-base">
-            Add what you need now. Selected essentials are reflected live in your booking summary.
-          </p>
-        </div>
-        <div className="hidden md:block">
-          <StickerTag bg="#fef08a" className="px-3 py-1 text-[10px] font-bold not-italic uppercase tracking-[0.12em]" label="Optional" rotate="rotate-[2deg]" text="#0f172a" />
-        </div>
-      </div>
-
-      <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {bookingEssentials.map((item) => {
-          const Icon = item.icon;
-          const quantity = selectedEssentials[item.id] ?? 0;
-
-          return (
-            <div key={item.id} className="rounded-[14px] border border-white/10 bg-white/[0.04] p-3 md:rounded-none md:border-0 md:bg-transparent md:p-0">
-              <div className="flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center text-[var(--vh-cyan)]">
-                  <Icon className="h-7 w-7" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-white">{item.title}</p>
-                      <p className="text-xs text-white/55 line-through">Rs. {item.originalPrice}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-[var(--vh-amber)]">Rs. {item.price}</p>
-                      <p className="text-[10px] uppercase tracking-[0.14em] text-white/45">{item.note}</p>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between gap-3">
-                    {quantity === 0 ? (
-                      <Button className="h-8 rounded-full px-4 text-xs md:ml-auto" onClick={() => onIncrement(item.id)} type="button" variant="outline">
-                        {item.actionLabel}
-                      </Button>
-                    ) : (
-                      <div className="ml-auto flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2 py-1">
-                        <button
-                          aria-label={`Remove ${item.title}`}
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)]"
-                          onClick={() => onDecrement(item.id)}
-                          type="button"
-                        >
-                          <Minus className="h-4 w-4" />
-                        </button>
-                        <span className="w-4 text-center text-sm font-semibold text-white">{quantity}</span>
-                        <button
-                          aria-label={`Add ${item.title}`}
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)]"
-                          onClick={() => onIncrement(item.id)}
-                          type="button"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
 function MobileStickySummary({
   checkIn,
   checkOut,
@@ -939,7 +857,7 @@ export function Property({
   const [resolvedPropertyId, setResolvedPropertyId] = useState(propertyId ?? "");
   const [propertyContextError, setPropertyContextError] = useState<string | null>(null);
   const [isLoadingRooms, setIsLoadingRooms] = useState(false);
-  const [selectedEssentials, setSelectedEssentials] = useState<Record<string, number>>({});
+  const [selectedEssentials] = useState<Record<string, number>>({});
   const [isAgeConfirmed, setIsAgeConfirmed] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: fromDateString(initialCheckIn) ?? getLocalDate(0),
@@ -1004,20 +922,6 @@ export function Property({
 
       return resolvedRange;
     });
-  };
-
-  const incrementEssential = (id: string) => {
-    setSelectedEssentials((current) => ({
-      ...current,
-      [id]: (current[id] ?? 0) + 1,
-    }));
-  };
-
-  const decrementEssential = (id: string) => {
-    setSelectedEssentials((current) => ({
-      ...current,
-      [id]: Math.max(0, (current[id] ?? 0) - 1),
-    }));
   };
 
   useEffect(() => {
@@ -1135,15 +1039,6 @@ export function Property({
       return;
     }
 
-    const addonDrafts = selectedEssentialDrafts.map((item) => ({
-      productId: item.id,
-      name: item.title,
-      category: "SERVICE" as const,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      inStock: true,
-    }));
-
     const signature = buildBookingSignature({
       propertyId: resolvedPropertyId,
       checkinDate: checkIn,
@@ -1152,10 +1047,7 @@ export function Property({
         roomTypeId: room.roomTypeId,
         quantity: room.quantity,
       })),
-      addons: addonDrafts.map((item) => ({
-        productId: item.productId,
-        quantity: item.quantity,
-      })),
+      addons: [],
     });
 
     saveBookingDraft({
@@ -1163,7 +1055,7 @@ export function Property({
       checkinDate: checkIn,
       checkoutDate: checkOut,
       rooms: selectedRoomDrafts,
-      addons: addonDrafts,
+      addons: [],
       signature,
       createdAt: Date.now(),
     });
@@ -1171,7 +1063,7 @@ export function Property({
     toast.success("Room selection saved", {
       description: "Taking you to review booking.",
     });
-    router.push("/reviewnew");
+    router.push("/bookingreview");
   };
 
   return (
@@ -1426,11 +1318,6 @@ export function Property({
                 )}
                 </div>
 
-                <AddEssentialsPanel
-                  onDecrement={decrementEssential}
-                  onIncrement={incrementEssential}
-                  selectedEssentials={selectedEssentials}
-                />
                 </div>
                 <div className="space-y-6">
                   <DesktopBookingSummary
