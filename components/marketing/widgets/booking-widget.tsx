@@ -196,7 +196,7 @@ export function BookingWidget({
               className="z-[200] w-[min(100vw-2rem,360px)] border-white/10 bg-[var(--vh-panel-strong)] p-3"
             >
               <Calendar
-                className="vh-calendar-dark rounded-[22px]"
+                className="vh-calendar-dark vh-calendar-balanced rounded-[22px]"
                 defaultMonth={dateRange?.from}
                 mode="range"
                 numberOfMonths={1}
@@ -251,7 +251,7 @@ export function BookingWidget({
           className="z-[200] w-[min(100vw-2rem,420px)] border-white/10 bg-[var(--vh-panel-strong)] p-3"
         >
           <Calendar
-            className="vh-calendar-dark rounded-[22px]"
+            className="vh-calendar-dark vh-calendar-balanced rounded-[22px]"
             defaultMonth={dateRange?.from}
             mode="range"
             numberOfMonths={1}

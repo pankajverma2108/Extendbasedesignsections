@@ -7,9 +7,7 @@ import { ArrowLeft, CheckCircle2, Crown, Sparkles } from "lucide-react";
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { StickerTag } from "@/components/shared/sticker-tag";
 import { Button } from "@/components/ui/button";
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const PHONE_REGEX = /^\+?[1-9]\d{7,14}$/;
+import { isValidEmail, isValidPhone, normalizeEmail, normalizePhone } from "@/lib/guest-form-validation";
 
 function getSeasonFromDate(date: Date): string {
   const month = date.getMonth();
@@ -119,20 +117,20 @@ export default function ProfilePage() {
 
   const saveEdit = () => {
     const normalizedName = name.trim();
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedPhone = phone.trim();
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedPhone = normalizePhone(phone);
 
     if (!normalizedName) {
       setError("Name is required.");
       return;
     }
 
-    if (!EMAIL_REGEX.test(normalizedEmail)) {
+    if (!isValidEmail(normalizedEmail)) {
       setError("Enter a valid email address.");
       return;
     }
 
-    if (normalizedPhone && !PHONE_REGEX.test(normalizedPhone)) {
+    if (!isValidPhone(normalizedPhone, { optional: true })) {
       setError("Enter a valid phone number.");
       return;
     }

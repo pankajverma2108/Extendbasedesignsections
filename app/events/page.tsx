@@ -1,8 +1,8 @@
 import { EventCard } from "@/components/marketing/event-card";
+import MagicBento from "@/components/marketing/magic-bento";
 import { SectionHeading } from "@/components/marketing/section-heading";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { FadeIn, Stagger, StaggerItem } from "@/components/shared/motion";
-import { Card, CardContent } from "@/components/ui/card";
 import { eventPageContent, pastEventImages, weeklyLineup } from "@/content/events";
 import { getDefaultPropertyId, getPublicEvents } from "@/lib/cx-api";
 
@@ -46,7 +46,7 @@ export default async function EventsPage() {
 
       <section className="vh-section">
         <div className="vh-container">
-          <SectionHeading align="left" subtitle={eventPageContent.upcomingSubtitle} title="This Week" />
+          <SectionHeading align="center" subtitle={eventPageContent.upcomingSubtitle} title="This Week" />
           <Stagger className={eventGridClass}>
             {liveEvents.map((event) => (
               <StaggerItem key={`${event.title}-${event.date}-${event.time}`}>
@@ -59,31 +59,27 @@ export default async function EventsPage() {
 
       <section className="vh-section vh-section-alt">
         <div className="vh-container">
-          <SectionHeading align="left" subtitle={eventPageContent.weeklySubtitle} title="Standard Weekly Experiences" />
-          <Stagger className="grid grid-cols-2 gap-6 md:grid-cols-2 lg:grid-cols-6">
-            {weeklyLineup.map((item) => (
-              <StaggerItem key={item.day} className="lg:col-span-2">
-                <Card className="w-full p-6">
-                  <CardContent className="p-0">
-                    <p
-                      className="vh-retro-sign-flat text-base"
-                      style={{ color: item.color, fontSize: "1rem", letterSpacing: "2px" }}
-                    >
-                      {item.day}
-                    </p>
-                    <h3 className="mt-4 text-xl font-bold text-white">{item.event}</h3>
-                    <p className="mt-2 text-sm text-white/65">{item.time}</p>
-                  </CardContent>
-                </Card>
-              </StaggerItem>
-            ))}
-          </Stagger>
+          <SectionHeading align="center" subtitle={eventPageContent.weeklySubtitle} title="Standard Weekly Experiences" />
+          <MagicBento
+            clickEffect
+            disableAnimations={false}
+            enableBorderGlow
+            enableMagnetism={false}
+            enableSpotlight
+            enableStars
+            enableTilt={false}
+            glowColor="132, 0, 255"
+            items={weeklyLineup}
+            particleCount={12}
+            spotlightRadius={400}
+            textAutoHide
+          />
         </div>
       </section>
 
       <section className="vh-section">
         <div className="vh-container">
-          <SectionHeading subtitle={eventPageContent.pastSubtitle} title="The Memories" />
+          <SectionHeading align="center" subtitle={eventPageContent.pastSubtitle} title="The Memories" />
           <Stagger className="grid grid-cols-2 gap-4 md:grid-cols-3">
             {pastEventImages.map((image, index) => (
               <StaggerItem key={image}>

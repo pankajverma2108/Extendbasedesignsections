@@ -6,9 +6,9 @@ import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Loader2, X } from "lucide-react";
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+import { isValidEmail, isValidPhone, normalizeEmail, normalizePhone } from "@/lib/guest-form-validation";
+
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
-const PHONE_REGEX = /^\+?[1-9]\d{7,14}$/;
 
 type AuthMode = "signin" | "signup";
 
@@ -76,14 +76,14 @@ export function GuestAuthModal({
   const isSignupValid = useMemo(() => {
     if (mode !== "signup") return true;
     const normalizedName = `${firstName.trim()} ${lastName.trim()}`.trim();
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedPhone = phone.trim();
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedPhone = normalizePhone(phone);
 
     const nameValid = normalizedName.length > 0;
-    const emailValid = EMAIL_REGEX.test(normalizedEmail);
+    const emailValid = isValidEmail(normalizedEmail);
     const passwordValid = PASSWORD_REGEX.test(password);
     const confirmPasswordValid = password === confirmPassword && password.length > 0;
-    const phoneValid = !normalizedPhone || PHONE_REGEX.test(normalizedPhone);
+    const phoneValid = isValidPhone(normalizedPhone, { optional: true });
 
     return nameValid && emailValid && passwordValid && confirmPasswordValid && phoneValid && agreed;
   }, [mode, firstName, lastName, email, password, confirmPassword, phone, agreed]);
@@ -92,8 +92,8 @@ export function GuestAuthModal({
     event.preventDefault();
     setLocalError(null);
 
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!EMAIL_REGEX.test(normalizedEmail)) {
+    const normalizedEmail = normalizeEmail(email);
+    if (!isValidEmail(normalizedEmail)) {
       setLocalError("Please enter a valid email address.");
       return;
     }
@@ -129,9 +129,9 @@ export function GuestAuthModal({
       return;
     }
 
-    const normalizedPhone = phone.trim();
-    if (normalizedPhone && !PHONE_REGEX.test(normalizedPhone)) {
-      setLocalError("Phone number must be valid and include country code when possible.");
+    const normalizedPhone = normalizePhone(phone);
+    if (!isValidPhone(normalizedPhone, { optional: true })) {
+      setLocalError("Phone number must be 10 to 15 digits.");
       return;
     }
 

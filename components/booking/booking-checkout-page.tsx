@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
-  CalendarCheck,
   Gift,
   GlassWater,
   Info,
@@ -24,8 +23,11 @@ import {
 } from "lucide-react";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
+import { StickerTag } from "@/components/shared/sticker-tag";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import {
   createBookingPaymentOrder,
   createGuestBookingOrder,
@@ -46,6 +48,8 @@ import {
   type BookingReviewGuest,
 } from "@/lib/booking-session";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
+import { isValidEmail, isValidPhone, normalizeEmail, normalizePhone } from "@/lib/guest-form-validation";
+import { weeklyLineup } from "@/content/events";
 import { propertyGuidelines } from "@/content/rooms";
 import { toast } from "sonner";
 
@@ -141,6 +145,41 @@ const POLICY_SECTIONS = [
   },
 ];
 
+const ROOM_GST_RATE = 0.05;
+const STANDARD_ADDON_GST_RATE = 0.18;
+
+function getAddonTaxRate(addonName: string): number {
+  const normalized = addonName.trim().toLowerCase();
+  if (normalized.includes("late checkout")) {
+    return ROOM_GST_RATE;
+  }
+  return STANDARD_ADDON_GST_RATE;
+}
+
+function calculatePricingBreakdown(params: {
+  roomSubtotal: number;
+  activeAddons: Array<{ name: string; unitPrice: number; quantity: number }>;
+}) {
+  const addonSubtotal = params.activeAddons.reduce((sum, addon) => sum + addon.unitPrice * addon.quantity, 0);
+  const roomTaxExact = params.roomSubtotal * ROOM_GST_RATE;
+  const addonTaxExact = params.activeAddons.reduce(
+    (sum, addon) => sum + (addon.unitPrice * addon.quantity * getAddonTaxRate(addon.name)),
+    0,
+  );
+  const taxesExact = roomTaxExact + addonTaxExact;
+  const taxes = Math.round(taxesExact);
+  const grandTotal = Math.round(params.roomSubtotal + addonSubtotal + taxesExact);
+
+  return {
+    addonSubtotal,
+    roomTaxExact,
+    addonTaxExact,
+    taxesExact,
+    taxes,
+    grandTotal,
+  };
+}
+
 function loadRazorpayCheckout(): Promise<void> {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("Razorpay checkout is only available in the browser."));
@@ -230,6 +269,20 @@ function splitGuestName(name?: string | null): Pick<BookingReviewGuest, "firstNa
   };
 }
 
+function isSingleQuantityService(item: Pick<StoreCatalogItem, "id" | "name" | "category">): boolean {
+  if (item.category !== "SERVICE") {
+    return false;
+  }
+
+  const normalizedId = item.id.trim().toLowerCase();
+  const normalizedName = item.name.trim().toLowerCase();
+
+  return normalizedId.includes("early-checkin")
+    || normalizedId.includes("late-checkout")
+    || normalizedName === "early check-in"
+    || normalizedName === "late checkout";
+}
+
 function getTotalGuestCount(draft: BookingDraft | null): number {
   if (!draft) {
     return 1;
@@ -270,6 +323,27 @@ function createInitialGuestForm(draft: BookingDraft | null, stored?: BookingRevi
   };
 }
 
+function mergeGuestIdentityIntoForm(
+  current: BookingReviewGuest,
+  guest?: { name?: string | null; email?: string | null; phone?: string | null } | null,
+): BookingReviewGuest {
+  if (!guest) {
+    return current;
+  }
+
+  const names = splitGuestName(guest.name);
+  const normalizedGuestEmail = normalizeEmail(guest.email ?? "");
+  const normalizedGuestPhone = normalizePhone(guest.phone ?? "");
+
+  return {
+    ...current,
+    firstName: current.firstName.trim() || names.firstName,
+    lastName: current.lastName.trim() || names.lastName,
+    email: current.email.trim() || normalizedGuestEmail,
+    phone: current.phone.trim() || normalizedGuestPhone,
+  };
+}
+
 function validateGuestForm(form: BookingReviewGuest): GuestFormErrors {
   const errors: GuestFormErrors = {};
 
@@ -281,15 +355,17 @@ function validateGuestForm(form: BookingReviewGuest): GuestFormErrors {
     errors.lastName = "Last name is required.";
   }
 
-  if (!form.email.trim()) {
+  const normalizedEmail = normalizeEmail(form.email);
+  if (!normalizedEmail) {
     errors.email = "Email is required.";
-  } else if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
+  } else if (!isValidEmail(normalizedEmail)) {
     errors.email = "Enter a valid email address.";
   }
 
-  if (!form.phone.trim()) {
+  const normalizedPhone = normalizePhone(form.phone);
+  if (!normalizedPhone) {
     errors.phone = "Phone number is required.";
-  } else if (form.phone.replace(/\D/g, "").length < 10) {
+  } else if (!isValidPhone(normalizedPhone)) {
     errors.phone = "Enter a valid phone number.";
   }
 
@@ -313,8 +389,24 @@ function addonIcon(name: string) {
   return Gift;
 }
 
+function isStockTrackedCategory(category: StoreCatalogItem["category"]): boolean {
+  return category === "COMMODITY" || category === "RETURNABLE";
+}
+
+function hasKnownStockLimit(item: StoreCatalogItem): boolean {
+  return isStockTrackedCategory(item.category) && item.available_stock !== null;
+}
+
 function isItemDisabled(item: StoreCatalogItem): boolean {
-  return item.category === "COMMODITY" && (!item.in_stock || (item.available_stock ?? 0) <= 0);
+  if (!isStockTrackedCategory(item.category)) {
+    return false;
+  }
+
+  if (!item.in_stock) {
+    return true;
+  }
+
+  return hasKnownStockLimit(item) ? (item.available_stock ?? 0) <= 0 : false;
 }
 
 function tabButtonClasses(isActive: boolean, isComplete: boolean) {
@@ -387,12 +479,18 @@ export function BookingCheckoutPage() {
   }, []);
 
   useEffect(() => {
-    if (!draft || !guest || hydratedGuestRef.current === false || guestForm !== null) {
+    if (!draft || !guest || hydratedGuestRef.current === false) {
       return;
     }
 
-    setGuestForm(createInitialGuestForm(draft, null, guest));
-  }, [draft, guest, guestForm]);
+    setGuestForm((current) => {
+      if (current) {
+        return mergeGuestIdentityIntoForm(current, guest);
+      }
+
+      return createInitialGuestForm(draft, null, guest);
+    });
+  }, [draft, guest]);
 
   useEffect(() => {
     if (!draft || !guestForm) {
@@ -403,15 +501,11 @@ export function BookingCheckoutPage() {
   }, [draft, guestForm]);
 
   useEffect(() => {
-    if (!draft?.propertyId) {
-      return;
-    }
-
     let cancelled = false;
     setCatalogLoading(true);
     setCatalogError(null);
 
-    void getStoreCatalog(draft.propertyId)
+    void getStoreCatalog(draft?.propertyId)
       .then((response) => {
         if (cancelled) {
           return;
@@ -428,11 +522,13 @@ export function BookingCheckoutPage() {
           const mappedAddons = nextCatalog
             .map((item) => {
               const existing = current.addons.find((addon) => addon.productId === item.id);
-              const maxQuantity = item.category === "COMMODITY" ? Math.max(0, item.available_stock ?? 0) : Number.MAX_SAFE_INTEGER;
+              const maxQuantity = hasKnownStockLimit(item)
+                ? Math.max(0, item.available_stock ?? 0)
+                : Number.MAX_SAFE_INTEGER;
               return {
                 productId: item.id,
                 name: item.name,
-                category: item.category === "SERVICE" ? "SERVICE" as const : "COMMODITY" as const,
+                category: item.category === "SERVICE" ? "SERVICE" as const : item.category === "RETURNABLE" ? "RETURNABLE" as const : "COMMODITY" as const,
                 quantity: existing ? Math.min(existing.quantity, maxQuantity) : 0,
                 unitPrice: item.base_price,
                 inStock: item.in_stock,
@@ -496,13 +592,20 @@ export function BookingCheckoutPage() {
     [draft?.rooms, nights],
   );
   const activeAddons = useMemo(() => (draft?.addons ?? []).filter((addon) => addon.quantity > 0), [draft?.addons]);
-  const addonSubtotal = useMemo(() => activeAddons.reduce((sum, addon) => sum + addon.unitPrice * addon.quantity, 0), [activeAddons]);
-  const roomTaxExact = roomSubtotal * 0.12;
-  const addonTaxExact = addonSubtotal * 0.18;
-  const taxes = Math.round(roomTaxExact + addonTaxExact);
-  const estimatedGrandTotal = roomSubtotal + addonSubtotal + taxes;
+  const pricingBreakdown = useMemo(
+    () => calculatePricingBreakdown({ roomSubtotal, activeAddons }),
+    [activeAddons, roomSubtotal],
+  );
+  const addonSubtotal = pricingBreakdown.addonSubtotal;
+  const roomTaxExact = pricingBreakdown.roomTaxExact;
+  const addonTaxExact = pricingBreakdown.addonTaxExact;
+  const taxes = pricingBreakdown.taxes;
+  const estimatedGrandTotal = pricingBreakdown.grandTotal;
   const coinsEarned = Math.round(roomSubtotal + addonSubtotal);
-  const commodityItems = useMemo(() => catalog.filter((item) => item.category === "COMMODITY"), [catalog]);
+  const commodityItems = useMemo(
+    () => catalog.filter((item) => item.category === "COMMODITY" || item.category === "RETURNABLE"),
+    [catalog],
+  );
   const serviceItems = useMemo(() => catalog.filter((item) => item.category === "SERVICE"), [catalog]);
 
   const updateGuestField = useCallback(<K extends keyof BookingReviewGuest>(field: K, value: BookingReviewGuest[K]) => {
@@ -540,7 +643,8 @@ export function BookingCheckoutPage() {
         return current;
       }
 
-      const clampedQuantity = Math.max(0, quantity);
+      const maxQuantity = isSingleQuantityService(item) ? 1 : Number.POSITIVE_INFINITY;
+      const clampedQuantity = Math.max(0, Math.min(quantity, maxQuantity));
       const nextAddons = [...current.addons];
       const existingIndex = nextAddons.findIndex((addon) => addon.productId === productId);
 
@@ -552,7 +656,7 @@ export function BookingCheckoutPage() {
         const nextAddon = {
           productId: item.id,
           name: item.name,
-          category: item.category === "SERVICE" ? "SERVICE" as const : "COMMODITY" as const,
+          category: item.category === "SERVICE" ? "SERVICE" as const : item.category === "RETURNABLE" ? "RETURNABLE" as const : "COMMODITY" as const,
           quantity: clampedQuantity,
           unitPrice: item.base_price,
           inStock: item.in_stock,
@@ -575,10 +679,31 @@ export function BookingCheckoutPage() {
     });
   }, [catalog]);
 
+  useEffect(() => {
+    if (!draft) {
+      return;
+    }
+
+    draft.addons.forEach((addon) => {
+      const item = catalog.find((catalogItem) => catalogItem.id === addon.productId);
+      if (item && isSingleQuantityService(item) && addon.quantity > 1) {
+        setAddonQuantity(item.id, 1);
+      }
+    });
+  }, [catalog, draft, setAddonQuantity]);
+
   const incrementAddon = useCallback((item: StoreCatalogItem) => {
     const currentQuantity = draft?.addons.find((addon) => addon.productId === item.id)?.quantity ?? 0;
 
-    if (item.category === "COMMODITY") {
+    if (isSingleQuantityService(item) && currentQuantity >= 1) {
+      setInventoryMessageById((current) => ({
+        ...current,
+        [item.id]: "Only 1 per booking",
+      }));
+      return;
+    }
+
+    if (hasKnownStockLimit(item)) {
       const available = Math.max(0, item.available_stock ?? 0);
 
       if (!item.in_stock || available <= 0) {
@@ -629,8 +754,8 @@ export function BookingCheckoutPage() {
 
     updateGuestProfile({
       name: `${guestForm.firstName} ${guestForm.lastName}`.trim(),
-      email: guestForm.email.trim(),
-      phone: guestForm.phone.trim() || null,
+      email: normalizeEmail(guestForm.email),
+      phone: normalizePhone(guestForm.phone) || null,
     });
 
     return true;
@@ -644,13 +769,13 @@ export function BookingCheckoutPage() {
     setActiveTab("addons");
   }, [validateAndStoreGuestDetails]);
 
-  const openConfirmationTab = useCallback((autoOpen: boolean) => {
+  const openPaymentFlow = useCallback(() => {
     if (!validateAndStoreGuestDetails()) {
       return;
     }
 
-    setActiveTab("confirmation");
-    setTriggerPaymentOpen(autoOpen);
+    setActiveTab("addons");
+    setTriggerPaymentOpen(true);
   }, [validateAndStoreGuestDetails]);
 
   const handleTabClick = useCallback((tab: ReviewTab) => {
@@ -663,9 +788,7 @@ export function BookingCheckoutPage() {
       openAddonsTab();
       return;
     }
-
-    openConfirmationTab(false);
-  }, [openAddonsTab, openConfirmationTab]);
+  }, [openAddonsTab]);
 
   const handlePayment = useCallback(async () => {
     if (!draft || !guestForm) {
@@ -744,8 +867,8 @@ export function BookingCheckoutPage() {
             guest: {
               first_name: guestForm.firstName,
               last_name: guestForm.lastName,
-              email: guestForm.email,
-              phone: guestForm.phone,
+              email: normalizeEmail(guestForm.email),
+              phone: normalizePhone(guestForm.phone),
             },
           },
         });
@@ -770,17 +893,19 @@ export function BookingCheckoutPage() {
       });
 
       setFlowStage("creating-payment-order");
+      const payableGrandTotal = Math.max(0, Math.round(estimatedGrandTotal));
       appendDiagnostic("create-payment-order", "request", {
         request: {
           ezee_reservation_id: orderSummary.ezee_reservation_id,
-          grand_total: orderSummary.grand_total,
+          grand_total: payableGrandTotal,
           addon_order_id: orderSummary.addon_order_id ?? undefined,
+          backend_subtotal: orderSummary.grand_total,
         },
       });
 
       const paymentOrder = await createBookingPaymentOrder(token, {
         ezee_reservation_id: orderSummary.ezee_reservation_id,
-        grand_total: orderSummary.grand_total,
+        grand_total: payableGrandTotal,
         ...(orderSummary.addon_order_id ? { addon_order_id: orderSummary.addon_order_id } : {}),
       });
 
@@ -887,6 +1012,39 @@ export function BookingCheckoutPage() {
                 checkoutDate: orderSummary.checkout_date,
                 amountPaid: verification.total,
                 paymentId: verification.payment_id,
+                noOfNights: orderSummary.no_of_nights,
+                totalGuests: orderSummary.total_guests,
+                status: "CONFIRMED",
+                addonOrderId: orderSummary.addon_order_id ?? null,
+                primaryGuest: {
+                  firstName: guestForm.firstName,
+                  lastName: guestForm.lastName,
+                  email: normalizeEmail(guestForm.email),
+                  phone: normalizePhone(guestForm.phone),
+                },
+                additionalGuests: guestForm.additionalGuests,
+                rooms: orderSummary.rooms.map((room) => ({
+                  roomTypeId: room.room_type_id,
+                  roomTypeName: room.room_type_name,
+                  type: room.type,
+                  quantity: room.quantity,
+                  pricePerNight: room.price_per_night,
+                  lineTotal: room.line_total,
+                })),
+                addons: orderSummary.addons.map((addon) => ({
+                  productId: addon.product_id,
+                  productName: addon.product_name,
+                  category: draft.addons.find((draftAddon) => draftAddon.productId === addon.product_id)?.category ?? "SERVICE",
+                  quantity: addon.quantity,
+                  unitPrice: addon.unit_price,
+                  lineTotal: addon.line_total,
+                })),
+                pricing: {
+                  subtotalRooms: orderSummary.subtotal_rooms,
+                  subtotalAddons: orderSummary.subtotal_addons,
+                  taxes,
+                  grandTotal: verification.total,
+                },
                 createdAt: Date.now(),
               });
               setFlowStage("confirmed");
@@ -925,16 +1083,16 @@ export function BookingCheckoutPage() {
     } finally {
       setIsPaying(false);
     }
-  }, [appendDiagnostic, draft, guestForm, isAuthenticated, openAuthModal, router, totalGuests]);
+  }, [appendDiagnostic, draft, estimatedGrandTotal, guestForm, isAuthenticated, openAuthModal, router, taxes, totalGuests]);
 
   useEffect(() => {
-    if (!triggerPaymentOpen || activeTab !== "confirmation") {
+    if (!triggerPaymentOpen) {
       return;
     }
 
     setTriggerPaymentOpen(false);
     void handlePayment();
-  }, [activeTab, handlePayment, triggerPaymentOpen]);
+  }, [handlePayment, triggerPaymentOpen]);
 
   if (!draft || !guestForm) {
     return (
@@ -959,9 +1117,13 @@ export function BookingCheckoutPage() {
 
   const bookingSummaryDesktop = (
     <div className="hidden lg:block lg:col-span-1">
-      <div className="sticky top-28 overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(35,15,20,0.88)] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
+      <div className="sticky top-28 overflow-hidden rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(52,18,26,0.98),rgba(26,10,14,0.98))] shadow-[10px_10px_0px_rgba(0,0,0,0.28)]">
         <div className="h-1.5 bg-[#c62828]" />
         <div className="p-6">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <StickerTag bg="#fef08a" className="px-3 py-1 font-bold not-italic uppercase tracking-[0.12em]" label="Locked rates" rotate="rotate-[-2deg]" text="#111827" />
+            <StickerTag bg="#39ff14" className="px-3 py-1 font-bold not-italic uppercase tracking-[0.12em]" label="Fast check-in" rotate="rotate-[2deg]" text="#111827" />
+          </div>
           <h2 className="font-['Space_Grotesk'] text-xl font-bold uppercase text-white">Booking details</h2>
 
           <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-[14px] border border-white/10 bg-white/5 px-4 py-4">
@@ -1043,28 +1205,20 @@ export function BookingCheckoutPage() {
         <div className="p-6 pt-4">
           {activeTab === "guest" ? (
             <button
-              className="w-full rounded-[12px] bg-[#c62828] px-5 py-4 text-lg font-bold uppercase tracking-[0.06em] text-white shadow-[4px_4px_0px_rgba(0,0,0,0.45)]"
+              className="w-full rounded-[12px] bg-[#c62828] px-4 py-3 text-sm font-bold leading-none whitespace-nowrap uppercase tracking-[0.04em] text-white shadow-[4px_4px_0px_rgba(0,0,0,0.45)] sm:px-5 sm:py-4 sm:text-base lg:text-lg"
               onClick={openAddonsTab}
               type="button"
             >
               Continue to add-ons
             </button>
-          ) : activeTab === "addons" ? (
-            <button
-              className="w-full rounded-[12px] bg-[#c62828] px-5 py-4 text-lg font-bold uppercase tracking-[0.06em] text-white shadow-[4px_4px_0px_rgba(0,0,0,0.45)]"
-              onClick={() => openConfirmationTab(true)}
-              type="button"
-            >
-              Continue to payment
-            </button>
           ) : (
             <button
-              className="w-full rounded-[12px] bg-[#c62828] px-5 py-4 text-lg font-bold uppercase tracking-[0.06em] text-white shadow-[4px_4px_0px_rgba(0,0,0,0.45)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-[12px] bg-[#c62828] px-4 py-3 text-sm font-bold leading-none whitespace-nowrap uppercase tracking-[0.04em] text-white shadow-[4px_4px_0px_rgba(0,0,0,0.45)] disabled:cursor-not-allowed disabled:opacity-60 sm:px-5 sm:py-4 sm:text-base lg:text-lg"
               disabled={isPaying}
-              onClick={() => setTriggerPaymentOpen(true)}
+              onClick={openPaymentFlow}
               type="button"
             >
-              {isPaying ? "Opening Razorpay..." : "Open Razorpay again"}
+              {isPaying ? "Opening Razorpay..." : "Continue to payment"}
             </button>
           )}
         </div>
@@ -1072,38 +1226,98 @@ export function BookingCheckoutPage() {
     </div>
   );
 
-  return (
-    <div className="min-h-screen bg-[#230f14] pb-28 text-white lg:pb-12">
-      <div className="sticky top-0 z-40 border-b border-[rgba(198,40,40,0.2)] bg-[rgba(35,15,20,0.88)] backdrop-blur-md">
-        <div className="mx-auto flex h-20 w-full max-w-[1200px] items-center justify-between px-4 md:px-6">
-          <Link className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.08em] text-white/60 hover:text-white" href="/property">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/5">
-              <ArrowLeft className="h-4 w-4" />
-            </span>
-            <span className="hidden sm:inline">Back</span>
-          </Link>
-          <h1 className="font-['Space_Grotesk'] text-xl font-bold uppercase tracking-[0.12em] text-white md:text-2xl">
-            The Daily Social
-          </h1>
-          <div className="w-10 sm:w-20" />
-        </div>
-      </div>
+  const reviewTabs = [
+    { key: "guest" as const, label: "Guest details", icon: User, sticker: "Names first" },
+    { key: "addons" as const, label: "Add to your stay", icon: PlusCircle, sticker: "Pay secure" },
+  ];
 
-      <section className="mx-auto w-full max-w-[1200px] px-4 py-8 md:px-6 md:py-12">
-        <div className="mx-auto mb-10 flex max-w-[720px] items-center justify-center">
-          <div className="grid w-full grid-cols-3 items-start gap-3">
-            {[
-              { key: "guest" as const, label: "Guest details", icon: User },
-              { key: "addons" as const, label: "Add to your stay", icon: PlusCircle },
-              { key: "confirmation" as const, label: "Confirmation", icon: CalendarCheck },
-            ].map((tab, index) => {
+  return (
+    <div className="min-h-screen overflow-x-clip bg-[#230f14] pb-28 text-white lg:pb-12">
+      <section className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-16 md:px-6 md:pb-12 md:pt-24">
+        <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(0,240,255,0.14),transparent_28%),radial-gradient(circle_at_top_right,rgba(255,223,0,0.12),transparent_24%),linear-gradient(135deg,rgba(46,13,18,0.96),rgba(20,8,12,0.96))] px-5 py-6 shadow-[12px_12px_0px_rgba(0,0,0,0.24)] md:px-8 md:py-8">
+          <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+            <div className="space-y-5">
+              <div className="flex flex-wrap items-center gap-3">
+                <StickerTag bg="#fef08a" className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.12em]" label="Review booking" rotate="rotate-[-2deg]" text="#111827" />
+                <StickerTag bg="#00d1ff" className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.12em]" label="Rates locked for this session" rotate="rotate-[1deg]" text="#111827" />
+                <StickerTag bg="#39ff14" className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.12em]" label="Add-ons synced live" rotate="rotate-[-1deg]" text="#111827" />
+              </div>
+
+              <div>
+                <p className="vh-chip inline-flex w-fit items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white/72">
+                  Stay tuned. Check fast. Pay once.
+                </p>
+                <h1 className="mt-4 max-w-4xl leading-none">
+                  <span className="vh-retro-sign-flat block text-[1.85rem] sm:text-[2.3rem] md:text-[3.8rem] lg:text-[4.6rem]">
+                    Lock the bunk.
+                  </span>
+                  <span className="vh-retro-sign-flat mt-1 block text-[1.6rem] sm:text-[2rem] md:text-[3.2rem] lg:text-[4rem] text-[var(--vh-ice)]">
+                    Add the fun.
+                  </span>
+                </h1>
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-white/76 md:text-base">
+                  Guest details, stay upgrades, and payment now sit in one booking lane. This page keeps the energy of the property page, but the flow stays strict: details first, extras next, payment last.
+                </p>
+              </div>
+
+              <Carousel className="w-full pr-1">
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {weeklyLineup.map((item) => (
+                    <CarouselItem key={item.day} className="basis-full pl-2 sm:basis-1/2 md:pl-4 lg:basis-1/3">
+                      <div className="p-1">
+                        <Card className="rounded-[18px] border border-white/10 bg-black/20">
+                          <CardContent className="px-4 py-4">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: item.color }}>
+                              {item.day}
+                            </p>
+                            <p className="mt-2 text-xl font-bold text-white">{item.event}</p>
+                            <p className="mt-2 inline-flex rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#ffdf00]">
+                              {item.hook}
+                            </p>
+                            <p className="mt-2 text-sm text-white/78">{item.description}</p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="-left-3 h-8 w-8 border-white/20 bg-black/55 text-white hover:bg-black/70" />
+                <CarouselNext className="-right-3 h-8 w-8 border-white/20 bg-black/55 text-white hover:bg-black/70" />
+              </Carousel>
+            </div>
+
+            <div className="rounded-[24px] border border-white/10 bg-[rgba(0,0,0,0.28)] p-5 shadow-[6px_6px_0px_rgba(0,0,0,0.22)]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#ffdf00]">Tonight&apos;s scene</p>
+                  <p className="mt-2 text-2xl font-bold uppercase text-white">Pre-book the stay. Plan the night.</p>
+                </div>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-white/72">
+                Heading out after check-in? Browse the latest community nights, open mics, and rooftop scenes before you pay.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Button asChild className="rounded-full bg-[#ffdf00] px-5 text-black hover:bg-[#ffe864]">
+                  <Link href="/events">See event calendar</Link>
+                </Button>
+                <Button asChild className="rounded-full border border-white/15 bg-white/5 px-5 text-white hover:bg-white/10">
+                  <Link href="/events?tab=rsvp">Open RSVP board</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto mb-10 mt-8 flex max-w-[760px] items-center justify-center">
+          <div className="grid w-full items-start gap-3" style={{ gridTemplateColumns: `repeat(${reviewTabs.length}, minmax(0, 1fr))` }}>
+            {reviewTabs.map((tab, index) => {
               const isActive = activeTab === tab.key;
-              const isComplete = (tab.key === "guest" && activeTab !== "guest") || (tab.key === "addons" && activeTab === "confirmation");
+              const isComplete = tab.key === "guest" && activeTab !== "guest";
               const Icon = tab.icon;
 
               return (
                 <div key={tab.key} className="relative flex flex-col items-center gap-3">
-                  {index < 2 ? (
+                  {index < reviewTabs.length - 1 ? (
                     <div className={`absolute left-[calc(50%+28px)] top-6 hidden h-[2px] w-[calc(100%-56px)] md:block ${activeTab !== "guest" && index === 0 ? "bg-[#c62828]" : "bg-white/10"}`} />
                   ) : null}
                   <button
@@ -1113,16 +1327,21 @@ export function BookingCheckoutPage() {
                   >
                     <Icon className="h-5 w-5" />
                   </button>
-                  <p className={`text-center text-[11px] font-bold uppercase tracking-[0.08em] ${isActive || isComplete ? "text-white" : "text-white/45"}`}>
-                    {tab.label}
-                  </p>
+                  <div className="flex flex-col items-center gap-2">
+                    <p className={`text-center text-[11px] font-bold uppercase tracking-[0.08em] ${isActive || isComplete ? "text-white" : "text-white/45"}`}>
+                      {tab.label}
+                    </p>
+                    <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${isActive || isComplete ? "bg-white/10 text-white/75" : "bg-white/5 text-white/35"}`}>
+                      {tab.sticker}
+                    </span>
+                  </div>
                 </div>
               );
             })}
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_360px] lg:items-start">
           <div className="space-y-6">
             {activeTab === "guest" ? (
               <>
@@ -1135,11 +1354,7 @@ export function BookingCheckoutPage() {
                           Primary guest details are required now. Additional guest details are optional and can be updated later.
                         </p>
                       </div>
-                      {isAuthenticated ? (
-                        <div className="rounded-full border border-[rgba(57,255,20,0.2)] bg-[rgba(57,255,20,0.08)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#39ff14]">
-                          Guest signed in
-                        </div>
-                      ) : (
+                      {!isAuthenticated ? (
                         <button
                           className="rounded-full border border-[rgba(0,240,255,0.3)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#00f0ff]"
                           onClick={() => openAuthModal("signin")}
@@ -1147,13 +1362,14 @@ export function BookingCheckoutPage() {
                         >
                           Sign in
                         </button>
-                      )}
+                      ) : null}
                     </div>
 
                     <div className="grid gap-5 md:grid-cols-2">
                       <label className="block">
                         <span className="mb-2 block text-xs font-medium uppercase tracking-[0.12em] text-white/60">First name *</span>
                         <input
+                          autoComplete="given-name"
                           className={`w-full rounded-[14px] border bg-black/30 px-4 py-4 text-base text-white outline-none ${guestErrors.firstName ? "border-[#ff2e62]" : "border-white/10 focus:border-[#c62828]"}`}
                           onChange={(event) => updateGuestField("firstName", event.target.value)}
                           value={guestForm.firstName}
@@ -1164,6 +1380,7 @@ export function BookingCheckoutPage() {
                       <label className="block">
                         <span className="mb-2 block text-xs font-medium uppercase tracking-[0.12em] text-white/60">Last name *</span>
                         <input
+                          autoComplete="family-name"
                           className={`w-full rounded-[14px] border bg-black/30 px-4 py-4 text-base text-white outline-none ${guestErrors.lastName ? "border-[#ff2e62]" : "border-white/10 focus:border-[#c62828]"}`}
                           onChange={(event) => updateGuestField("lastName", event.target.value)}
                           value={guestForm.lastName}
@@ -1174,8 +1391,10 @@ export function BookingCheckoutPage() {
                       <label className="block">
                         <span className="mb-2 block text-xs font-medium uppercase tracking-[0.12em] text-white/60">Email *</span>
                         <input
+                          autoComplete="email"
                           className={`w-full rounded-[14px] border bg-black/30 px-4 py-4 text-base text-white outline-none ${guestErrors.email ? "border-[#ff2e62]" : "border-white/10 focus:border-[#c62828]"}`}
-                          onChange={(event) => updateGuestField("email", event.target.value)}
+                          onChange={(event) => updateGuestField("email", normalizeEmail(event.target.value))}
+                          type="email"
                           value={guestForm.email}
                         />
                         <span className="mt-2 block text-[10px] uppercase tracking-[0.12em] text-white/40">
@@ -1186,9 +1405,12 @@ export function BookingCheckoutPage() {
                       <label className="block">
                         <span className="mb-2 block text-xs font-medium uppercase tracking-[0.12em] text-white/60">Phone number *</span>
                         <input
+                          autoComplete="tel"
                           className={`w-full rounded-[14px] border bg-black/30 px-4 py-4 text-base text-white outline-none ${guestErrors.phone ? "border-[#ff2e62]" : "border-white/10 focus:border-[#c62828]"}`}
-                          onChange={(event) => updateGuestField("phone", event.target.value)}
+                          inputMode="tel"
+                          onChange={(event) => updateGuestField("phone", normalizePhone(event.target.value))}
                           placeholder="Enter phone number"
+                          type="tel"
                           value={guestForm.phone}
                         />
                         <span className="mt-2 block text-[10px] uppercase tracking-[0.12em] text-white/40">
@@ -1228,7 +1450,9 @@ export function BookingCheckoutPage() {
                                   <span className="mb-2 block text-xs uppercase tracking-[0.12em] text-white/50">Phone number</span>
                                   <input
                                     className="w-full rounded-[12px] border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-[#00f0ff]"
-                                    onChange={(event) => updateAdditionalGuest(index, "phone", event.target.value)}
+                                    inputMode="tel"
+                                    onChange={(event) => updateAdditionalGuest(index, "phone", normalizePhone(event.target.value))}
+                                    type="tel"
                                     value={additionalGuest.phone}
                                   />
                                 </label>
@@ -1322,7 +1546,7 @@ export function BookingCheckoutPage() {
                   <div className="border-l-[8px] border-l-[#ffdf00] p-6 md:p-8">
                     <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase text-white">Add essentials</h2>
                     <p className="mt-2 text-sm leading-6 text-white/62">
-                      Live inventory is pulled from the guest store API. Out-of-stock essentials stay disabled automatically.
+                      Live inventory is pulled from the guest store API. Chargeable essentials and returnable stay items both render from the database-backed catalog.
                     </p>
 
                     {catalogLoading ? (
@@ -1362,6 +1586,9 @@ export function BookingCheckoutPage() {
                                   <span className="text-sm text-white/40 line-through">{formatCurrency(item.base_price * 1.1)}</span>
                                   <span className="font-bold text-white">{formatCurrency(item.base_price)}</span>
                                 </div>
+                                {item.category === "RETURNABLE" ? (
+                                  <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#00f0ff]">Issued for stay, collected later</p>
+                                ) : null}
                                 {disabled ? (
                                   <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-[#ffdf00]">Avail at property</p>
                                 ) : helperMessage ? (
@@ -1414,6 +1641,8 @@ export function BookingCheckoutPage() {
                       {serviceItems.map((item) => {
                         const Icon = addonIcon(item.name);
                         const quantity = draft.addons.find((addon) => addon.productId === item.id)?.quantity ?? 0;
+                        const singleQuantity = isSingleQuantityService(item);
+                        const helperMessage = inventoryMessageById[item.id] || (singleQuantity ? "Only 1 per booking" : "");
 
                         return (
                           <div key={item.id} className="flex items-center justify-between gap-4 py-4">
@@ -1426,6 +1655,9 @@ export function BookingCheckoutPage() {
                                 <p className="text-sm text-white/50">
                                   {item.base_price > 0 ? `Starts at ${formatCurrency(item.base_price)}` : "Included on request"}
                                 </p>
+                                {helperMessage ? (
+                                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-[#00f0ff]">{helperMessage}</p>
+                                ) : null}
                               </div>
                             </div>
 
@@ -1435,7 +1667,12 @@ export function BookingCheckoutPage() {
                                   <Minus className="h-4 w-4" />
                                 </button>
                                 <span className="w-4 text-center text-base font-bold text-white">{quantity}</span>
-                                <button className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#00f0ff] hover:bg-white/5" onClick={() => incrementAddon(item)} type="button">
+                                <button
+                                  className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#00f0ff] hover:bg-white/5 disabled:cursor-not-allowed disabled:text-white/25 disabled:hover:bg-transparent"
+                                  disabled={singleQuantity && quantity >= 1}
+                                  onClick={() => incrementAddon(item)}
+                                  type="button"
+                                >
                                   <Plus className="h-4 w-4" />
                                 </button>
                               </div>
@@ -1587,15 +1824,11 @@ export function BookingCheckoutPage() {
             <button className="rounded-[10px] bg-[#ffdf00] px-5 py-3 text-sm font-bold uppercase text-black shadow-[4px_4px_0px_rgba(0,0,0,0.45)]" onClick={openAddonsTab} type="button">
               Continue
             </button>
-          ) : activeTab === "addons" ? (
-            <button className="rounded-[10px] bg-[#ffdf00] px-5 py-3 text-sm font-bold uppercase text-black shadow-[4px_4px_0px_rgba(0,0,0,0.45)]" onClick={() => openConfirmationTab(true)} type="button">
-              Pay now
-            </button>
           ) : (
             <button
               className="rounded-[10px] bg-[#ffdf00] px-5 py-3 text-sm font-bold uppercase text-black shadow-[4px_4px_0px_rgba(0,0,0,0.45)] disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isPaying}
-              onClick={() => setTriggerPaymentOpen(true)}
+              onClick={openPaymentFlow}
               type="button"
             >
               {isPaying ? "Opening..." : "Pay now"}

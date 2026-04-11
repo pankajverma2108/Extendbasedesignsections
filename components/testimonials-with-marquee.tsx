@@ -202,6 +202,7 @@ const ReviewCard: React.FC<{ review: Review }> = ({ review }) => {
             width={20}
             height={20}
             className="object-contain"
+            style={{ width: "auto", height: "auto" }}
           />
           <span className="text-xs text-white/70 hidden md:block">{review.source}</span>
         </div>
@@ -273,6 +274,7 @@ const PlatformCard: React.FC<{ platform: PlatformRating }> = ({ platform }) => {
         width={78}
         height={68}
         className="mb-2 object-contain transition-transform duration-300"
+        style={{ width: "auto", height: "auto" }}
       />
       <h3 className="text-sm md:text-lg font-bold text-white mb-1">{platform.name}</h3>
       <div className="flex items-baseline gap-1 mb-2">
@@ -309,7 +311,7 @@ const CountCard: React.FC<{ count: RatingCount }> = ({ count }) => {
           width={96}
           height={72}
           className="object-contain transition-transform duration-300"
-          style={{ zIndex: 2 }}
+          style={{ zIndex: 2, width: "auto", height: "auto" }}
         />
       </div>
 

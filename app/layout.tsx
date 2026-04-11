@@ -29,10 +29,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth" className={cn("font-sans", geist.variable)}>
-      <body className="vh-shell font-sora">
+      <body className="vh-shell flex min-h-screen flex-col font-sora">
         <GuestAuthProvider>
           <Navigation />
-          <main>{children}</main>
+          <main className="flex-1">{children}</main>
           <Footer />
           <Toaster position="top-right" />
         </GuestAuthProvider>

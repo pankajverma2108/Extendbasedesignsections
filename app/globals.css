@@ -413,6 +413,40 @@ body {
   box-shadow: inset 0 0 0 1px rgba(9, 19, 41, 0.75);
 }
 
+.vh-calendar-balanced .rdp-month {
+  width: auto;
+}
+
+.vh-calendar-balanced .rdp-month_grid,
+.vh-calendar-balanced .rdp-weekdays,
+.vh-calendar-balanced .rdp-week {
+  width: auto;
+  table-layout: auto;
+}
+
+.vh-calendar-balanced .rdp-weekday,
+.vh-calendar-balanced .rdp-day {
+  width: auto;
+  min-width: 2.35rem;
+}
+
+.vh-calendar-balanced .rdp-day_button {
+  width: 2.35rem;
+  min-width: 2.35rem;
+}
+
+@media (min-width: 768px) {
+  .vh-calendar-balanced .rdp-weekday,
+  .vh-calendar-balanced .rdp-day {
+    min-width: 3rem;
+  }
+
+  .vh-calendar-balanced .rdp-day_button {
+    width: 3rem;
+    min-width: 3rem;
+  }
+}
+
 a,
 button,
 input,

@@ -3,7 +3,7 @@ import { requestJson } from "@/lib/vibehouse-api";
 export type StoreCatalogItem = {
   id: string;
   name: string;
-  category: "COMMODITY" | "SERVICE" | "BORROWABLE";
+  category: "COMMODITY" | "SERVICE" | "BORROWABLE" | "RETURNABLE";
   base_price: number;
   in_stock: boolean;
   available_stock: number | null;
@@ -64,6 +64,92 @@ export type CreateBookingPaymentOrderResponse = {
   guest?: {
     email?: string | null;
   };
+};
+
+export type ColiveStayType = "solo" | "couple" | "remote";
+
+export type CreateColiveQuotePayload = {
+  property_id: string;
+  room_type_id: string;
+  move_in_date: string;
+  duration_months: number;
+  stay_type: ColiveStayType;
+  addons: Array<{
+    addon_id: string;
+    quantity: number;
+  }>;
+  coupon_code?: string | null;
+};
+
+export type CreateColiveQuoteResponse = {
+  quote_id: string;
+  currency: string;
+  charges: {
+    room_subtotal: number;
+    addon_subtotal: number;
+    discount_total?: number;
+    deposit_total?: number;
+    tax_total?: number;
+    grand_total: number;
+  };
+};
+
+export type CreateColiveDraftBookingPayload = {
+  quote_id: string;
+  property_id: string;
+  room_type_id: string;
+  move_in_date: string;
+  duration_months: number;
+  stay_type: ColiveStayType;
+  guest_details: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+  };
+  addons: Array<{
+    addon_id: string;
+    quantity: number;
+  }>;
+  source: string;
+  notes?: string | null;
+};
+
+export type CreateColiveDraftBookingResponse = {
+  draft_booking_id: string;
+  status: string;
+  charges: {
+    room_subtotal: number;
+    addon_subtotal: number;
+    tax_total?: number;
+    grand_total: number;
+  };
+};
+
+export type CreateColivePaymentOrderResponse = {
+  payment_order_id?: string;
+  razorpay_order_id: string;
+  razorpay_key: string;
+  amount: number;
+  amount_paise: number;
+  currency: string;
+  draft_booking_id: string;
+  booking_reference?: string;
+  guest?: {
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  };
+};
+
+export type VerifyColivePaymentResponse = {
+  message: string;
+  booking_id: string;
+  booking_reference?: string;
+  status: string;
+  payment_id: string;
+  total_paid: number;
+  currency: string;
 };
 
 export type GuestBookingMineItem = {
@@ -174,11 +260,13 @@ export type KycSubmitPayload = {
   consent_given: boolean;
 };
 
-export async function getStoreCatalog(propertyId: string): Promise<StoreCatalogItem[]> {
-  return requestJson<StoreCatalogItem[]>(
-    `/guest/store/catalog?property_id=${encodeURIComponent(propertyId)}`,
-    { method: "GET" },
-  );
+export async function getStoreCatalog(propertyId?: string): Promise<StoreCatalogItem[]> {
+  const normalizedPropertyId = propertyId?.trim();
+  const path = normalizedPropertyId
+    ? `/guest/store/catalog?property_id=${encodeURIComponent(normalizedPropertyId)}`
+    : "/guest/store/catalog";
+
+  return requestJson<StoreCatalogItem[]>(path, { method: "GET" });
 }
 
 export async function createGuestBookingOrder(
@@ -186,6 +274,59 @@ export async function createGuestBookingOrder(
   payload: CreateBookingOrderPayload,
 ): Promise<CreateBookingOrderResponse> {
   return requestJson<CreateBookingOrderResponse>("/guest/booking/create-order", {
+    method: "POST",
+    body: payload,
+    token,
+  });
+}
+
+export async function createColiveQuote(
+  token: string,
+  payload: CreateColiveQuotePayload,
+): Promise<CreateColiveQuoteResponse> {
+  return requestJson<CreateColiveQuoteResponse>("/guest/colive/quote", {
+    method: "POST",
+    body: payload,
+    token,
+  });
+}
+
+export async function createColiveDraftBooking(
+  token: string,
+  payload: CreateColiveDraftBookingPayload,
+): Promise<CreateColiveDraftBookingResponse> {
+  return requestJson<CreateColiveDraftBookingResponse>("/guest/colive/draft-booking", {
+    method: "POST",
+    body: payload,
+    token,
+  });
+}
+
+export async function createColivePaymentOrder(
+  token: string,
+  payload: {
+    draft_booking_id: string;
+    grand_total: number;
+    currency: string;
+  },
+): Promise<CreateColivePaymentOrderResponse> {
+  return requestJson<CreateColivePaymentOrderResponse>("/payment/create-colive-order", {
+    method: "POST",
+    body: payload,
+    token,
+  });
+}
+
+export async function verifyColivePayment(
+  token: string,
+  payload: {
+    draft_booking_id: string;
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  },
+): Promise<VerifyColivePaymentResponse> {
+  return requestJson<VerifyColivePaymentResponse>("/payment/verify-colive", {
     method: "POST",
     body: payload,
     token,

@@ -79,7 +79,10 @@ export function Navigation() {
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const desktopMenuRef = useRef<HTMLDivElement | null>(null);
   const shouldShowSignedInState = isAuthenticated || isRestoringSession;
-  const guestFirstName = useMemo(() => guest?.name.split(" ")[0] ?? "Profile", [guest]);
+  const guestFirstName = useMemo(() => {
+    const firstToken = guest?.name?.trim().split(/\s+/)[0];
+    return firstToken || "Profile";
+  }, [guest]);
 
   useEffect(() => {
     let lastY = window.scrollY;
@@ -159,7 +162,7 @@ export function Navigation() {
           <div
             ref={desktopMenuRef}
             className={cn(
-              "relative overflow-hidden rounded-2xl transition-all duration-200",
+              "relative overflow-visible rounded-2xl transition-all duration-200",
               isScrolled
                 ? "border border-white/12 bg-[rgba(15,16,26,0.92)] shadow-[0_20px_50px_rgba(0,0,0,0.34)] backdrop-blur-xl"
                 : "border border-transparent bg-[rgba(15,16,26,0.72)]",

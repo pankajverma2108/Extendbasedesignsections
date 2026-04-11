@@ -1,7 +1,8 @@
+import { ColiveFlow } from "@/components/colive/colive-flow";
 import { Property } from "@/components/marketing/property";
 import {
   getDefaultPropertyId,
-  getRoomAvailability,
+  getRoomAvailabilitySnapshot,
   roomTypesToPropertyCategories,
 } from "@/lib/cx-api";
 
@@ -10,24 +11,31 @@ type PropertyPageProps = {
     checkin?: string;
     checkout?: string;
     property_id?: string;
+    type?: string;
+    location?: string;
   }>;
 };
 
 export default async function PropertyPage({ searchParams }: PropertyPageProps) {
   const params = await searchParams;
-  const propertyId = params?.property_id || getDefaultPropertyId() || undefined;
-  const roomTypes = await getRoomAvailability({
-    propertyId,
+  if (params?.type === "colive") {
+    return <ColiveFlow initialLocation={params.location} />;
+  }
+
+  const requestedPropertyId = params?.property_id || getDefaultPropertyId() || undefined;
+  const snapshot = await getRoomAvailabilitySnapshot({
+    propertyId: requestedPropertyId,
     checkin: params?.checkin,
     checkout: params?.checkout,
   });
+  const backendPropertyId = snapshot.propertyId || requestedPropertyId;
 
   return (
     <Property
-      propertyId={propertyId}
+      propertyId={backendPropertyId}
       initialCheckIn={params?.checkin}
       initialCheckOut={params?.checkout}
-      initialRoomCategories={roomTypesToPropertyCategories(roomTypes)}
+      initialRoomCategories={roomTypesToPropertyCategories(snapshot.roomTypes)}
     />
   );
 }

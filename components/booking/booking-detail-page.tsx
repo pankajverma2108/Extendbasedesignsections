@@ -197,6 +197,12 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
   const roomNumber = booking?.room_number || "Assigned at check-in";
   const totalGuests = slots.length || booking?.no_of_guests || 1;
   const amountPaid = snapshotFallback?.amountPaid ?? 0;
+  const snapshotRooms = snapshotFallback?.rooms ?? [];
+  const snapshotAddons = snapshotFallback?.addons ?? [];
+  const snapshotPricing = snapshotFallback?.pricing;
+  const primaryGuest = snapshotFallback?.primaryGuest;
+  const additionalGuests = snapshotFallback?.additionalGuests ?? [];
+  const hasSnapshotPanels = Boolean(primaryGuest || snapshotRooms.length > 0 || snapshotAddons.length > 0);
 
   return (
     <section className="vh-section min-h-screen bg-[var(--vh-section-b)] pt-24 md:pt-28 animate-vh-fade-in">
@@ -325,7 +331,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                   </div>
                 </div>
 
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_290px]">
+                <div className={`grid gap-6 ${hasSnapshotPanels ? "xl:grid-cols-[minmax(0,1fr)_290px_290px]" : "xl:grid-cols-[minmax(0,1fr)_290px]"}`}>
                   <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)] backdrop-blur-md">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div>
@@ -364,6 +370,81 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                       )}
                     </div>
                   </div>
+
+                  {(primaryGuest || snapshotRooms.length > 0 || snapshotAddons.length > 0) ? (
+                    <div className="space-y-6">
+                      {primaryGuest ? (
+                        <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)] backdrop-blur-md">
+                          <p className="font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-pink)]">Guest details</p>
+                          <div className="mt-4 space-y-2 text-sm text-white/80">
+                            <p className="font-semibold text-white">
+                              {`${primaryGuest.firstName} ${primaryGuest.lastName}`.trim() || "Primary guest"}
+                            </p>
+                            <p>{primaryGuest.email || "-"}</p>
+                            <p>{primaryGuest.phone || "-"}</p>
+                          </div>
+                          {additionalGuests.length > 0 ? (
+                            <div className="mt-4 border-t border-white/10 pt-4">
+                              <p className="text-xs font-bold uppercase tracking-[0.12em] text-white/60">Additional guests</p>
+                              <div className="mt-3 space-y-2 text-sm text-white/75">
+                                {additionalGuests.map((guest, index) => (
+                                  <p key={`summary-additional-${index}`}>
+                                    {guest.name || `Guest ${index + 2}`}{guest.phone ? ` - ${guest.phone}` : ""}
+                                  </p>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      {(snapshotRooms.length > 0 || snapshotAddons.length > 0) ? (
+                        <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)] backdrop-blur-md">
+                          <p className="font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-pink)]">Booking charges</p>
+                          <div className="mt-4 space-y-3">
+                            {snapshotRooms.map((room) => (
+                              <div key={`summary-room-${room.roomTypeId}`} className="flex items-start justify-between gap-3 text-sm text-white/82">
+                                <div>
+                                  <p className="font-semibold text-white">{room.roomTypeName}</p>
+                                  <p className="text-xs text-white/55">{formatCurrency(room.pricePerNight)} x {room.quantity}</p>
+                                </div>
+                                <p className="font-semibold text-white">{formatCurrency(room.lineTotal)}</p>
+                              </div>
+                            ))}
+                            {snapshotAddons.map((addon) => (
+                              <div key={`summary-addon-${addon.productId}`} className="flex items-start justify-between gap-3 border-t border-white/10 pt-3 text-sm text-white/82">
+                                <div>
+                                  <p className="font-semibold text-white">{addon.productName}</p>
+                                  <p className="text-xs text-white/55">{formatCurrency(addon.unitPrice)} x {addon.quantity}</p>
+                                </div>
+                                <p className="font-semibold text-white">{formatCurrency(addon.lineTotal)}</p>
+                              </div>
+                            ))}
+                          </div>
+                          {snapshotPricing ? (
+                            <div className="mt-4 space-y-1 border-t border-white/10 pt-4 text-sm text-white/80">
+                              <div className="flex items-center justify-between">
+                                <p>Room subtotal</p>
+                                <p>{formatCurrency(snapshotPricing.subtotalRooms)}</p>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <p>Add-on subtotal</p>
+                                <p>{formatCurrency(snapshotPricing.subtotalAddons)}</p>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <p>Taxes</p>
+                                <p>{formatCurrency(snapshotPricing.taxes)}</p>
+                              </div>
+                              <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-3">
+                                <p className="font-semibold text-white">Grand total</p>
+                                <p className="font-semibold text-[#00f0ff]">{formatCurrency(snapshotPricing.grandTotal)}</p>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
 
                   <div className="space-y-6">
                     <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)] backdrop-blur-md hover:border-white/20 transition-all duration-300">

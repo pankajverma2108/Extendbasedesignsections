@@ -41,17 +41,60 @@ export const upcomingEvents: EventCardProps[] = [
 
 export const eventPageContent = {
   upcomingSubtitle: "Packed with possibilities",
-  weeklySubtitle: "Sundays are for surprises, and we are stacked with them. No cap.",
+  weeklySubtitle: "Seven nights, seven different reasons to not head upstairs early.",
   pastSubtitle: "FOMO hitting now?",
 };
 
 export const weeklyLineup = [
-  { day: "Monday", event: "Movie Night", time: "8:00 PM", color: "#c62828" },
-  { day: "Tuesday", event: "Beer Pong Tournament", time: "9:00 PM", color: "#facc15" },
-  { day: "Wednesday", event: "Game Night", time: "7:30 PM", color: "#39ff14" },
-  { day: "Thursday", event: "Pub Crawl", time: "8:30 PM", color: "#00d1ff" },
-  { day: "Friday", event: "DJ Night", time: "9:00 PM", color: "#c62828" },
-  { day: "Saturday", event: "Open Mic", time: "8:00 PM", color: "#39ff14" },
+  {
+    day: "Monday",
+    event: "Startup Talks / Founder Meet",
+    hook: "Seats fill fast",
+    description: "Ideas, founders, unexpected collabs",
+    color: "#c62828",
+  },
+  {
+    day: "Tuesday",
+    event: "Game Night",
+    hook: "Gets competitive real quick",
+    description: "Strangers -> teammates -> friends",
+    color: "#facc15",
+  },
+  {
+    day: "Wednesday",
+    event: "Open Mic Night",
+    hook: "You might discover hidden talent",
+    description: "Music, poetry, stand-up vibes",
+    color: "#39ff14",
+  },
+  {
+    day: "Thursday",
+    event: "Networking Mixer",
+    hook: "Where people actually connect",
+    description: "Travelers, creators, remote workers",
+    color: "#00d1ff",
+  },
+  {
+    day: "Friday",
+    event: "Party Night",
+    hook: "Most talked-about night",
+    description: "Packed, loud, unforgettable",
+    color: "#c62828",
+  },
+  {
+    day: "Saturday",
+    event: "Coffee Crawl (Bangalore Edition)",
+    hook: "Only for early signups",
+    description: "Explore the best cafes in Bangalore",
+    color: "#facc15",
+  },
+  {
+    day: "Sunday",
+    event: "Chill + Movie Night",
+    hook: "Perfect reset before Monday",
+    description: "Cozy, relaxed, community time",
+    color: "#39ff14",
+  },
 ];
 
 export const pastEventImages = [

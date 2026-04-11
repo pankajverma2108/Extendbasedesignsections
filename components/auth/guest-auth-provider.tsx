@@ -43,6 +43,7 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 const PROFILE_OVERRIDES_KEY = "vh_guest_profile_overrides";
+const GUEST_PROFILE_CACHE_KEY = "vh_guest_profile_cache";
 
 type ProfileOverrides = {
   name: string;
@@ -106,6 +107,47 @@ function mergeWithOverrides(guest: GuestProfile): GuestProfile {
   };
 }
 
+function readCachedGuestProfile(): GuestProfile | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const raw = window.localStorage.getItem(GUEST_PROFILE_CACHE_KEY) || window.sessionStorage.getItem(GUEST_PROFILE_CACHE_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as GuestProfile;
+    if (!parsed || typeof parsed !== "object" || typeof parsed.id !== "string") {
+      return null;
+    }
+
+    return mergeWithOverrides(parsed);
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedGuestProfile(guest: GuestProfile): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const tokenInLocalStorage = window.localStorage.getItem("vh_guest_access_token");
+  const targetStorage = tokenInLocalStorage ? window.localStorage : window.sessionStorage;
+  targetStorage.setItem(GUEST_PROFILE_CACHE_KEY, JSON.stringify(guest));
+}
+
+function clearCachedGuestProfile(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(GUEST_PROFILE_CACHE_KEY);
+  window.sessionStorage.removeItem(GUEST_PROFILE_CACHE_KEY);
+}
+
 export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mode, setMode] = useState<AuthMode>("signin");
@@ -117,8 +159,14 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const token = getStoredGuestToken();
     if (!token) {
+      clearCachedGuestProfile();
       setIsRestoringSession(false);
       return;
+    }
+
+    const cachedGuest = readCachedGuestProfile();
+    if (cachedGuest) {
+      setGuest(cachedGuest);
     }
 
     let cancelled = false;
@@ -127,10 +175,13 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const me = await getGuestMe(token);
         if (!cancelled) {
-          setGuest(mergeWithOverrides(me));
+          const nextGuest = mergeWithOverrides(me);
+          setGuest(nextGuest);
+          writeCachedGuestProfile(nextGuest);
         }
       } catch {
         clearStoredGuestToken();
+        clearCachedGuestProfile();
         if (!cancelled) {
           setGuest(null);
         }
@@ -172,6 +223,7 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(() => {
     clearStoredGuestToken();
+    clearCachedGuestProfile();
 
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(PROFILE_OVERRIDES_KEY);
@@ -188,7 +240,9 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
       const response = await loginGuest({ email: payload.email, password: payload.password });
       setStoredGuestToken(response.access_token, payload.rememberMe);
       const me = await getGuestMe(response.access_token).catch(() => response.guest);
-      setGuest(mergeWithOverrides(me));
+      const nextGuest = mergeWithOverrides(me);
+      setGuest(nextGuest);
+      writeCachedGuestProfile(nextGuest);
       setIsRestoringSession(false);
       toast.success("Signed in successfully", {
         description: `Welcome back, ${me.name.split(" ")[0] ?? "Guest"}.`,
@@ -211,7 +265,9 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
       const response = await signupGuest(payload);
       setStoredGuestToken(response.access_token);
       const me = await getGuestMe(response.access_token).catch(() => response.guest);
-      setGuest(mergeWithOverrides(me));
+      const nextGuest = mergeWithOverrides(me);
+      setGuest(nextGuest);
+      writeCachedGuestProfile(nextGuest);
       setIsRestoringSession(false);
       toast.success("Account created", {
         description: `Great to have you here, ${me.name.split(" ")[0] ?? "Guest"}.`,
@@ -263,6 +319,8 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
 
         window.localStorage.setItem(PROFILE_OVERRIDES_KEY, JSON.stringify(overrides));
       }
+
+      writeCachedGuestProfile(nextProfile);
 
       return nextProfile;
     });

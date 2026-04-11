@@ -13,7 +13,6 @@ export function EventCard({
   capacity,
   date,
   description,
-  href: _href,
   image,
   location,
   price,

@@ -36,7 +36,6 @@ import {
   X,
 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { buildBookingSignature, saveBookingDraft, type BookingDraftRoom } from "@/lib/booking-session";
 import type { CxRoomCategory } from "@/lib/cx-api";
@@ -60,6 +59,7 @@ import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { FadeIn } from "@/components/shared/motion";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -172,6 +172,39 @@ function getNightCount(checkIn: string, checkOut: string): number {
   return Math.max(1, Math.round((end - start) / 86400000));
 }
 
+const ROOM_GST_RATE = 0.05;
+const STANDARD_ADDON_GST_RATE = 0.18;
+
+function getAddonTaxRate(title: string): number {
+  const normalized = title.trim().toLowerCase();
+  if (normalized.includes("late checkout")) {
+    return ROOM_GST_RATE;
+  }
+  return STANDARD_ADDON_GST_RATE;
+}
+
+function calculateWidgetTaxes(params: {
+  roomTotal: number;
+  addons: Array<{ title: string; quantity: number; unitPrice: number }>;
+}) {
+  const addonTotal = params.addons.reduce((sum, addon) => sum + addon.unitPrice * addon.quantity, 0);
+  const roomTaxExact = params.roomTotal * ROOM_GST_RATE;
+  const addonTaxExact = params.addons.reduce(
+    (sum, addon) => sum + (addon.unitPrice * addon.quantity * getAddonTaxRate(addon.title)),
+    0,
+  );
+  const taxes = Math.round(roomTaxExact + addonTaxExact);
+  const grandTotal = params.roomTotal + addonTotal + taxes;
+
+  return {
+    addonTotal,
+    roomTaxExact,
+    addonTaxExact,
+    taxes,
+    grandTotal,
+  };
+}
+
 const bookingEssentials = [
   {
     id: "dinner",
@@ -259,10 +292,10 @@ function DateRangePicker({
       </PopoverTrigger>
       <PopoverContent
         align={align === "left" ? "start" : "end"}
-        className="z-[200] w-fit max-w-[calc(100vw-1rem)] border-white/12 bg-[#10111a] p-2"
+        className="z-[200] w-auto max-w-[min(100vw-1rem,860px)] border-white/12 bg-[#10111a] p-2"
       >
         <Calendar
-          className="vh-calendar-dark rounded-[20px]"
+          className="vh-calendar-dark vh-calendar-balanced rounded-[20px]"
           defaultMonth={dateRange?.from}
           mode="range"
           numberOfMonths={1}
@@ -313,12 +346,11 @@ function DesktopBookingSummary({
     (sum, room) => sum + room.basePrice * (selectedCounts[room.slug] ?? 0) * nights,
     0,
   );
-  const roomTaxExact = roomTotal * 0.12;
-  const addonTaxExact = essentialsTotal * 0.18;
-  const roomTaxes = Math.round(roomTaxExact);
-  const addonTaxes = Math.round(addonTaxExact);
-  const taxes = roomTaxes + addonTaxes;
-  const grandTotal = roomTotal + essentialsTotal + taxes;
+  const selectedEssentials = essentials.filter((item) => item.quantity > 0);
+  const { roomTaxExact, addonTaxExact, taxes, grandTotal } = calculateWidgetTaxes({
+    roomTotal,
+    addons: selectedEssentials,
+  });
   const hasSelection = selectedRooms.length > 0;
 
   return (
@@ -465,59 +497,60 @@ function MobileStickySummary({
     (sum, room) => sum + room.basePrice * (selectedCounts[room.slug] ?? 0) * nights,
     0,
   );
-  const roomTaxes = Math.round(roomTotal * 0.12);
-  const addonTaxes = Math.round(essentialsTotal * 0.18);
-  const taxes = roomTaxes + addonTaxes;
-  const grandTotal = roomTotal + essentialsTotal + taxes;
-  const hasSelection = selectedRooms.length > 0;
+  const selectedEssentials = essentials.filter((item) => item.quantity > 0);
+  const { taxes, grandTotal } = calculateWidgetTaxes({
+    roomTotal,
+    addons: selectedEssentials,
+  });
+  const hasSelection = selectedRooms.length > 0 || selectedEssentials.length > 0;
+  const displayAmount = hasSelection ? grandTotal : roomCategoryList[0]?.basePrice ?? 0;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-40 lg:hidden">
-      <div className="overflow-hidden rounded-[30px] border border-white/12 bg-[var(--vh-panel-strong)] shadow-[var(--vh-shadow-lg)] backdrop-blur-xl">
+      <div className="overflow-hidden rounded-[22px] border border-white/12 bg-[var(--vh-panel-strong)] shadow-[var(--vh-shadow-lg)] backdrop-blur-xl">
         {open && hasSelection ? (
-          <div className="animate-vh-fade-in">
-            <div className="flex items-center justify-between p-4">
-              <div>
-                <p className="text-lg font-semibold text-white">Booking Summary</p>
-                <p className="text-xs text-white/58">
-                  {nights} {nights === 1 ? "night" : "nights"} starting from {formatDisplayDate(checkIn)}
-                </p>
-              </div>
+          <div className="animate-vh-fade-in border-b border-white/10 px-4 py-4">
+            <div className="flex items-center justify-between">
+              <p className="text-lg font-semibold text-white">Booking Summary</p>
               <button
                 aria-label="Hide Summary"
-                className="rounded-full border border-white/10 p-2 text-white/70"
+                className="rounded-full border border-white/12 p-2 text-white/72"
                 onClick={() => setOpen(false)}
                 type="button"
               >
                 <ChevronDown className="h-4 w-4" />
               </button>
             </div>
-            <div className="max-h-[40vh] space-y-4 overflow-y-auto px-4 pb-4">
+            <p className="mt-1 text-xs text-white/58">
+              {nights} {nights === 1 ? "night" : "nights"} starting from {formatDisplayDate(checkIn)}
+            </p>
+
+            <div className="mt-3 max-h-[34vh] space-y-3 overflow-y-auto pr-1 text-sm text-white/84">
               {selectedRooms.map((room) => (
-                <div key={room.slug} className="space-y-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="font-medium text-white">
+                <div key={room.slug} className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-white">
                       {room.title} x {selectedCounts[room.slug]}
                     </p>
-                    <p className="font-semibold text-white">
-                      Rs. {room.basePrice * (selectedCounts[room.slug] ?? 0) * nights}
-                    </p>
+                    <p className="text-xs text-white/58">Rs. {room.basePrice} / night</p>
                   </div>
-                  <p className="text-xs text-white/55">Rs. {room.basePrice} / night</p>
+                  <p className="font-semibold text-white">Rs. {room.basePrice * (selectedCounts[room.slug] ?? 0) * nights}</p>
                 </div>
               ))}
-              {essentials.filter((item) => item.quantity > 0).map((item) => (
-                <div key={item.id} className="space-y-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="font-medium text-white">
+
+              {selectedEssentials.map((item) => (
+                <div key={item.id} className="flex items-start justify-between gap-3 border-t border-white/10 pt-3">
+                  <div>
+                    <p className="font-semibold text-white">
                       {item.title} x {item.quantity}
                     </p>
-                    <p className="font-semibold text-white">Rs. {item.unitPrice * item.quantity}</p>
+                    <p className="text-xs text-white/58">Rs. {item.unitPrice} each</p>
                   </div>
-                  <p className="text-xs text-white/55">Rs. {item.unitPrice} each</p>
+                  <p className="font-semibold text-white">Rs. {item.unitPrice * item.quantity}</p>
                 </div>
               ))}
-              <div className="border-t border-dashed border-white/15 pt-4 text-sm text-white/78">
+
+              <div className="border-t border-dashed border-white/15 pt-3">
                 <div className="flex items-center justify-between">
                   <p>Add-ons</p>
                   <p>Rs. {essentialsTotal}</p>
@@ -531,49 +564,42 @@ function MobileStickySummary({
                   <p>Rs. {grandTotal}</p>
                 </div>
               </div>
-              <div className="flex items-start my-4">
+
+              <div className="flex items-start pt-2">
                 <input
                   checked={isAgeConfirmed}
-                  className="mt-1 h-10 w-10 cursor-pointer rounded border-gray-300 bg-gray-100 p-2 text-blue-600 align-top focus:ring-blue-500"
+                  className="mt-1 h-8 w-8 cursor-pointer rounded border-gray-300 bg-gray-100 p-1 text-blue-600 align-top focus:ring-blue-500"
                   id="checked-checkbox-mobile"
                   onChange={(event) => onAgeConfirmChange(event.target.checked)}
                   type="checkbox"
                 />
-                <span className="cursor-pointer select-none px-2 text-sm font-poppins text-[#ffffff]">
-                  Yes, I confirm <span className="font-bold">all the guests are above 18 year old</span> and I acknowledge and accept the{" "}
+                <span className="cursor-pointer select-none px-2 text-xs text-white/88">
+                  Yes, I confirm <span className="font-bold">all guests are above 18 years old</span> and accept{" "}
                   <Link className="text-blue-400" href="/policies/">
-                    Terms of Booking Conditions, Cancellation Policy &amp; Property Policy.
+                    booking terms and policies.
                   </Link>
                 </span>
               </div>
-              <Button className="w-full" disabled={!isAgeConfirmed} onClick={onContinue} type="button">
-                Review Booking
-              </Button>
             </div>
           </div>
         ) : null}
 
-        <div className={cn("flex items-center justify-between gap-4 p-4", open && hasSelection ? "border-t border-white/10" : "")}>
+        <div className="flex items-center justify-between gap-4 p-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.14em] text-white/48">
-              {hasSelection ? "Payable Now" : "Starting From"}
-            </p>
-            <p className="text-2xl font-semibold text-white">Rs. {hasSelection ? grandTotal : roomCategoryList[0]?.basePrice ?? 0}</p>
+            <p className="text-2xl font-semibold text-white">₹{displayAmount.toFixed(2)}</p>
+            <button
+              className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-[#46B2FF]"
+              disabled={!hasSelection}
+              onClick={() => setOpen((value) => !value)}
+              type="button"
+            >
+              Price breakup
+              <Info className="h-3.5 w-3.5" />
+            </button>
           </div>
-          {hasSelection ? (
-            <div className="flex items-center gap-2">
-              <Button className="h-10 min-w-[100px] rounded-[16px] px-3 py-2.5 text-xs sm:px-4 sm:text-sm" onClick={() => setOpen((value) => !value)} type="button">
-                {open ? "Hide" : "Summary"}
-              </Button>
-              <Button className="h-10 min-w-[120px] rounded-[16px] px-3 py-2.5 text-xs font-black sm:px-4 sm:text-sm" disabled={!isAgeConfirmed} onClick={onContinue} type="button">
-                Review Booking
-              </Button>
-            </div>
-          ) : (
-            <Button className="h-10 min-w-[120px] rounded-[16px] px-3 py-2.5 text-xs font-black sm:px-4 sm:text-sm" disabled type="button">
-              Review Booking
-            </Button>
-          )}
+          <Button className="h-10 min-w-[128px] rounded-[12px] px-3 py-2.5 text-xs font-black sm:px-4 sm:text-sm" disabled={!hasSelection} onClick={onContinue} type="button">
+            Review Booking
+          </Button>
         </div>
       </div>
     </div>
@@ -847,6 +873,7 @@ export function Property({
   initialRoomCategories = roomCategories,
 }: PropertyProps) {
   const router = useRouter();
+  const { isAuthenticated, isRestoringSession, openAuthModal } = useGuestAuth();
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [selectedCounts, setSelectedCounts] = useState<Record<string, number>>({});
   const [activeRoomSlug, setActiveRoomSlug] = useState<string | null>(null);
@@ -859,6 +886,7 @@ export function Property({
   const [isLoadingRooms, setIsLoadingRooms] = useState(false);
   const [selectedEssentials] = useState<Record<string, number>>({});
   const [isAgeConfirmed, setIsAgeConfirmed] = useState(false);
+  const [resumeReviewAfterAuth, setResumeReviewAfterAuth] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: fromDateString(initialCheckIn) ?? getLocalDate(0),
     to: fromDateString(initialCheckOut) ?? getLocalDate(1),
@@ -1009,6 +1037,15 @@ export function Property({
     };
   }, [checkIn, checkOut, resolvedPropertyId]);
 
+  useEffect(() => {
+    if (!resumeReviewAfterAuth || !isAuthenticated) {
+      return;
+    }
+
+    setResumeReviewAfterAuth(false);
+    router.push("/bookingreview");
+  }, [isAuthenticated, resumeReviewAfterAuth, router]);
+
   const openRoomPopup = (slug: string) => {
     setActiveRoomSlug(slug);
     setActiveRoomImageIndex(0);
@@ -1039,6 +1076,13 @@ export function Property({
       return;
     }
 
+    if (isRestoringSession) {
+      toast.info("Restoring your session", {
+        description: "Please wait a moment, then try Review Booking again.",
+      });
+      return;
+    }
+
     const signature = buildBookingSignature({
       propertyId: resolvedPropertyId,
       checkinDate: checkIn,
@@ -1063,6 +1107,13 @@ export function Property({
     toast.success("Room selection saved", {
       description: "Taking you to review booking.",
     });
+
+    if (!isAuthenticated) {
+      setResumeReviewAfterAuth(true);
+      openAuthModal("signin");
+      return;
+    }
+
     router.push("/bookingreview");
   };
 
@@ -1124,7 +1175,7 @@ export function Property({
                   </button>
                 </div>
                 <div className="hidden lg:block lg:sticky lg:top-28">
-                  <Button asChild className="h-12 w-full rounded-[10px] text-base font-black uppercase tracking-[0.04em]">
+                  <Button asChild className="h-12 w-full rounded-[10px] text-sm font-black leading-none whitespace-nowrap uppercase tracking-[0.04em] sm:text-base">
                     <Link href="#availability">View rooms</Link>
                   </Button>
                 </div>

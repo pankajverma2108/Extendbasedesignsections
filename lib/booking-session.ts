@@ -15,7 +15,7 @@ export type BookingDraftRoom = {
 export type BookingDraftAddon = {
   productId: string;
   name: string;
-  category: "COMMODITY" | "SERVICE";
+  category: "COMMODITY" | "SERVICE" | "RETURNABLE";
   quantity: number;
   unitPrice: number;
   inStock: boolean;
@@ -72,6 +72,42 @@ export type ConfirmedBookingSnapshot = {
   checkoutDate: string;
   amountPaid: number;
   paymentId: string;
+  noOfNights?: number;
+  totalGuests?: number;
+  status?: string;
+  addonOrderId?: string | null;
+  primaryGuest?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
+  additionalGuests?: Array<{
+    name: string;
+    phone: string;
+  }>;
+  rooms?: Array<{
+    roomTypeId: string;
+    roomTypeName: string;
+    type: string;
+    quantity: number;
+    pricePerNight: number;
+    lineTotal: number;
+  }>;
+  addons?: Array<{
+    productId: string;
+    productName: string;
+    category: "COMMODITY" | "SERVICE" | "RETURNABLE";
+    quantity: number;
+    unitPrice: number;
+    lineTotal: number;
+  }>;
+  pricing?: {
+    subtotalRooms: number;
+    subtotalAddons: number;
+    taxes: number;
+    grandTotal: number;
+  };
   createdAt: number;
 };
 
