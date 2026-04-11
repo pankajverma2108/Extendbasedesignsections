@@ -1233,29 +1233,29 @@ export function BookingCheckoutPage() {
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[#230f14] pb-28 text-white lg:pb-12">
-      <section className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-16 md:px-6 md:pb-12 md:pt-24">
-        <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(0,240,255,0.14),transparent_28%),radial-gradient(circle_at_top_right,rgba(255,223,0,0.12),transparent_24%),linear-gradient(135deg,rgba(46,13,18,0.96),rgba(20,8,12,0.96))] px-5 py-6 shadow-[12px_12px_0px_rgba(0,0,0,0.24)] md:px-8 md:py-8">
-          <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
-            <div className="space-y-5">
-              <div className="flex flex-wrap items-center gap-3">
-                <StickerTag bg="#fef08a" className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.12em]" label="Review booking" rotate="rotate-[-2deg]" text="#111827" />
-                <StickerTag bg="#00d1ff" className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.12em]" label="Rates locked for this session" rotate="rotate-[1deg]" text="#111827" />
-                <StickerTag bg="#39ff14" className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.12em]" label="Add-ons synced live" rotate="rotate-[-1deg]" text="#111827" />
+      <section className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-20 md:px-6 md:pb-12 md:pt-24">
+        <div className="relative overflow-hidden rounded-[26px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(0,240,255,0.14),transparent_28%),radial-gradient(circle_at_top_right,rgba(255,223,0,0.12),transparent_24%),linear-gradient(135deg,rgba(46,13,18,0.96),rgba(20,8,12,0.96))] px-4 py-5 shadow-[10px_10px_0px_rgba(0,0,0,0.24)] sm:rounded-[30px] sm:px-5 sm:py-6 md:px-8 md:py-8">
+          <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end lg:gap-6">
+            <div className="space-y-4 sm:space-y-5">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:gap-3 sm:overflow-visible sm:pb-0">
+                <StickerTag bg="#fef08a" className="shrink-0 px-3 py-1.5 text-[10px] font-bold not-italic uppercase tracking-[0.1em] sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-[0.12em]" label="Review booking" rotate="rotate-[-2deg]" text="#111827" />
+                <StickerTag bg="#00d1ff" className="shrink-0 px-3 py-1.5 text-[10px] font-bold not-italic uppercase tracking-[0.1em] sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-[0.12em]" label="Rates locked" rotate="rotate-[1deg]" text="#111827" />
+                <StickerTag bg="#39ff14" className="hidden shrink-0 px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.12em] sm:inline-flex" label="Add-ons synced live" rotate="rotate-[-1deg]" text="#111827" />
               </div>
 
               <div>
-                <p className="vh-chip inline-flex w-fit items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white/72">
+                <p className="vh-chip inline-flex w-fit items-center rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white/72 sm:text-[11px] sm:tracking-[0.16em]">
                   Stay tuned. Check fast. Pay once.
                 </p>
-                <h1 className="mt-4 max-w-4xl leading-none">
-                  <span className="vh-retro-sign-flat block text-[1.85rem] sm:text-[2.3rem] md:text-[3.8rem] lg:text-[4.6rem]">
+                <h1 className="mt-3 max-w-4xl leading-none sm:mt-4">
+                  <span className="vh-retro-sign-flat block text-[1.22rem] leading-[1.06] sm:text-[2rem] md:text-[3.8rem] lg:text-[4.6rem]">
                     Lock the bunk.
                   </span>
-                  <span className="vh-retro-sign-flat mt-1 block text-[1.6rem] sm:text-[2rem] md:text-[3.2rem] lg:text-[4rem] text-[var(--vh-ice)]">
+                  <span className="vh-retro-sign-flat mt-0.5 block text-[1.08rem] leading-[1.06] sm:mt-1 sm:text-[1.75rem] md:text-[3.2rem] lg:text-[4rem] text-[var(--vh-ice)]">
                     Add the fun.
                   </span>
                 </h1>
-                <p className="mt-4 max-w-2xl text-sm leading-7 text-white/76 md:text-base">
+                <p className="mt-3 max-w-xl text-sm leading-6 text-white/76 md:mt-4 md:max-w-2xl md:leading-7 md:text-base">
                   Guest details, stay upgrades, and payment now sit in one booking lane. This page keeps the energy of the property page, but the flow stays strict: details first, extras next, payment last.
                 </p>
               </div>
@@ -1270,7 +1270,7 @@ export function BookingCheckoutPage() {
                             <p className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: item.color }}>
                               {item.day}
                             </p>
-                            <p className="mt-2 text-xl font-bold text-white">{item.event}</p>
+                            <p className="mt-2 text-lg font-bold leading-tight text-white sm:text-xl">{item.event}</p>
                             <p className="mt-2 inline-flex rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#ffdf00]">
                               {item.hook}
                             </p>
@@ -1281,26 +1281,26 @@ export function BookingCheckoutPage() {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="-left-3 h-8 w-8 border-white/20 bg-black/55 text-white hover:bg-black/70" />
-                <CarouselNext className="-right-3 h-8 w-8 border-white/20 bg-black/55 text-white hover:bg-black/70" />
+                <CarouselPrevious className="-left-3 hidden h-8 w-8 border-white/20 bg-black/55 text-white hover:bg-black/70 sm:flex" />
+                <CarouselNext className="-right-3 hidden h-8 w-8 border-white/20 bg-black/55 text-white hover:bg-black/70 sm:flex" />
               </Carousel>
             </div>
 
-            <div className="rounded-[24px] border border-white/10 bg-[rgba(0,0,0,0.28)] p-5 shadow-[6px_6px_0px_rgba(0,0,0,0.22)]">
+            <div className="rounded-[20px] border border-white/10 bg-[rgba(0,0,0,0.28)] p-4 shadow-[6px_6px_0px_rgba(0,0,0,0.22)] sm:rounded-[24px] sm:p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#ffdf00]">Tonight&apos;s scene</p>
-                  <p className="mt-2 text-2xl font-bold uppercase text-white">Pre-book the stay. Plan the night.</p>
+                  <p className="mt-2 text-lg font-bold uppercase leading-tight text-white sm:text-2xl">Pre-book the stay. Plan the night.</p>
                 </div>
               </div>
-              <p className="mt-3 text-sm leading-6 text-white/72">
+              <p className="mt-3 text-sm leading-5 text-white/72 sm:leading-6">
                 Heading out after check-in? Browse the latest community nights, open mics, and rooftop scenes before you pay.
               </p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Button asChild className="rounded-full bg-[#ffdf00] px-5 text-black hover:bg-[#ffe864]">
+              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
+                <Button asChild className="w-full rounded-full bg-[#ffdf00] px-5 text-black whitespace-nowrap hover:bg-[#ffe864] sm:w-auto">
                   <Link href="/events">See event calendar</Link>
                 </Button>
-                <Button asChild className="rounded-full border border-white/15 bg-white/5 px-5 text-white hover:bg-white/10">
+                <Button asChild className="w-full rounded-full border border-white/15 bg-white/5 px-5 text-white whitespace-nowrap hover:bg-white/10 sm:w-auto">
                   <Link href="/events?tab=rsvp">Open RSVP board</Link>
                 </Button>
               </div>

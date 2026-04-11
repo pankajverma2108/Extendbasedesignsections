@@ -272,7 +272,7 @@ function DateRangePicker({
       <PopoverTrigger asChild>
         <button
           aria-expanded={open}
-          className="flex w-full items-center justify-center gap-3 rounded-full border border-[var(--vh-pink)] bg-[#10111a] px-4 py-3 text-center text-white shadow-[0_10px_26px_rgba(0,0,0,0.28)]"
+          className="flex w-full items-center justify-center gap-3 rounded-full border border-[var(--vh-pink)] bg-[#10111a] px-4 py-3 text-center text-white shadow-[0_10px_26px_rgba(0,0,0,0.28)] md:w-auto"
           type="button"
         >
           <div className="inline-flex min-w-0 items-center gap-3">
@@ -1217,7 +1217,7 @@ export function Property({
                         Pick your perch for tonight. We&apos;ll keep the vibe ready.
                       </p>
                     </div>
-                    <div className="w-full max-w-[420px] md:w-auto md:min-w-[336px]">
+                    <div className="w-full max-w-[420px] md:w-fit md:min-w-[336px]">
                       <DateRangePicker align="left" dateRange={dateRange} onSelect={handleRangeChange} />
                     </div>
                   </div>

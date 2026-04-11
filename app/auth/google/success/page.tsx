@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { getGuestMe, setStoredGuestToken } from "@/lib/guest-auth-api";
+import { consumePostAuthRedirect, getGuestMe, setStoredGuestToken } from "@/lib/guest-auth-api";
 
 export default function GoogleAuthSuccessPage() {
   useEffect(() => {
@@ -23,7 +23,10 @@ export default function GoogleAuthSuccessPage() {
         await getGuestMe(token);
 
         if (!cancelled) {
-          window.location.replace("/");
+          const searchParamsReturnTo = searchParams.get("return_to");
+          const rememberedReturnTo = consumePostAuthRedirect();
+          const nextPath = rememberedReturnTo || (searchParamsReturnTo?.startsWith("/") ? searchParamsReturnTo : "/");
+          window.location.replace(nextPath);
         }
       } catch (error) {
         const detail =

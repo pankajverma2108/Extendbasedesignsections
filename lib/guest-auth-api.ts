@@ -45,6 +45,8 @@ export type GuestLoginPayload = {
 };
 
 const DEFAULT_GOOGLE_AUTH_PATH = "/guest/auth/google";
+const POST_AUTH_REDIRECT_KEY = "vh_post_auth_redirect";
+const POST_AUTH_REDIRECT_FALLBACK_KEY = "vh_post_auth_redirect_fallback";
 
 const LOCAL_STORAGE_KEY = "vh_guest_access_token";
 const SESSION_STORAGE_KEY = "vh_guest_access_token_session";
@@ -70,8 +72,79 @@ export async function getGuestMe(token: string): Promise<GuestProfile> {
   });
 }
 
-export function getGuestGoogleAuthUrl(): string {
-  return process.env.NEXT_PUBLIC_GUEST_GOOGLE_AUTH_URL?.trim() || `${getApiBaseUrl()}${DEFAULT_GOOGLE_AUTH_PATH}`;
+function normalizeRedirectPath(candidate: string | null | undefined): string {
+  if (!candidate) {
+    return "/";
+  }
+
+  if (candidate.startsWith("http://") || candidate.startsWith("https://")) {
+    try {
+      if (typeof window !== "undefined") {
+        const parsed = new URL(candidate);
+        if (parsed.origin !== window.location.origin) {
+          return "/";
+        }
+        return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+      }
+    } catch {
+      return "/";
+    }
+  }
+
+  if (!candidate.startsWith("/")) {
+    return "/";
+  }
+
+  return candidate;
+}
+
+export function rememberPostAuthRedirect(path?: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const nextPath = normalizeRedirectPath(path || `${window.location.pathname}${window.location.search}${window.location.hash}`);
+  window.sessionStorage.setItem(POST_AUTH_REDIRECT_KEY, nextPath);
+  window.localStorage.setItem(POST_AUTH_REDIRECT_FALLBACK_KEY, nextPath);
+}
+
+export function getPostAuthRedirect(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const stored = window.sessionStorage.getItem(POST_AUTH_REDIRECT_KEY) || window.localStorage.getItem(POST_AUTH_REDIRECT_FALLBACK_KEY);
+  if (!stored) {
+    return null;
+  }
+
+  return normalizeRedirectPath(stored);
+}
+
+export function consumePostAuthRedirect(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const stored = getPostAuthRedirect();
+  window.sessionStorage.removeItem(POST_AUTH_REDIRECT_KEY);
+  window.localStorage.removeItem(POST_AUTH_REDIRECT_FALLBACK_KEY);
+  return stored;
+}
+
+export function getGuestGoogleAuthUrl(returnTo?: string): string {
+  const baseUrl = process.env.NEXT_PUBLIC_GUEST_GOOGLE_AUTH_URL?.trim() || `${getApiBaseUrl()}${DEFAULT_GOOGLE_AUTH_PATH}`;
+  const redirectPath = normalizeRedirectPath(returnTo);
+
+  try {
+    const url = new URL(baseUrl);
+    if (redirectPath && redirectPath !== "/") {
+      url.searchParams.set("return_to", redirectPath);
+    }
+    return url.toString();
+  } catch {
+    return baseUrl;
+  }
 }
 
 export function getStoredGuestToken(): string | null {

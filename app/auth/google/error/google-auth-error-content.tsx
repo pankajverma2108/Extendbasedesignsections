@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-import { getGuestGoogleAuthUrl } from "@/lib/guest-auth-api";
+import { getGuestGoogleAuthUrl, getPostAuthRedirect } from "@/lib/guest-auth-api";
 
 type ReasonDetails = {
   title: string;
@@ -41,6 +41,7 @@ export function GoogleAuthErrorContent() {
   const searchParams = useSearchParams();
   const reason = searchParams.get("reason") ?? "unknown";
   const detail = searchParams.get("detail");
+  const returnPath = getPostAuthRedirect() || "/";
   const reasonDetails = reasonMap[reason] ?? reasonMap.unknown;
 
   return (
@@ -56,7 +57,8 @@ export function GoogleAuthErrorContent() {
             <button
               className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--vh-pink)] px-5 text-sm font-semibold text-white transition hover:bg-[var(--vh-pink-soft)]"
               onClick={() => {
-                window.location.href = getGuestGoogleAuthUrl();
+                const returnPath = getPostAuthRedirect() || undefined;
+                window.location.href = getGuestGoogleAuthUrl(returnPath);
               }}
               type="button"
             >
@@ -65,9 +67,9 @@ export function GoogleAuthErrorContent() {
 
             <Link
               className="inline-flex h-11 items-center justify-center rounded-full border border-white/20 px-5 text-sm font-semibold text-white/90 transition hover:bg-white/10 hover:text-white"
-              href="/"
+              href={returnPath}
             >
-              Go To Home
+              Go Back
             </Link>
           </div>
         </div>

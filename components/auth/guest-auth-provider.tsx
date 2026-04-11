@@ -7,6 +7,8 @@ import { GuestAuthModal } from "@/components/auth/guest-auth-modal";
 import {
   type GuestProfile,
   clearStoredGuestToken,
+  rememberPostAuthRedirect,
+  getPostAuthRedirect,
   getGuestGoogleAuthUrl,
   getGuestMe,
   getStoredGuestToken,
@@ -211,6 +213,7 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const openAuthModal = useCallback((nextMode: AuthMode = "signin") => {
+    rememberPostAuthRedirect();
     setMode(nextMode);
     setErrorMessage(null);
     setIsModalOpen(true);
@@ -283,7 +286,9 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
   }, [closeAuthModal]);
 
   const onGoogleAuth = useCallback(() => {
-    const googleAuthUrl = getGuestGoogleAuthUrl();
+    rememberPostAuthRedirect();
+    const returnPath = getPostAuthRedirect() || undefined;
+    const googleAuthUrl = getGuestGoogleAuthUrl(returnPath);
     window.location.href = googleAuthUrl;
   }, []);
 

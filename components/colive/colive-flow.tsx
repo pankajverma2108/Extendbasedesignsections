@@ -114,6 +114,20 @@ type ColivePropertyBackendMap = {
   rooms: Record<string, string>;
 };
 
+type ColiveFlowSnapshot = {
+  stage: FlowStage;
+  checkoutStep: CheckoutStep;
+  moveIn: string;
+  duration: number;
+  stayType: StayType;
+  selectedPropertyId: string | null;
+  selectedRoomId: string | null;
+  guest: GuestDetails;
+  addonQuantities: Record<AddonKey, number>;
+  activeGalleryIndex: number;
+  savedAt: number;
+};
+
 type RazorpaySuccessResponse = {
   razorpay_order_id: string;
   razorpay_payment_id: string;
@@ -134,6 +148,7 @@ declare global {
 }
 
 const RAZORPAY_SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
+const COLIVE_FLOW_SNAPSHOT_KEY = "vh_colive_flow_snapshot";
 
 const coliveBackendMap: Record<string, ColivePropertyBackendMap> = {
   "koramangala-a": {
@@ -196,6 +211,57 @@ function getColiveAddonId(propertyId: string, addonKey: AddonKey): string {
   }
 
   return coliveAddonProductMap[addonKey]?.trim() || "";
+}
+
+function readColiveFlowSnapshot(): ColiveFlowSnapshot | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const raw = window.sessionStorage.getItem(COLIVE_FLOW_SNAPSHOT_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<ColiveFlowSnapshot>;
+    if (!parsed || typeof parsed !== "object") {
+      return null;
+    }
+
+    return {
+      stage: (parsed.stage as FlowStage) || "landing",
+      checkoutStep: (parsed.checkoutStep as CheckoutStep) || 1,
+      moveIn: typeof parsed.moveIn === "string" ? parsed.moveIn : nextMonthDate(),
+      duration: typeof parsed.duration === "number" ? Math.min(12, Math.max(1, parsed.duration)) : 3,
+      stayType: (parsed.stayType as StayType) || "remote",
+      selectedPropertyId: typeof parsed.selectedPropertyId === "string" ? parsed.selectedPropertyId : null,
+      selectedRoomId: typeof parsed.selectedRoomId === "string" ? parsed.selectedRoomId : null,
+      guest: {
+        firstName: typeof parsed.guest?.firstName === "string" ? parsed.guest.firstName : "",
+        lastName: typeof parsed.guest?.lastName === "string" ? parsed.guest.lastName : "",
+        email: typeof parsed.guest?.email === "string" ? parsed.guest.email : "",
+        phone: typeof parsed.guest?.phone === "string" ? parsed.guest.phone : "",
+      },
+      addonQuantities: {
+        meals: typeof parsed.addonQuantities?.meals === "number" ? Math.max(0, parsed.addonQuantities.meals) : 0,
+        laundry: typeof parsed.addonQuantities?.laundry === "number" ? Math.max(0, parsed.addonQuantities.laundry) : 0,
+        workspace: typeof parsed.addonQuantities?.workspace === "number" ? Math.max(0, parsed.addonQuantities.workspace) : 0,
+      },
+      activeGalleryIndex: typeof parsed.activeGalleryIndex === "number" ? Math.max(0, parsed.activeGalleryIndex) : 0,
+      savedAt: typeof parsed.savedAt === "number" ? parsed.savedAt : Date.now(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function clearColiveFlowSnapshot() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.sessionStorage.removeItem(COLIVE_FLOW_SNAPSHOT_KEY);
 }
 
 const plans: ColivePlan[] = [
@@ -624,6 +690,51 @@ export function ColiveFlow({ initialLocation = "bangalore" }: { initialLocation?
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
 
   useEffect(() => {
+    const snapshot = readColiveFlowSnapshot();
+    if (!snapshot) {
+      return;
+    }
+
+    if (Date.now() - snapshot.savedAt > 1000 * 60 * 60 * 12) {
+      clearColiveFlowSnapshot();
+      return;
+    }
+
+    setStage(snapshot.stage);
+    setCheckoutStep(snapshot.checkoutStep);
+    setMoveIn(snapshot.moveIn);
+    setDuration(snapshot.duration);
+    setStayType(snapshot.stayType);
+    setSelectedPropertyId(snapshot.selectedPropertyId);
+    setSelectedRoomId(snapshot.selectedRoomId);
+    setGuest(snapshot.guest);
+    setAddonQuantities(snapshot.addonQuantities);
+    setActiveGalleryIndex(snapshot.activeGalleryIndex);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const snapshot: ColiveFlowSnapshot = {
+      stage,
+      checkoutStep,
+      moveIn,
+      duration,
+      stayType,
+      selectedPropertyId,
+      selectedRoomId,
+      guest,
+      addonQuantities,
+      activeGalleryIndex,
+      savedAt: Date.now(),
+    };
+
+    window.sessionStorage.setItem(COLIVE_FLOW_SNAPSHOT_KEY, JSON.stringify(snapshot));
+  }, [activeGalleryIndex, addonQuantities, checkoutStep, duration, guest, moveIn, selectedPropertyId, selectedRoomId, stage, stayType]);
+
+  useEffect(() => {
     if (!showMobileSummary) {
       return;
     }
@@ -866,6 +977,7 @@ export function ColiveFlow({ initialLocation = "bangalore" }: { initialLocation?
               setConfirmedReservationId(verification.booking_reference || verification.booking_id);
               setStage("confirmation");
               setShowMobileSummary(false);
+              clearColiveFlowSnapshot();
               toast.success("Payment successful", {
                 description: "Your Colive booking is confirmed.",
               });
@@ -907,6 +1019,7 @@ export function ColiveFlow({ initialLocation = "bangalore" }: { initialLocation?
   }
 
   function resetFlow() {
+    clearColiveFlowSnapshot();
     setStage("landing");
     setCheckoutStep(1);
     setSelectedPropertyId(null);
@@ -985,7 +1098,7 @@ export function ColiveFlow({ initialLocation = "bangalore" }: { initialLocation?
         <div className="absolute inset-x-0 top-0 h-[420px] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),transparent)]" />
       </div>
 
-      <main className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-6 pt-24 sm:px-6 sm:pb-8 sm:pt-28 lg:px-8">
+      <main className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-6 pt-28 sm:px-6 sm:pb-8 sm:pt-28 lg:px-8">
         {stage === "landing" ? (
           <section className="space-y-8 sm:space-y-10">
             <div className="grid gap-6 lg:grid-cols-[1.32fr_0.68fr] lg:items-stretch">
@@ -994,7 +1107,7 @@ export function ColiveFlow({ initialLocation = "bangalore" }: { initialLocation?
                   <StickerTag bg="#34d5ff" label="Immersive Long Stay" rotate="-rotate-[4deg]" text="#03131a" />
                   <StickerTag bg="#f9cb37" label="All Utilities Included" rotate="rotate-[2deg]" text="#231702" />
                 </div>
-                <h2 className="mt-6 font-['Space_Grotesk'] text-3xl font-black uppercase leading-[1.08] text-white sm:text-5xl">
+                <h2 className="mt-6 font-['Space_Grotesk'] text-[1.7rem] font-black uppercase leading-[1.12] text-white sm:text-5xl">
                   Live in Koramangala like it was always your neighborhood.
                 </h2>
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/72 sm:text-lg">
@@ -1055,12 +1168,12 @@ export function ColiveFlow({ initialLocation = "bangalore" }: { initialLocation?
                   })}
                 </div>
 
-                <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <Button className="h-12 rounded-full px-7 text-sm" onClick={handleSearch} size="lg">
+                <div className="mt-8 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+                  <Button className="h-12 w-full rounded-full px-5 text-sm sm:w-auto sm:px-7" onClick={handleSearch} size="lg">
                     Explore Colive Houses
                     <ArrowRight className="h-4 w-4" />
                   </Button>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.13em] text-white/72">
+                  <div className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/12 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.13em] text-white/72 sm:w-auto sm:justify-start">
                     <MapPin className="h-4 w-4 text-[#34d5ff]" />
                     {locationLabels[location]}
                   </div>
@@ -1081,7 +1194,7 @@ export function ColiveFlow({ initialLocation = "bangalore" }: { initialLocation?
                     <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_38%,rgba(5,4,8,0.82)_100%)]" />
                     <div className="absolute bottom-0 left-0 right-0 p-5">
                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8ee8ff]">Signature Spaces</p>
-                      <p className="mt-2 font-['Space_Grotesk'] text-2xl font-black uppercase text-white">Immersive, social, and work ready.</p>
+                      <p className="mt-2 font-['Space_Grotesk'] text-xl font-black uppercase text-white sm:text-2xl">Immersive, social, and work ready.</p>
                     </div>
                   </div>
                 </div>
