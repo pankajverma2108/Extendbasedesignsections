@@ -12,3 +12,7 @@ dist/
 guidelines/finalised_workflows/
 guidelines/api_routes/
 guidelines/
+docs/
+BUILD_PLAN.md
+ATTRIBUTIONS.md
+context.md
