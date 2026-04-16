@@ -1,33 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
-  CalendarDays,
+  Camera,
+  CheckCircle2,
   ChevronRight,
+  Clock3,
   FileSearch,
-  IdCard,
+  Info,
   LoaderCircle,
-  MapPin,
   Plus,
-  ShieldCheck,
-  Sparkles,
   Trash2,
   Upload,
-  Users,
+  User,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
+import { StickerTag } from "@/components/shared/sticker-tag";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   addBookingKycSlot,
   deleteBookingKycSlot,
   getBookingKycDetail,
   getBookingKycSlots,
   getBookingKycUploadUrl,
-  getStoreCatalog,
   linkGuestBooking,
   runBookingKycOcr,
   submitBookingKyc,
@@ -35,146 +36,256 @@ import {
   type BookingKycDetailResponse,
   type BookingSlotSummary,
   type KycSubmitPayload,
-  type StoreCatalogItem,
 } from "@/lib/booking-api";
+import { withBrandName } from "@/lib/branding";
+import { getClientCache, setClientCache } from "@/lib/client-cache";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
+import { toSafeErrorMessage } from "@/lib/ui-error";
 import { cn } from "@/lib/utils";
 
 import { BookingEmptyState, BookingPageShell } from "./booking-shell";
 
-type KycEditorState = KycSubmitPayload & {
+type Step = 1 | 2 | 3;
+type UploadSide = "front" | "back";
+type GenderValue = "MALE" | "FEMALE" | "OTHER";
+
+type KycEditorState = {
+  nationality_type: string;
+  id_type: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  date_of_birth: string;
+  gender: GenderValue;
+  id_number: string;
+  permanent_address: string;
+  contact_number: string;
+  coming_from: string;
+  going_to: string;
+  purpose: string;
+  arrival_time: string;
   front_image_key?: string;
   back_image_key?: string;
+  front_image_url?: string;
+  back_image_url?: string;
+  consent_terms: boolean;
+  consent_age: boolean;
 };
 
-const KYC_ID_TYPES = ["AADHAAR", "VOTER_ID", "DRIVING_LICENCE", "PASSPORT"];
-const KYC_PURPOSES = ["LEISURE", "BUSINESS", "MEDICAL", "TRANSIT", "OTHER"];
+type UploadPreviewDraft = {
+  side: UploadSide;
+  file: File;
+  objectUrl: string;
+};
 
-function emptyKycState(): KycEditorState {
+type SlotsCachePayload = {
+  slots: BookingSlotSummary[];
+  bookingTitle: string;
+  propertyName: string;
+  bookingStatus?: string | null;
+};
+
+const STEPS: Array<{ id: Step; label: string }> = [
+  { id: 1, label: "Basic Info" },
+  { id: 2, label: "Gov. ID" },
+  { id: 3, label: "Time" },
+];
+
+const ID_TYPES = [
+  { value: "AADHAAR", label: "Aadhaar Card" },
+  { value: "PASSPORT", label: "Passport" },
+  { value: "DRIVING_LICENCE", label: "Driving Licence" },
+  { value: "VOTER_ID", label: "Voter ID" },
+];
+
+const PURPOSES = ["LEISURE", "BUSINESS", "MEDICAL", "TRANSIT", "OTHER"];
+
+const ARRIVAL_WINDOWS = [
+  "10:00 AM - 12:00 PM",
+  "12:00 PM - 02:00 PM",
+  "02:00 PM - 04:00 PM",
+  "04:00 PM - 06:00 PM",
+  "06:00 PM - 08:00 PM",
+];
+
+const WEB_CHECKIN_CACHE_TTL_MS = 1000 * 60 * 3;
+
+function slotsCacheKey(ezeeReservationId: string): string {
+  return `vh:web-checkin:slots:${ezeeReservationId}`;
+}
+
+function slotDetailCacheKey(ezeeReservationId: string, slotId: string): string {
+  return `vh:web-checkin:slot:${ezeeReservationId}:${slotId}`;
+}
+
+function emptyEditorState(params?: {
+  fullName?: string;
+  email?: string;
+  phone?: string | null;
+  birthDate?: string | null;
+  nationality?: string | null;
+  location?: string | null;
+  gender?: string | null;
+}): KycEditorState {
+  const [first, ...rest] = (params?.fullName || "").trim().split(/\s+/).filter(Boolean);
+
   return {
-    nationality_type: "INDIAN",
+    nationality_type: normalizeNationality(params?.nationality),
     id_type: "AADHAAR",
-    full_name: "",
-    date_of_birth: "",
+    first_name: first || "",
+    last_name: rest.join(" "),
+    email: (params?.email || "").trim(),
+    date_of_birth: normalizeBirthDate(params?.birthDate),
+    gender: normalizeGender(params?.gender),
     id_number: "",
-    permanent_address: "",
-    contact_number: "",
+    permanent_address: (params?.location || "").trim(),
+    contact_number: normalizeContactNumber(params?.phone),
     coming_from: "",
     going_to: "",
     purpose: "LEISURE",
-    consent_given: false,
+    arrival_time: ARRIVAL_WINDOWS[1],
+    consent_terms: false,
+    consent_age: false,
   };
 }
 
 function createEditorState(
   kyc: BookingKycDetailResponse["kyc"],
-  slotGuestName?: string | null,
-  guestPhone?: string | null,
+  params?: {
+    slotGuestName?: string | null;
+    guestName?: string;
+    email?: string;
+    phone?: string | null;
+    birthDate?: string | null;
+    nationality?: string | null;
+    location?: string | null;
+    gender?: string | null;
+  },
 ): KycEditorState {
   if (!kyc) {
-    return {
-      ...emptyKycState(),
-      full_name: slotGuestName || "",
-      contact_number: guestPhone || "",
-    };
+    return emptyEditorState({
+      fullName: params?.slotGuestName || params?.guestName,
+      email: params?.email,
+      phone: params?.phone,
+      birthDate: params?.birthDate,
+      nationality: params?.nationality,
+      location: params?.location,
+      gender: params?.gender,
+    });
   }
 
+  const [firstName, ...rest] = (kyc.full_name || params?.slotGuestName || params?.guestName || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
   return {
-    nationality_type: kyc.nationality_type || "INDIAN",
+    nationality_type: kyc.nationality_type || normalizeNationality(params?.nationality),
     id_type: kyc.id_type || "AADHAAR",
-    full_name: kyc.full_name || slotGuestName || "",
-    date_of_birth: kyc.date_of_birth || "",
+    first_name: firstName || "",
+    last_name: rest.join(" "),
+    email: (params?.email || "").trim(),
+    date_of_birth: normalizeBirthDate(kyc.date_of_birth || params?.birthDate),
+    gender: normalizeGender(params?.gender),
     id_number: kyc.id_number || "",
-    permanent_address: kyc.permanent_address || "",
-    contact_number: kyc.contact_number || guestPhone || "",
+    permanent_address: kyc.permanent_address || (params?.location || ""),
+    contact_number: kyc.contact_number || normalizeContactNumber(params?.phone),
     coming_from: kyc.coming_from || "",
     going_to: kyc.going_to || "",
     purpose: kyc.purpose || "LEISURE",
+    arrival_time: ARRIVAL_WINDOWS[1],
+    front_image_key: undefined,
+    back_image_key: undefined,
     front_image_url: kyc.front_image_url || undefined,
     back_image_url: kyc.back_image_url || undefined,
-    consent_given: Boolean(kyc.consent_given),
+    consent_terms: Boolean(kyc.consent_given),
+    consent_age: Boolean(kyc.consent_given),
   };
 }
 
-function validateKycPayload(payload: KycSubmitPayload): string[] {
-  const errors: string[] = [];
-  const trimmedFullName = payload.full_name.trim();
-  const trimmedIdNumber = payload.id_number.trim();
-  const trimmedAddress = payload.permanent_address.trim();
-  const trimmedContact = payload.contact_number.trim();
-  const trimmedComingFrom = payload.coming_from.trim();
-  const trimmedGoingTo = payload.going_to.trim();
-
-  if (payload.nationality_type !== "INDIAN") {
-    errors.push("Nationality must be INDIAN for this KYC flow.");
+function normalizeBirthDate(value?: string | null): string {
+  if (!value) {
+    return "";
   }
 
-  if (!KYC_ID_TYPES.includes(payload.id_type)) {
-    errors.push("Select a valid ID type before submitting.");
+  const raw = value.trim();
+  if (!raw) {
+    return "";
   }
 
-  if (trimmedFullName.length === 0) {
-    errors.push("Full name is required.");
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
   }
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.date_of_birth)) {
-    errors.push("Date of birth must be in YYYY-MM-DD format.");
-  } else {
-    const birthDate = new Date(`${payload.date_of_birth}T00:00:00`);
-    const minimumAdultDate = new Date();
-    minimumAdultDate.setFullYear(minimumAdultDate.getFullYear() - 18);
-    if (birthDate > minimumAdultDate) {
-      errors.push("Guest must be 18 years or older.");
-    }
+  const alt = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (!alt) {
+    return "";
   }
 
-  if (trimmedIdNumber.length === 0) {
-    errors.push("ID number is required.");
-  }
-
-  if (trimmedAddress.length === 0) {
-    errors.push("Permanent address is required.");
-  }
-
-  if (!/^\+\d{10,15}$/.test(trimmedContact)) {
-    errors.push("Contact number must include country code, for example +918884973328.");
-  }
-
-  if (trimmedComingFrom.length === 0) {
-    errors.push("Coming from is required.");
-  }
-
-  if (trimmedGoingTo.length === 0) {
-    errors.push("Going to is required.");
-  }
-
-  if (!KYC_PURPOSES.includes(payload.purpose)) {
-    errors.push("Select a valid purpose before submitting.");
-  }
-
-  if (!payload.consent_given) {
-    errors.push("Consent is required before you can submit KYC.");
-  }
-
-  return errors;
+  const [, day, month, year] = alt;
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 }
 
-function normaliseOcrDate(input?: string | null): string {
-  if (!input) {
+function normalizeGender(value?: string | null): GenderValue {
+  const raw = (value || "").trim().toLowerCase();
+  if (raw === "male") {
+    return "MALE";
+  }
+  if (raw === "female") {
+    return "FEMALE";
+  }
+  return "OTHER";
+}
+
+function normalizeNationality(value?: string | null): string {
+  const raw = (value || "").trim().toUpperCase();
+  if (!raw || raw.includes("IND")) {
+    return "INDIAN";
+  }
+  return raw;
+}
+
+function normalizeContactNumber(value?: string | null): string {
+  const raw = (value || "").trim();
+  if (!raw) {
     return "";
   }
 
-  const match = input.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
-  if (!match) {
-    return "";
+  if (raw.startsWith("+")) {
+    return raw;
   }
 
-  const [, day, month, year] = match;
-  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  const digits = raw.replace(/\D+/g, "");
+  if (digits.length === 10) {
+    return `+91${digits}`;
+  }
+  if (digits.length > 0) {
+    return `+${digits}`;
+  }
+  return raw;
+}
+
+function isAdult(dateInput: string): boolean {
+  const date = new Date(`${dateInput}T00:00:00`);
+  if (Number.isNaN(date.getTime())) {
+    return false;
+  }
+
+  const minDate = new Date();
+  minDate.setFullYear(minDate.getFullYear() - 18);
+  return date <= minDate;
 }
 
 function publicFileUrlFromUploadUrl(uploadUrl: string): string {
   return uploadUrl.split("?")[0] || uploadUrl;
+}
+
+function normalizeOcrDate(input?: string | null): string {
+  if (!input) {
+    return "";
+  }
+
+  return normalizeBirthDate(input);
 }
 
 function slotStatusLabel(status: string): string {
@@ -197,125 +308,337 @@ function slotStatusTone(status: string): string {
   return "border-white/10 bg-white/5 text-white/70";
 }
 
-function missionStepCount(editorState: KycEditorState): number {
-  const hasDocument = Boolean(editorState.front_image_key || editorState.front_image_url);
-  const identityComplete = Boolean(
-    editorState.full_name.trim() &&
-      editorState.date_of_birth &&
-      editorState.id_number.trim(),
-  );
-  const travelComplete = Boolean(
-    editorState.permanent_address.trim() &&
-      editorState.contact_number.trim() &&
-      editorState.coming_from.trim() &&
-      editorState.going_to.trim() &&
-      editorState.purpose,
-  );
-  const consentComplete = editorState.consent_given;
+function isPaymentPendingStatus(status?: string | null): boolean {
+  const normalized = (status || "").trim().toUpperCase();
+  return normalized === "PENDING_PAYMENT" || normalized === "PAYMENT_PENDING" || normalized === "UNPAID";
+}
 
-  return [hasDocument, identityComplete, travelComplete, consentComplete].filter(Boolean).length;
+function validateStepOne(state: KycEditorState): string[] {
+  const errors: string[] = [];
+
+  if (!state.first_name.trim()) {
+    errors.push("First name is required.");
+  }
+  if (!state.last_name.trim()) {
+    errors.push("Last name is required.");
+  }
+  if (!state.date_of_birth || !/^\d{4}-\d{2}-\d{2}$/.test(state.date_of_birth)) {
+    errors.push("Date of birth is required.");
+  } else if (!isAdult(state.date_of_birth)) {
+    errors.push("Guest must be at least 18 years old.");
+  }
+  if (!state.nationality_type.trim()) {
+    errors.push("Nationality is required.");
+  }
+  if (!state.permanent_address.trim()) {
+    errors.push("Address is required.");
+  }
+
+  return errors;
+}
+
+function validateStepTwo(state: KycEditorState): string[] {
+  const errors: string[] = [];
+  if (!state.id_type.trim()) {
+    errors.push("Select one government ID type.");
+  }
+  if (!state.front_image_url || !state.front_image_key) {
+    errors.push("Upload the front side of your ID.");
+  }
+  if (!state.id_number.trim()) {
+    errors.push("ID number is required.");
+  }
+  if (!state.consent_terms) {
+    errors.push("Please accept Terms and Conditions.");
+  }
+  if (!state.consent_age) {
+    errors.push("Age confirmation is required.");
+  }
+  return errors;
+}
+
+function validateStepThree(state: KycEditorState): string[] {
+  const errors: string[] = [];
+  if (!state.arrival_time.trim()) {
+    errors.push("Select your expected arrival window.");
+  }
+  if (!state.coming_from.trim()) {
+    errors.push("Please enter where you are coming from.");
+  }
+  if (!state.going_to.trim()) {
+    errors.push("Please enter your next destination.");
+  }
+  if (!/^\+\d{10,15}$/.test(state.contact_number.trim())) {
+    errors.push("Contact number must include country code (for example +918765432109).");
+  }
+  if (!PURPOSES.includes(state.purpose)) {
+    errors.push("Select a valid travel purpose.");
+  }
+  return errors;
+}
+
+function validateForSubmit(state: KycEditorState): string[] {
+  return [...validateStepOne(state), ...validateStepTwo(state), ...validateStepThree(state)];
 }
 
 export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: string }) {
+  const router = useRouter();
   const { guest, isAuthenticated, isRestoringSession, openAuthModal } = useGuestAuth();
-  const [bookingTitle, setBookingTitle] = useState<string>("Pre-arrival setup");
-  const [activeTab, setActiveTab] = useState<"kyc" | "addons">("kyc");
-  const [catalogItems, setCatalogItems] = useState<StoreCatalogItem[]>([]);
-  const [addonQuantities, setAddonQuantities] = useState<Record<string, number>>({});
+
+  const [bookingTitle, setBookingTitle] = useState("Web check-in");
+  const [propertyName, setPropertyName] = useState("The Daily Social");
+  const [bookingLifecycleStatus, setBookingLifecycleStatus] = useState<string | null>(null);
   const [slots, setSlots] = useState<BookingSlotSummary[]>([]);
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
-  const [editorState, setEditorState] = useState<KycEditorState>(emptyKycState);
+  const [activeStep, setActiveStep] = useState<Step>(1);
+  const [editorState, setEditorState] = useState<KycEditorState>(() =>
+    emptyEditorState({
+      fullName: guest?.name,
+      email: guest?.email,
+      phone: guest?.phone,
+      birthDate: guest?.birthDate,
+      nationality: guest?.nationality,
+      location: guest?.location,
+      gender: guest?.gender,
+    }),
+  );
+
   const [isLoading, setIsLoading] = useState(true);
-  const [isMutating, setIsMutating] = useState(false);
+  const [isMutatingSlots, setIsMutatingSlots] = useState(false);
   const [isUploadingFront, setIsUploadingFront] = useState(false);
   const [isUploadingBack, setIsUploadingBack] = useState(false);
   const [isRunningOcr, setIsRunningOcr] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [uploadPreviewDraft, setUploadPreviewDraft] = useState<UploadPreviewDraft | null>(null);
+  const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!successMessage) {
-      return;
-    }
+  const frontUploadInputRef = useRef<HTMLInputElement | null>(null);
+  const backUploadInputRef = useRef<HTMLInputElement | null>(null);
+  const frontCameraInputRef = useRef<HTMLInputElement | null>(null);
+  const backCameraInputRef = useRef<HTMLInputElement | null>(null);
+  const slotsRef = useRef<BookingSlotSummary[]>([]);
+  const activeSlotIdRef = useRef<string | null>(null);
 
-    toast.success("Pre-arrival update", {
-      description: successMessage,
-    });
-  }, [successMessage]);
-
-  useEffect(() => {
-    if (!errorMessage) {
-      return;
-    }
-
-    toast.error("Pre-arrival action failed", {
-      description: errorMessage,
-    });
-  }, [errorMessage]);
+  const guestPrefill = useMemo(
+    () => ({
+      name: guest?.name,
+      email: guest?.email,
+      phone: guest?.phone,
+      birthDate: guest?.birthDate,
+      nationality: guest?.nationality,
+      location: guest?.location,
+      gender: guest?.gender,
+    }),
+    [guest?.birthDate, guest?.email, guest?.gender, guest?.location, guest?.name, guest?.nationality, guest?.phone],
+  );
 
   const activeSlot = useMemo(
     () => slots.find((slot) => slot.slot_id === activeSlotId) ?? null,
     [activeSlotId, slots],
   );
+
   const completedSlotCount = useMemo(
     () => slots.filter((slot) => slot.kyc_status === "PRE_VERIFIED" || slot.kyc_status === "VERIFIED").length,
     [slots],
   );
-  const activeMissionSteps = useMemo(() => missionStepCount(editorState), [editorState]);
 
   const canEditActiveSlot =
     Boolean(activeSlot?.can_edit ?? true) &&
     activeSlot?.kyc_status !== "PRE_VERIFIED" &&
     activeSlot?.kyc_status !== "VERIFIED";
 
-  const loadSlots = useCallback(async (selectedSlotId?: string) => {
-    const storedToken = getStoredGuestToken();
-    if (typeof storedToken !== "string" || storedToken.length === 0) {
-      setIsLoading(false);
+  const progressPercent = useMemo(() => {
+    if (activeStep === 1) {
+      return 34;
+    }
+    if (activeStep === 2) {
+      return 67;
+    }
+    return 100;
+  }, [activeStep]);
+
+  const frontPreview = editorState.front_image_url;
+  const backPreview = editorState.back_image_url;
+
+  const showUploadPreviewModal = Boolean(uploadPreviewDraft);
+
+  const setField = <K extends keyof KycEditorState>(key: K, value: KycEditorState[K]) => {
+    setEditorState((current) => ({ ...current, [key]: value }));
+  };
+
+  useEffect(() => {
+    slotsRef.current = slots;
+  }, [slots]);
+
+  useEffect(() => {
+    activeSlotIdRef.current = activeSlotId;
+  }, [activeSlotId]);
+
+  useEffect(() => {
+    return () => {
+      if (uploadPreviewDraft?.objectUrl) {
+        URL.revokeObjectURL(uploadPreviewDraft.objectUrl);
+      }
+    };
+  }, [uploadPreviewDraft?.objectUrl]);
+
+  useEffect(() => {
+    if (!errorMessage) {
       return;
     }
-    const token = storedToken;
 
-    setIsLoading(true);
-    setErrorMessage(null);
+    toast.error("Web check-in issue", {
+      description: errorMessage,
+    });
+  }, [errorMessage]);
 
-    try {
-      const [detail, slotResponse] = await Promise.all([
-        linkGuestBooking(token, ezeeReservationId),
-        getBookingKycSlots(token, ezeeReservationId),
-      ]);
+  const loadSlotDetail = useCallback(
+    async (token: string, slotId: string, nextSlots?: BookingSlotSummary[]) => {
+      const detailKey = slotDetailCacheKey(ezeeReservationId, slotId);
+      const cachedDetail = getClientCache<BookingKycDetailResponse>(detailKey, WEB_CHECKIN_CACHE_TTL_MS);
+      const selectedSlot = (nextSlots ?? slotsRef.current).find((slot) => slot.slot_id === slotId) ?? null;
 
-      const catalog = await getStoreCatalog(detail.booking.property_id).catch(() => []);
-      setCatalogItems(catalog);
-
-      setBookingTitle(detail.booking.room_type_name || "Pre-arrival setup");
-      setSlots(slotResponse.slots);
-
-      const nextActiveFromState = activeSlotId && slotResponse.slots.some((slot) => slot.slot_id === activeSlotId)
-        ? activeSlotId
-        : null;
-      const preferredSlotId = selectedSlotId
-        || nextActiveFromState
-        || slotResponse.slots.find((slot) => slot.guest_id)?.slot_id
-        || slotResponse.slots[0]?.slot_id
-        || null;
-
-      setActiveSlotId(preferredSlotId);
-
-      if (preferredSlotId) {
-        const slotDetail = await getBookingKycDetail(token, ezeeReservationId, preferredSlotId);
-        const selectedSlot = slotResponse.slots.find((slot) => slot.slot_id === preferredSlotId) ?? null;
-        setEditorState(createEditorState(slotDetail.kyc, selectedSlot?.guest_name, guest?.phone));
-      } else {
-        setEditorState(createEditorState(null, null, guest?.phone));
+      if (cachedDetail) {
+        setEditorState(
+          createEditorState(cachedDetail.kyc, {
+            slotGuestName: selectedSlot?.guest_name,
+            guestName: guestPrefill.name,
+            email: guestPrefill.email,
+            phone: guestPrefill.phone,
+            birthDate: guestPrefill.birthDate,
+            nationality: guestPrefill.nationality,
+            location: guestPrefill.location,
+            gender: guestPrefill.gender,
+          }),
+        );
       }
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to load pre-arrival setup.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activeSlotId, ezeeReservationId, guest?.phone]);
+
+      const detail = await getBookingKycDetail(token, ezeeReservationId, slotId);
+      setClientCache(detailKey, detail);
+      setEditorState(
+        createEditorState(detail.kyc, {
+          slotGuestName: selectedSlot?.guest_name,
+          guestName: guestPrefill.name,
+          email: guestPrefill.email,
+          phone: guestPrefill.phone,
+          birthDate: guestPrefill.birthDate,
+          nationality: guestPrefill.nationality,
+          location: guestPrefill.location,
+          gender: guestPrefill.gender,
+        }),
+      );
+    },
+    [ezeeReservationId, guestPrefill],
+  );
+
+  const loadSlots = useCallback(
+    async (preferredSlotId?: string) => {
+      if (isRestoringSession) {
+        return;
+      }
+
+      const token = getStoredGuestToken();
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      const cacheKey = slotsCacheKey(ezeeReservationId);
+      const cachedSlots = getClientCache<SlotsCachePayload>(cacheKey, WEB_CHECKIN_CACHE_TTL_MS);
+
+      if (cachedSlots) {
+        setSlots(cachedSlots.slots);
+        setBookingTitle(cachedSlots.bookingTitle);
+        setPropertyName(cachedSlots.propertyName);
+        setBookingLifecycleStatus(cachedSlots.bookingStatus ?? null);
+        const currentActiveSlotId = activeSlotIdRef.current;
+        const cachedActive = preferredSlotId
+          || cachedSlots.slots.find((slot) => slot.slot_id === currentActiveSlotId)?.slot_id
+          || cachedSlots.slots[0]?.slot_id
+          || null;
+        setActiveSlotId(cachedActive);
+        setIsLoading(false);
+
+        if (isPaymentPendingStatus(cachedSlots.bookingStatus)) {
+          return;
+        }
+      }
+
+      setIsLoading(true);
+      setErrorMessage(null);
+
+      try {
+        const [bookingLinkResponse, slotResponse] = await Promise.all([
+          linkGuestBooking(token, ezeeReservationId),
+          getBookingKycSlots(token, ezeeReservationId),
+        ]);
+
+        const nextPropertyName = withBrandName(bookingLinkResponse.booking.property_id);
+        const nextTitle = bookingLinkResponse.booking.room_type_name || "Web check-in";
+        const nextBookingStatus = (bookingLinkResponse.booking.status || "").toUpperCase();
+
+        setBookingTitle(nextTitle);
+        setPropertyName(nextPropertyName);
+        setBookingLifecycleStatus(nextBookingStatus || null);
+
+        if (isPaymentPendingStatus(nextBookingStatus)) {
+          setSlots([]);
+          setActiveSlotId(null);
+          setClientCache(cacheKey, {
+            slots: [],
+            bookingTitle: nextTitle,
+            propertyName: nextPropertyName,
+            bookingStatus: nextBookingStatus,
+          });
+          return;
+        }
+
+        setSlots(slotResponse.slots);
+        setClientCache(cacheKey, {
+          slots: slotResponse.slots,
+          bookingTitle: nextTitle,
+          propertyName: nextPropertyName,
+          bookingStatus: nextBookingStatus,
+        });
+
+        const currentActiveSlotId = activeSlotIdRef.current;
+        const nextActiveSlotId = preferredSlotId
+          || slotResponse.slots.find((slot) => slot.slot_id === currentActiveSlotId)?.slot_id
+          || slotResponse.slots.find((slot) => slot.guest_id)?.slot_id
+          || slotResponse.slots[0]?.slot_id
+          || null;
+
+        setActiveSlotId(nextActiveSlotId);
+
+        if (nextActiveSlotId) {
+          await loadSlotDetail(token, nextActiveSlotId, slotResponse.slots);
+        } else {
+          setEditorState(
+            emptyEditorState({
+              fullName: guestPrefill.name,
+              email: guestPrefill.email,
+              phone: guestPrefill.phone,
+              birthDate: guestPrefill.birthDate,
+              nationality: guestPrefill.nationality,
+              location: guestPrefill.location,
+              gender: guestPrefill.gender,
+            }),
+          );
+        }
+      } catch (error) {
+        setErrorMessage(toSafeErrorMessage(error, "We could not load web check-in right now."));
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [
+      ezeeReservationId,
+      guestPrefill,
+      isRestoringSession,
+      loadSlotDetail,
+    ],
+  );
 
   useEffect(() => {
     if (isRestoringSession) {
@@ -330,88 +653,104 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     void loadSlots();
   }, [isAuthenticated, isRestoringSession, loadSlots]);
 
-  async function selectSlot(nextSlotId: string) {
-    const storedToken = getStoredGuestToken();
-    if (typeof storedToken !== "string" || storedToken.length === 0) {
+  async function selectSlot(slotId: string) {
+    const token = getStoredGuestToken();
+    if (!token) {
       return;
     }
-    const token = storedToken;
 
-    setActiveSlotId(nextSlotId);
-    setSuccessMessage(null);
+    setActiveSlotId(slotId);
+    setActiveStep(1);
     setErrorMessage(null);
 
     try {
-      const slotDetail = await getBookingKycDetail(token, ezeeReservationId, nextSlotId);
-      const nextSlot = slots.find((slot) => slot.slot_id === nextSlotId) ?? null;
-      setEditorState(createEditorState(slotDetail.kyc, nextSlot?.guest_name, guest?.phone));
+      await loadSlotDetail(token, slotId);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to open this slot.");
+      setErrorMessage(toSafeErrorMessage(error, "Unable to open this guest slot."));
     }
   }
 
   async function handleAddSlot() {
-    const storedToken = getStoredGuestToken();
-    if (typeof storedToken !== "string" || storedToken.length === 0) {
+    const token = getStoredGuestToken();
+    if (!token) {
+      setErrorMessage("Your session ended. Please sign in again.");
       return;
     }
-    const token = storedToken;
 
-    setIsMutating(true);
+    setIsMutatingSlots(true);
     setErrorMessage(null);
-    setSuccessMessage(null);
 
     try {
-      const newSlot = await addBookingKycSlot(token, ezeeReservationId);
-      await loadSlots(newSlot.slot_id);
-      setSuccessMessage(`Added ${newSlot.label}.`);
+      const nextSlot = await addBookingKycSlot(token, ezeeReservationId);
+      toast.success("Guest slot added", {
+        description: `${nextSlot.label} is ready for details.`,
+      });
+      await loadSlots(nextSlot.slot_id);
+      setActiveStep(1);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to add another guest slot.");
+      setErrorMessage(toSafeErrorMessage(error, "Unable to add another guest slot."));
     } finally {
-      setIsMutating(false);
+      setIsMutatingSlots(false);
     }
   }
 
   async function handleDeleteSlot(slotId: string) {
-    const storedToken = getStoredGuestToken();
-    if (typeof storedToken !== "string" || storedToken.length === 0) {
+    const token = getStoredGuestToken();
+    if (!token) {
+      setErrorMessage("Your session ended. Please sign in again.");
       return;
     }
-    const token = storedToken;
 
-    setIsMutating(true);
+    setIsMutatingSlots(true);
     setErrorMessage(null);
-    setSuccessMessage(null);
 
     try {
-      if (slotId === activeSlotId) {
-        setActiveSlotId(null);
-      }
       const response = await deleteBookingKycSlot(token, ezeeReservationId, slotId);
+      toast.success("Guest slot removed", {
+        description: response.message,
+      });
       await loadSlots();
-      setSuccessMessage(response.message);
+      setActiveStep(1);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to delete this slot.");
+      setErrorMessage(toSafeErrorMessage(error, "Unable to delete this slot."));
     } finally {
-      setIsMutating(false);
+      setIsMutatingSlots(false);
     }
   }
 
-  async function handleUpload(side: "front" | "back", file: File) {
-    const storedToken = getStoredGuestToken();
-    if (typeof storedToken !== "string" || storedToken.length === 0) {
+  function handleSelectedFile(side: UploadSide, event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) {
       return;
     }
-    const token = storedToken;
+
+    if (!file.type.startsWith("image/")) {
+      setErrorMessage("Only image files are supported for ID upload.");
+      event.target.value = "";
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    if (uploadPreviewDraft?.objectUrl) {
+      URL.revokeObjectURL(uploadPreviewDraft.objectUrl);
+    }
+    setUploadPreviewDraft({ side, file, objectUrl });
+    event.target.value = "";
+  }
+
+  async function handleUpload(side: UploadSide, file: File) {
+    const token = getStoredGuestToken();
+    if (!token) {
+      setErrorMessage("Your session ended. Please sign in again.");
+      return;
+    }
 
     if (side === "front") {
       setIsUploadingFront(true);
     } else {
       setIsUploadingBack(true);
     }
-
     setErrorMessage(null);
-    setSuccessMessage(null);
 
     try {
       const upload = await getBookingKycUploadUrl(token, ezeeReservationId, {
@@ -420,23 +759,20 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
       });
 
       await uploadFileToPresignedUrl(upload.uploadUrl, file);
+      const publicUrl = publicFileUrlFromUploadUrl(upload.uploadUrl);
 
       setEditorState((current) => ({
         ...current,
         ...(side === "front"
-          ? {
-              front_image_key: upload.fileKey,
-              front_image_url: publicFileUrlFromUploadUrl(upload.uploadUrl),
-            }
-          : {
-              back_image_key: upload.fileKey,
-              back_image_url: publicFileUrlFromUploadUrl(upload.uploadUrl),
-            }),
+          ? { front_image_key: upload.fileKey, front_image_url: publicUrl }
+          : { back_image_key: upload.fileKey, back_image_url: publicUrl }),
       }));
 
-      setSuccessMessage(`${side === "front" ? "Front" : "Back"} document uploaded.`);
+      toast.success("ID uploaded", {
+        description: `${side === "front" ? "Front" : "Back"} image uploaded successfully.`,
+      });
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Document upload failed.");
+      setErrorMessage(toSafeErrorMessage(error, "Document upload failed. Please try again."));
     } finally {
       if (side === "front") {
         setIsUploadingFront(false);
@@ -446,16 +782,32 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     }
   }
 
-  async function handleRunOcr() {
-    const storedToken = getStoredGuestToken();
-    if (typeof storedToken !== "string" || storedToken.length === 0 || !activeSlotId || !editorState.front_image_key) {
+  async function applyUploadPreview() {
+    if (!uploadPreviewDraft) {
       return;
     }
-    const token = storedToken;
+
+    const { side, file, objectUrl } = uploadPreviewDraft;
+    setUploadPreviewDraft(null);
+    URL.revokeObjectURL(objectUrl);
+    await handleUpload(side, file);
+  }
+
+  function dismissUploadPreview() {
+    if (uploadPreviewDraft?.objectUrl) {
+      URL.revokeObjectURL(uploadPreviewDraft.objectUrl);
+    }
+    setUploadPreviewDraft(null);
+  }
+
+  async function handleRunOcr() {
+    const token = getStoredGuestToken();
+    if (!token || !activeSlotId || !editorState.front_image_key) {
+      return;
+    }
 
     setIsRunningOcr(true);
     setErrorMessage(null);
-    setSuccessMessage(null);
 
     try {
       const ocr = await runBookingKycOcr(token, ezeeReservationId, activeSlotId, {
@@ -463,62 +815,95 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
         ...(editorState.back_image_key ? { back_image_key: editorState.back_image_key } : {}),
       });
 
-      setEditorState((current) => ({
-        ...current,
-        id_type: ocr.id_type_detected || current.id_type,
-        full_name: ocr.ocr_name || current.full_name,
-        date_of_birth: normaliseOcrDate(ocr.ocr_dob) || current.date_of_birth,
-        id_number: ocr.ocr_id_number || current.id_number,
-        permanent_address: ocr.ocr_address || current.permanent_address,
-      }));
+      setEditorState((current) => {
+        const normalizedName = (ocr.ocr_name || "").trim();
+        const [firstName, ...lastNameParts] = normalizedName ? normalizedName.split(/\s+/) : [current.first_name, current.last_name];
 
-      setSuccessMessage("OCR completed. Review the extracted fields before you submit.");
+        return {
+          ...current,
+          id_type: ocr.id_type_detected || current.id_type,
+          first_name: firstName || current.first_name,
+          last_name: lastNameParts.join(" ") || current.last_name,
+          date_of_birth: normalizeOcrDate(ocr.ocr_dob) || current.date_of_birth,
+          id_number: ocr.ocr_id_number || current.id_number,
+          permanent_address: ocr.ocr_address || current.permanent_address,
+        };
+      });
+
+      toast.success("ID scanned", {
+        description: "Review the extracted fields before submitting.",
+      });
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "OCR could not be completed.");
+      setErrorMessage(toSafeErrorMessage(error, "We could not scan this ID. Please fill the fields manually."));
     } finally {
       setIsRunningOcr(false);
     }
   }
 
-  async function handleSubmit() {
-    const storedToken = getStoredGuestToken();
-    if (typeof storedToken !== "string" || storedToken.length === 0 || !activeSlotId) {
+  function nextStep() {
+    const stepErrors =
+      activeStep === 1 ? validateStepOne(editorState) : activeStep === 2 ? validateStepTwo(editorState) : [];
+
+    if (stepErrors.length > 0) {
+      setErrorMessage(stepErrors[0]);
       return;
     }
-    const token = storedToken;
+
+    setErrorMessage(null);
+    setActiveStep((current) => Math.min(3, current + 1) as Step);
+  }
+
+  function previousStep() {
+    if (activeStep === 1) {
+      router.push(`/bookings/${encodeURIComponent(ezeeReservationId)}`);
+      return;
+    }
+
+    setErrorMessage(null);
+    setActiveStep((current) => Math.max(1, current - 1) as Step);
+  }
+
+  async function handleSubmit() {
+    const token = getStoredGuestToken();
+    if (!token || !activeSlotId) {
+      setErrorMessage("Your session ended. Please sign in again.");
+      return;
+    }
+
+    const validationErrors = validateForSubmit(editorState);
+    if (validationErrors.length > 0) {
+      setErrorMessage(validationErrors[0]);
+      return;
+    }
+
+    const payload: KycSubmitPayload = {
+      nationality_type: editorState.nationality_type,
+      id_type: editorState.id_type,
+      full_name: `${editorState.first_name} ${editorState.last_name}`.replace(/\s+/g, " ").trim(),
+      date_of_birth: editorState.date_of_birth,
+      id_number: editorState.id_number.trim(),
+      permanent_address: editorState.permanent_address.trim(),
+      contact_number: editorState.contact_number.trim(),
+      coming_from: editorState.coming_from.trim(),
+      going_to: editorState.going_to.trim(),
+      purpose: editorState.purpose,
+      front_image_url: editorState.front_image_url,
+      back_image_url: editorState.back_image_url,
+      consent_given: editorState.consent_terms && editorState.consent_age,
+    };
 
     setIsSubmitting(true);
     setErrorMessage(null);
-    setSuccessMessage(null);
 
     try {
-      const payload: KycSubmitPayload = {
-        nationality_type: editorState.nationality_type,
-        id_type: editorState.id_type,
-        full_name: editorState.full_name.trim(),
-        date_of_birth: editorState.date_of_birth,
-        id_number: editorState.id_number.trim(),
-        permanent_address: editorState.permanent_address.trim(),
-        contact_number: editorState.contact_number.trim(),
-        coming_from: editorState.coming_from.trim(),
-        going_to: editorState.going_to.trim(),
-        purpose: editorState.purpose,
-        front_image_url: editorState.front_image_url,
-        back_image_url: editorState.back_image_url,
-        consent_given: editorState.consent_given,
-      };
-      const validationErrors = validateKycPayload(payload);
-      if (validationErrors.length > 0) {
-        setErrorMessage(validationErrors.join(" "));
-        return;
-      }
-
-      const response = await submitBookingKyc(token, ezeeReservationId, activeSlotId, payload);
-
-      setSuccessMessage(response.message);
+      await submitBookingKyc(token, ezeeReservationId, activeSlotId, payload);
+      toast.success("Web check-in submitted", {
+        description: `${activeSlot?.label || "Guest slot"} is submitted successfully.`,
+      });
       await loadSlots(activeSlotId);
+      setIsCompletionModalOpen(true);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Unable to submit KYC.");
+      setErrorMessage(toSafeErrorMessage(error, "Unable to submit web check-in right now."));
     } finally {
       setIsSubmitting(false);
     }
@@ -527,12 +912,12 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
   if (isRestoringSession || isLoading) {
     return (
       <BookingPageShell
-        badge="Pre-arrival Setup"
-        title="Preparing your guest slots"
-        description="Loading the booking slots, existing KYC state, and pre-arrival actions for this reservation."
+        badge="Web Check-In"
+        title="Preparing your check-in"
+        description="Loading your guest slots and any saved check-in details."
       >
         <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-8 text-center text-white/72">
-          Loading pre-arrival setup...
+          Loading web check-in...
         </div>
       </BookingPageShell>
     );
@@ -541,14 +926,14 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
   if (!isAuthenticated) {
     return (
       <BookingPageShell
-        badge="Pre-arrival Setup"
-        title="Sign in to complete pre-arrival setup"
-        description="KYC upload and slot management require the linked guest session for this booking."
+        badge="Web Check-In"
+        title="Sign in to continue"
+        description="Web check-in is tied to your guest session for this booking."
       >
         <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-8 text-center shadow-[var(--vh-shadow-lg)]">
           <p className="text-lg font-semibold text-white">Guest sign-in required</p>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/70">
-            Sign in with the guest account linked to this reservation, then continue the KYC flow for each guest slot.
+            Sign in with the same account used for this booking, then continue web check-in.
           </p>
           <Button className="mt-6 rounded-full px-6" onClick={() => openAuthModal("signin")} type="button">
             Sign in to continue
@@ -558,362 +943,677 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     );
   }
 
+  if (isPaymentPendingStatus(bookingLifecycleStatus)) {
+    return (
+      <BookingPageShell
+        badge="Web Check-In"
+        title="Payment pending"
+        description="Web check-in opens only after booking payment is successful."
+      >
+        <BookingEmptyState
+          title="Finish payment to unlock web check-in"
+          description="Ask the primary guest to complete payment for this reservation, then reopen this link to continue check-in."
+          ctaHref={`/bookings/${encodeURIComponent(ezeeReservationId)}/confirmed`}
+          ctaLabel="View booking status"
+        />
+      </BookingPageShell>
+    );
+  }
+
   if (slots.length === 0) {
     return (
       <BookingPageShell
-        badge="Pre-arrival Setup"
+        badge="Web Check-In"
         title="No guest slots found"
-        description="This reservation does not have any active guest slots yet, so there is nothing to complete on the KYC side."
+        description="We could not find guest slots for this booking yet."
       >
         <BookingEmptyState
-          title="Guest slots are missing"
-          description={errorMessage || "Try reopening the booking detail page so the link flow can initialise the guest slots, then return here."}
+          title="Guest slots are unavailable"
+          description={errorMessage || "Please reopen the booking details and try web check-in again."}
           ctaHref={`/bookings/${encodeURIComponent(ezeeReservationId)}`}
           ctaLabel="Back to booking"
         />
       </BookingPageShell>
     );
   }
+
   return (
     <section className="vh-section min-h-screen bg-[var(--vh-section-b)] pt-24 md:pt-28 animate-vh-fade-in">
       <div className="vh-container">
         <div className="mx-auto max-w-6xl">
           <div className="animate-vh-slide-up overflow-hidden rounded-[28px] border border-[rgba(253,16,94,0.14)] bg-[var(--vh-section-a)] shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
-            <div className="flex items-center justify-between border-b border-[rgba(253,16,94,0.1)] bg-[rgba(253,16,94,0.03)] px-4 py-5 backdrop-blur-md md:px-6">
-              <Button asChild className="h-10 w-10 rounded-[12px] border border-white/10 bg-transparent p-0 text-[var(--vh-pink)] shadow-none hover:bg-white/10 transition-all duration-300" variant="ghost">
-                <Link href={`/bookings/${encodeURIComponent(ezeeReservationId)}`} aria-label="Back to booking">
+            <div className="flex items-center justify-between border-b border-[rgba(253,16,94,0.1)] bg-[rgba(253,16,94,0.03)] px-4 py-4 md:px-6 backdrop-blur-md">
+              <Button asChild className="h-10 w-10 rounded-[12px] border border-white/10 bg-transparent p-0 text-white shadow-none hover:bg-white/10" variant="ghost">
+                <Link href={`/bookings/${encodeURIComponent(ezeeReservationId)}`} aria-label="Back to booking detail">
                   <ArrowLeft className="h-4 w-4" />
                 </Link>
               </Button>
-              <p className="font-['Space_Grotesk'] text-2xl font-bold uppercase tracking-[-0.04em] text-slate-100 [text-shadow:2px_2px_0px_var(--vh-pink)]">
-                Pre-Arrival
-              </p>
-              <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[rgba(253,16,94,0.3)] bg-[rgba(253,16,94,0.1)] text-[var(--vh-pink)] shadow-[0_0_10px_rgba(253,16,94,0.1)]">
-                <Sparkles className="h-4 w-4" />
+              <div className="text-center">
+                <p className="font-['Space_Grotesk'] text-lg font-bold uppercase tracking-[0.08em] text-slate-100">
+                  Web Check-In
+                </p>
+                <p className="text-xs uppercase tracking-[0.14em] text-white/50">{withBrandName(propertyName)}</p>
               </div>
+              <div className="h-10 w-10" />
             </div>
 
             <div className="px-4 py-6 md:px-6">
               {errorMessage ? (
-                <div className="rounded-[22px] border border-[rgba(255,107,107,0.24)] bg-[rgba(255,107,107,0.1)] px-5 py-4 text-sm text-[var(--vh-hot)]">
+                <div className="rounded-[20px] border border-[rgba(255,107,107,0.24)] bg-[rgba(255,107,107,0.1)] px-4 py-3 text-sm text-[var(--vh-hot)]">
                   {errorMessage}
                 </div>
               ) : null}
 
-              {successMessage ? (
-                <div className="mt-4 rounded-[22px] border border-[rgba(57,247,44,0.2)] bg-[rgba(57,247,44,0.08)] px-5 py-4 text-sm text-[var(--vh-lime)]">
-                  {successMessage}
-                </div>
-              ) : null}
-
-              <div className="mt-6 flex gap-2 w-full max-w-[400px] rounded-[16px] bg-[rgba(253,16,94,0.05)] p-1.5 border border-[rgba(253,16,94,0.2)] mx-auto">
-                <button
-                  onClick={() => setActiveTab('kyc')}
-                  className={`flex-1 rounded-[12px] py-2.5 text-sm font-bold uppercase tracking-[0.1em] transition-all ${activeTab === 'kyc' ? 'bg-[var(--vh-pink)] text-white shadow-[0_4px_15px_rgba(253,16,94,0.3)]' : 'text-[var(--vh-pink)] hover:bg-[rgba(253,16,94,0.1)]'}`}
-                >
-                  KYC & Docs
-                </button>
-                <button
-                  onClick={() => setActiveTab('addons')}
-                  className={`flex-1 rounded-[12px] py-2.5 text-sm font-bold uppercase tracking-[0.1em] transition-all ${activeTab === 'addons' ? 'bg-[var(--vh-cyan)] text-[var(--vh-surface-2)] shadow-[0_4px_15px_rgba(234,239,254,0.3)]' : 'text-[var(--vh-cyan)] hover:bg-[rgba(234,239,254,0.1)]'}`}
-                >
-                  Pre-book Add-ons
-                </button>
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <StickerTag
+                  label={`${completedSlotCount}/${slots.length} Slots Ready`}
+                  bg="#39ff14"
+                  text="#111827"
+                  rotate="rotate-[-2deg]"
+                  className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.1em]"
+                />
+                <StickerTag
+                  label={bookingTitle}
+                  bg="#fef08a"
+                  text="#111827"
+                  rotate="rotate-[2deg]"
+                  className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.1em]"
+                />
               </div>
 
-              {activeTab === "kyc" && (
-                <>
-                  <div className="mt-6 rounded-[20px] border border-[rgba(253,16,94,0.24)] bg-[rgba(253,16,94,0.08)] p-4 backdrop-blur-sm">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-pink)]">Mission Progress</p>
-                  <p className="font-['Space_Grotesk'] text-xs font-bold text-slate-100">{activeMissionSteps} / 4</p>
+              <div className="mt-6 rounded-[16px] border border-[rgba(253,16,94,0.2)] bg-[rgba(253,16,94,0.06)] p-3">
+                <div className="flex items-center justify-between text-xs uppercase tracking-[0.12em] text-white/70">
+                  <span>Step progress</span>
+                  <span>{activeStep}/3</span>
                 </div>
-                <div className="mt-3 h-6 rounded-full border-2 border-[rgba(253,16,94,0.3)] bg-[rgba(253,16,94,0.08)] p-[2px]">
-                  <div className="flex h-full items-center justify-end rounded-full bg-gradient-to-r from-[var(--vh-pink)] to-[#ff3a7a] px-2 transition-all duration-500 shadow-[0_0_10px_rgba(253,16,94,0.4)]" style={{ width: `${Math.max(25, (activeMissionSteps / 4) * 100)}%` }}>
-                    <div className="h-2 flex-1 rounded-full bg-white/40" />
-                  </div>
+                <div className="mt-3 h-2 rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[var(--vh-pink)] to-[#ff4c30] transition-all duration-300"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                  {STEPS.map((step) => {
+                    const isCurrent = step.id === activeStep;
+                    const isDone = step.id < activeStep;
+
+                    return (
+                      <button
+                        key={step.id}
+                        className={cn(
+                          "rounded-[12px] border px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] transition-colors",
+                          isCurrent
+                            ? "border-[var(--vh-pink)] bg-[rgba(253,16,94,0.2)] text-white"
+                            : isDone
+                              ? "border-[rgba(57,247,44,0.3)] bg-[rgba(57,247,44,0.12)] text-[var(--vh-lime)]"
+                              : "border-white/10 bg-white/5 text-white/60",
+                        )}
+                        onClick={() => {
+                          if (step.id <= activeStep) {
+                            setActiveStep(step.id);
+                          }
+                        }}
+                        type="button"
+                      >
+                        {step.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
                 <div className="space-y-6">
-                  <section className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <h2 className="font-['Space_Grotesk'] text-[20px] font-bold uppercase text-white">1. ID Verification</h2>
-                      <IdCard className="h-4 w-4 text-[var(--vh-pink)]" />
-                    </div>
-                    <div className="-rotate-1 rounded-[16px] border border-[rgba(253,16,94,0.3)] bg-[var(--vh-ice)] p-5 text-[var(--vh-surface-2)] shadow-[8px_8px_0_0_var(--vh-pink)] transition-transform duration-300 hover:-translate-y-1 hover:-rotate-2 hover:shadow-[12px_12px_0_0_var(--vh-pink)]">
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <label className="rounded-[12px] bg-white border border-[rgba(253,16,94,0.2)] p-4 text-[var(--vh-surface-2)] shadow-sm hover:border-[var(--vh-pink)] transition-colors cursor-pointer group">
-                          <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 border-b border-[var(--vh-surface-2)]/10 pb-4 text-center">
-                            <div className="h-12 w-12 bg-center bg-no-repeat opacity-80 group-hover:scale-110 transition-transform duration-300" style={{ backgroundImage: "url('/design-guidelines/pre-arrival/Image.png')", backgroundSize: "contain" }} />
-                            <div>
-                              <p className="font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-pink)] group-hover:text-[var(--vh-cyan)] transition-colors">Click to snap</p>
-                              <p className="mt-2 text-sm font-medium text-[var(--vh-surface-2)]/70">&quot;Gotta make sure it&apos;s really you, boss!&quot;</p>
-                            </div>
-                          </div>
-                          <div className="mt-4 flex items-center justify-between gap-3">
-                            <div>
-                              <p className="font-['Space_Grotesk'] text-sm font-bold uppercase text-[var(--vh-surface-2)]">Front document</p>
-                              <p className="mt-1 text-xs font-medium text-[var(--vh-surface-2)]/60">{editorState.front_image_url ? "Uploaded and ready for OCR." : "Upload JPG, PNG, or HEIC."}</p>
-                            </div>
-                            {isUploadingFront ? <LoaderCircle className="h-4 w-4 animate-spin text-[var(--vh-pink)]" /> : <Upload className="h-4 w-4 text-[var(--vh-pink)] group-hover:-translate-y-1 transition-transform" />}
-                          </div>
-                          <input accept="image/*" className="mt-4 block w-full text-sm text-slate-700" disabled={!canEditActiveSlot || isUploadingFront} onChange={(event) => {
-                            const file = event.target.files?.[0];
-                            if (file) {
-                              void handleUpload("front", file);
-                            }
-                          }} type="file" />
+                  {activeStep === 1 ? (
+                    <section className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 md:p-6 shadow-[var(--vh-shadow-lg)]">
+                      <div className="flex items-center justify-between gap-3">
+                        <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase tracking-[-0.03em] text-white">
+                          Basic Info
+                        </h2>
+                        <User className="h-5 w-5 text-[var(--vh-cyan)]" />
+                      </div>
+
+                      <p className="mt-2 text-sm text-white/65">
+                        Prefilled from your profile where available. Adjust anything before continuing.
+                      </p>
+
+                      <div className="mt-5 grid gap-4 md:grid-cols-2">
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">First Name</span>
+                          <input
+                            className="vh-input bg-white/5 border-white/10"
+                            onChange={(event) => setField("first_name", event.target.value)}
+                            placeholder="First name"
+                            value={editorState.first_name}
+                          />
                         </label>
 
-                        <label className="rotate-[1deg] rounded-[12px] border-4 border-[var(--vh-pink)] bg-[var(--vh-surface-2)] p-4 text-white shadow-[0_10px_25px_-5px_rgba(0,0,0,0.22)] cursor-pointer group hover:rotate-0 hover:border-[var(--vh-cyan)] transition-all duration-300">
-                          <div className="flex min-h-[220px] flex-col items-center justify-center gap-4 text-center">
-                            <ShieldCheck className="h-10 w-10 text-[var(--vh-pink)] group-hover:text-[var(--vh-cyan)] transition-colors group-hover:scale-110" />
-                            <div>
-                              <p className="font-['Space_Grotesk'] text-sm font-black uppercase">Back document</p>
-                              <p className="mt-2 text-xs font-medium text-white/70">{editorState.back_image_url ? "Uploaded and ready for OCR." : "Optional for IDs that need two sides."}</p>
-                            </div>
-                          </div>
-                          <div className="mt-4 flex items-center justify-between gap-3">
-                            <p className="font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.12em] text-[var(--vh-pink)] group-hover:text-[var(--vh-cyan)] transition-colors">Optional support file</p>
-                            {isUploadingBack ? <LoaderCircle className="h-4 w-4 animate-spin text-white" /> : <Upload className="h-4 w-4 text-white group-hover:-translate-y-1 transition-transform" />}
-                          </div>
-                          <input accept="image/*" className="mt-4 block w-full text-sm text-white" disabled={!canEditActiveSlot || isUploadingBack} onChange={(event) => {
-                            const file = event.target.files?.[0];
-                            if (file) {
-                              void handleUpload("back", file);
-                            }
-                          }} type="file" />
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Last Name</span>
+                          <input
+                            className="vh-input bg-white/5 border-white/10"
+                            onChange={(event) => setField("last_name", event.target.value)}
+                            placeholder="Last name"
+                            value={editorState.last_name}
+                          />
                         </label>
+
+                        <label className="space-y-2 md:col-span-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Email</span>
+                          <input
+                            className="vh-input bg-white/5 border-white/10"
+                            onChange={(event) => setField("email", event.target.value)}
+                            placeholder="Email"
+                            type="email"
+                            value={editorState.email}
+                          />
+                        </label>
+
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Date Of Birth</span>
+                          <input
+                            className="vh-input bg-white/5 border-white/10"
+                            onChange={(event) => setField("date_of_birth", event.target.value)}
+                            type="date"
+                            value={editorState.date_of_birth}
+                          />
+                        </label>
+
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Gender</span>
+                          <select
+                            className="vh-input bg-white/5 border-white/10"
+                            onChange={(event) => setField("gender", event.target.value as GenderValue)}
+                            value={editorState.gender}
+                          >
+                            <option className="text-slate-900" value="MALE">Male</option>
+                            <option className="text-slate-900" value="FEMALE">Female</option>
+                            <option className="text-slate-900" value="OTHER">Other</option>
+                          </select>
+                        </label>
+
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Nationality</span>
+                          <select
+                            className="vh-input bg-white/5 border-white/10"
+                            onChange={(event) => setField("nationality_type", event.target.value)}
+                            value={editorState.nationality_type}
+                          >
+                            <option className="text-slate-900" value="INDIAN">Indian</option>
+                          </select>
+                        </label>
+
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Contact Number</span>
+                          <input
+                            className="vh-input bg-white/5 border-white/10"
+                            onChange={(event) => setField("contact_number", normalizeContactNumber(event.target.value))}
+                            placeholder="+918765432109"
+                            value={editorState.contact_number}
+                          />
+                        </label>
+
+                        <label className="space-y-2 md:col-span-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Address</span>
+                          <textarea
+                            className="vh-input min-h-[110px] resize-y bg-white/5 border-white/10"
+                            onChange={(event) => setField("permanent_address", event.target.value)}
+                            placeholder="Full address"
+                            value={editorState.permanent_address}
+                          />
+                        </label>
+                      </div>
+                    </section>
+                  ) : null}
+
+                  {activeStep === 2 ? (
+                    <section className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 md:p-6 shadow-[var(--vh-shadow-lg)]">
+                      <div className="flex items-center justify-between gap-3">
+                        <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase tracking-[-0.03em] text-white">
+                          Required Details
+                        </h2>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              aria-label="Upload guidance"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 hover:bg-white/10"
+                              type="button"
+                            >
+                              <Info className="h-4 w-4" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72 border-white/15 bg-[var(--vh-section-a)] p-4 text-sm text-white/80">
+                            Upload one valid government ID. You can use camera capture for quick mobile upload, then run ID scan to prefill fields.
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        {ID_TYPES.map((idType) => (
+                          <button
+                            key={idType.value}
+                            className={cn(
+                              "rounded-[12px] border px-4 py-3 text-left transition-colors",
+                              editorState.id_type === idType.value
+                                ? "border-[var(--vh-pink)] bg-[rgba(253,16,94,0.12)] text-white"
+                                : "border-white/10 bg-white/5 text-white/75 hover:border-white/20",
+                            )}
+                            onClick={() => setField("id_type", idType.value)}
+                            type="button"
+                          >
+                            <p className="text-sm font-bold uppercase tracking-[0.08em]">{idType.label}</p>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                        <div className="rounded-[16px] border border-dashed border-white/20 bg-white/5 p-4">
+                          <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Front side</p>
+                          <div className="relative mt-3 flex h-40 items-center justify-center overflow-hidden rounded-[12px] border border-white/10 bg-black/20">
+                            {frontPreview ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img alt="Front ID preview" className="h-full w-full object-cover" src={frontPreview} />
+                            ) : (
+                              <p className="text-xs uppercase tracking-[0.12em] text-white/40">No file selected</p>
+                            )}
+                            {isRunningOcr ? (
+                              <div className="pointer-events-none absolute inset-0 bg-black/35">
+                                <div className="vh-scan-line absolute left-0 right-0 h-[2px] bg-[var(--vh-cyan)] shadow-[0_0_12px_rgba(58,95,132,0.85)]" />
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mt-3 grid grid-cols-2 gap-2">
+                            <Button
+                              className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/8"
+                              disabled={!canEditActiveSlot || isUploadingFront}
+                              onClick={() => frontCameraInputRef.current?.click()}
+                              type="button"
+                              variant="outline"
+                            >
+                              <Camera className="mr-2 h-4 w-4" />
+                              Camera
+                            </Button>
+                            <Button
+                              className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/8"
+                              disabled={!canEditActiveSlot || isUploadingFront}
+                              onClick={() => frontUploadInputRef.current?.click()}
+                              type="button"
+                              variant="outline"
+                            >
+                              {isUploadingFront ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                              Upload
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="rounded-[16px] border border-dashed border-white/20 bg-white/5 p-4">
+                          <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Back side</p>
+                          <div className="relative mt-3 flex h-40 items-center justify-center overflow-hidden rounded-[12px] border border-white/10 bg-black/20">
+                            {backPreview ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img alt="Back ID preview" className="h-full w-full object-cover" src={backPreview} />
+                            ) : (
+                              <p className="text-xs uppercase tracking-[0.12em] text-white/40">Optional</p>
+                            )}
+                            {isRunningOcr ? (
+                              <div className="pointer-events-none absolute inset-0 bg-black/35">
+                                <div className="vh-scan-line absolute left-0 right-0 h-[2px] bg-[var(--vh-cyan)] shadow-[0_0_12px_rgba(58,95,132,0.85)]" />
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mt-3 grid grid-cols-2 gap-2">
+                            <Button
+                              className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/8"
+                              disabled={!canEditActiveSlot || isUploadingBack}
+                              onClick={() => backCameraInputRef.current?.click()}
+                              type="button"
+                              variant="outline"
+                            >
+                              <Camera className="mr-2 h-4 w-4" />
+                              Camera
+                            </Button>
+                            <Button
+                              className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/8"
+                              disabled={!canEditActiveSlot || isUploadingBack}
+                              onClick={() => backUploadInputRef.current?.click()}
+                              type="button"
+                              variant="outline"
+                            >
+                              {isUploadingBack ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                              Upload
+                            </Button>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="mt-4 flex flex-wrap items-center gap-3">
-                        <Button className="rounded-[8px] bg-[var(--vh-pink)] px-5 py-5 text-sm font-black uppercase tracking-[0.12em] shadow-[0_4px_0_0_var(--vh-border)] hover:translate-y-[2px] hover:shadow-[0_2px_0_0_var(--vh-border)] transition-all duration-200 text-white" disabled={!canEditActiveSlot || !editorState.front_image_key || isRunningOcr} onClick={() => void handleRunOcr()} type="button">
+                        <Button
+                          className="rounded-[10px] bg-[var(--vh-pink)] text-white"
+                          disabled={!canEditActiveSlot || !editorState.front_image_key || isRunningOcr}
+                          onClick={() => void handleRunOcr()}
+                          type="button"
+                        >
                           {isRunningOcr ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <FileSearch className="mr-2 h-4 w-4" />}
-                          Run OCR
+                          {isRunningOcr ? "Scanning ID" : "Scan ID"}
                         </Button>
-                        <p className="text-sm font-medium text-[var(--vh-surface-2)]/70">OCR prefills the form but does not submit KYC.</p>
-                      </div>
-                    </div>
-                  </section>
-                  <section className="space-y-4">
-                    <h2 className="font-['Space_Grotesk'] text-[20px] font-bold uppercase text-white">2. Traveler Details</h2>
-                    <div className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)] backdrop-blur-md">
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Nationality</span>
-                          <select className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, nationality_type: event.target.value }))} value={editorState.nationality_type}>
-                            <option value="INDIAN" className="text-slate-900">INDIAN</option>
-                          </select>
-                        </label>
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">ID Type</span>
-                          <select className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, id_type: event.target.value }))} value={editorState.id_type}>
-                            {KYC_ID_TYPES.map((idType) => (
-                              <option key={idType} value={idType} className="text-slate-900">{idType}</option>
-                            ))}
-                          </select>
-                        </label>
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Full Name</span>
-                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, full_name: event.target.value }))} value={editorState.full_name} placeholder="As per ID" />
-                        </label>
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Date of Birth</span>
-                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, date_of_birth: event.target.value }))} type="date" value={editorState.date_of_birth} />
-                        </label>
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">ID Number</span>
-                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, id_number: event.target.value }))} value={editorState.id_number} placeholder="e.g. 1234 5678 9012" />
-                        </label>
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Contact Number</span>
-                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, contact_number: event.target.value }))} value={editorState.contact_number} placeholder="+91..." />
-                        </label>
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Coming From</span>
-                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, coming_from: event.target.value }))} value={editorState.coming_from} placeholder="City, State" />
-                        </label>
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Going To</span>
-                          <input className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, going_to: event.target.value }))} value={editorState.going_to} placeholder="City, State" />
-                        </label>
-                        <label className="space-y-2 md:col-span-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Permanent Address</span>
-                          <textarea className="vh-input min-h-[120px] resize-y bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all text-white/90" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, permanent_address: event.target.value }))} value={editorState.permanent_address} placeholder="Full address as shown on ID" />
-                        </label>
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.16em] text-white/60">Purpose</span>
-                          <select className="vh-input bg-white/5 border-white/10 hover:border-white/20 focus:border-[var(--vh-pink)] focus:shadow-[0_0_15px_rgba(253,16,94,0.3)] transition-all" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, purpose: event.target.value }))} value={editorState.purpose}>
-                            {KYC_PURPOSES.map((purpose) => (
-                              <option key={purpose} value={purpose} className="text-slate-900">{purpose}</option>
-                            ))}
-                          </select>
-                        </label>
-                      </div>
-                    </div>
-                  </section>
-
-                  <section className="space-y-4">
-                    <h2 className="font-['Space_Grotesk'] text-[20px] font-bold uppercase text-white">3. House Rules</h2>
-                    <div className="rounded-[24px] border border-[rgba(253,16,94,0.3)] bg-[linear-gradient(145deg,rgba(253,16,94,0.1)_0%,var(--vh-section-a)_100%)] p-6 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] backdrop-blur-sm">
-                      <div className="space-y-4">
-                        <div className="flex items-start gap-3 border-b border-[rgba(253,16,94,0.15)] pb-3">
-                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
-                          <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Bring the same government ID to the property for final verification.</p>
-                        </div>
-                        <div className="flex items-start gap-3 border-b border-[rgba(253,16,94,0.15)] pb-3">
-                          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
-                          <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Your documents are securely vaulted in AWS S3 and are only accessible by certified property mangers.</p>
-                        </div>
-                        <div className="flex items-start gap-3 border-b border-[rgba(253,16,94,0.15)] pb-3">
-                          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
-                          <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Only Indian nationals above 18 years are supported in this KYC flow.</p>
-                        </div>
-                        <div className="flex items-start gap-3 border-b border-[rgba(253,16,94,0.15)] pb-3">
-                          <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
-                          <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Accepted IDs: Aadhaar, Voter ID, Driving Licence, Passport.</p>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <Users className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-pink)]" />
-                          <p className="text-sm font-medium uppercase tracking-[0.04em] text-white">Add another guest slot before submission if more guests are joining this stay.</p>
-                        </div>
+                        <p className="text-sm text-white/65">Run scan to auto-fill name, DOB, ID number, and address.</p>
                       </div>
 
-                      <label className="mt-6 flex items-start gap-3 rounded-[12px] border border-[rgba(253,16,94,0.3)] bg-[rgba(253,16,94,0.05)] p-4 cursor-pointer hover:bg-[rgba(253,16,94,0.1)] transition-colors">
-                        <input checked={editorState.consent_given} className="mt-1 accent-[var(--vh-pink)]" disabled={!canEditActiveSlot} onChange={(event) => setEditorState((current) => ({ ...current, consent_given: event.target.checked }))} type="checkbox" />
-                        <span className="text-sm leading-7 text-white/80">I confirm that the submitted information is accurate, matches the uploaded ID, and can be used for pre-check-in verification.</span>
-                      </label>
-                    </div>
-                  </section>
+                      <div className="mt-5 grid gap-4 md:grid-cols-2">
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">ID Number</span>
+                          <input
+                            className="vh-input bg-white/5 border-white/10"
+                            onChange={(event) => setField("id_number", event.target.value)}
+                            placeholder="As printed on ID"
+                            value={editorState.id_number}
+                          />
+                        </label>
 
-                  <div className="pt-2">
-                    <Button className="w-full rounded-[12px] bg-[var(--vh-pink)] py-6 text-xl font-black uppercase tracking-[0.16em] shadow-[0_4px_0_0_var(--vh-border)] hover:translate-y-[2px] hover:shadow-[0_2px_0_0_var(--vh-border)] transition-all duration-200 text-white" disabled={!canEditActiveSlot || isSubmitting} onClick={() => void handleSubmit()} type="button">
-                      {isSubmitting ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <ShieldCheck className="mr-2 h-5 w-5" />}
-                      Finish Setup
-                    </Button>
-                    <p className="mt-4 text-center font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.1em] text-white/60">You&apos;re almost home, traveler.</p>
-                    {!canEditActiveSlot ? <p className="mt-3 text-center text-sm text-white/58">This slot is locked because it has already been submitted or verified.</p> : null}
-                  </div>
-                </div>
-                <div className="space-y-6">
-                  <section className="space-y-4">
-                    <h2 className="font-['Space_Grotesk'] text-[20px] font-bold uppercase text-white">4. Who&apos;s Staying?</h2>
-                    <div className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)] backdrop-blur-md">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-xs uppercase tracking-[0.16em] text-white/50">Guest Slots</p>
-                          <p className="mt-2 text-sm font-medium text-white/80">{completedSlotCount}/{slots.length} verified</p>
-                        </div>
-                        <Button className="rounded-[12px] bg-white/10 hover:bg-white/20 text-white transition-colors" disabled={isMutating} onClick={() => void handleAddSlot()} type="button" variant="ghost">
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add slot
-                        </Button>
-                      </div>
-                      <div className="mt-6 space-y-3">
-                        {slots.map((slot) => (
-                          <div
-                            key={slot.slot_id}
-                            className={cn(
-                              "w-full rounded-[20px] border p-4 text-left transition-all duration-300",
-                              activeSlotId === slot.slot_id
-                                ? "border-[var(--vh-pink)] bg-[rgba(253,16,94,0.12)] shadow-[0_0_15px_rgba(253,16,94,0.15)] scale-[1.02]"
-                                : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 cursor-pointer",
-                            )}
-                            onClick={() => void selectSlot(slot.slot_id)}
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter" || event.key === " ") {
-                                event.preventDefault();
-                                void selectSlot(slot.slot_id);
-                              }
-                            }}
-                            role="button"
-                            tabIndex={0}
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Purpose</span>
+                          <select
+                            className="vh-input bg-white/5 border-white/10"
+                            onChange={(event) => setField("purpose", event.target.value)}
+                            value={editorState.purpose}
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <p className="text-xs uppercase tracking-[0.16em] text-white/45">{slot.label}</p>
-                                <p className="mt-2 text-lg font-semibold text-white">{slot.guest_name || "Guest details pending"}</p>
-                              </div>
-                              <div className={`rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] ${slotStatusTone(slot.kyc_status)}`}>
-                                {slotStatusLabel(slot.kyc_status)}
-                              </div>
-                            </div>
-                            <div className="mt-4 flex items-center justify-between gap-3">
-                              <p className="text-sm font-medium text-white/60">{slot.can_edit === false ? "Read only" : "Editable by this guest"}</p>
-                              {slots.length > 1 ? (
-                                <button
-                                  aria-label={`Delete ${slot.label}`}
-                                  className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] border border-white/10 bg-white/5 text-white/78 hover:bg-[var(--vh-hot)] hover:text-white hover:border-[var(--vh-hot)] transition-colors"
-                                  disabled={isMutating}
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    void handleDeleteSlot(slot.slot_id);
-                                  }}
-                                  type="button"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              ) : null}
-                            </div>
-                          </div>
-                        ))}
+                            {PURPOSES.map((purpose) => (
+                              <option key={purpose} className="text-slate-900" value={purpose}>
+                                {purpose}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
                       </div>
+
+                      <div className="mt-5 space-y-3 rounded-[14px] border border-white/12 bg-white/5 p-4">
+                        <label className="flex items-start gap-3 text-sm text-white/80">
+                          <input
+                            checked={editorState.consent_terms}
+                            className="mt-1 accent-[var(--vh-pink)]"
+                            onChange={(event) => setField("consent_terms", event.target.checked)}
+                            type="checkbox"
+                          />
+                          I acknowledge and accept the Terms and Conditions.
+                        </label>
+                        <label className="flex items-start gap-3 text-sm text-white/80">
+                          <input
+                            checked={editorState.consent_age}
+                            className="mt-1 accent-[var(--vh-pink)]"
+                            onChange={(event) => setField("consent_age", event.target.checked)}
+                            type="checkbox"
+                          />
+                          I confirm that I am above the age of 18.
+                        </label>
+                      </div>
+                    </section>
+                  ) : null}
+
+                  {activeStep === 3 ? (
+                    <section className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 md:p-6 shadow-[var(--vh-shadow-lg)]">
+                      <div className="flex items-center justify-between gap-3">
+                        <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase tracking-[-0.03em] text-white">
+                          Arrival Details
+                        </h2>
+                        <Clock3 className="h-5 w-5 text-[var(--vh-cyan)]" />
+                      </div>
+
+                      <div className="mt-5 grid gap-4">
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Time of Arrival</span>
+                          <select
+                            className="vh-input bg-white/5 border-white/10"
+                            onChange={(event) => setField("arrival_time", event.target.value)}
+                            value={editorState.arrival_time}
+                          >
+                            {ARRIVAL_WINDOWS.map((windowLabel) => (
+                              <option key={windowLabel} className="text-slate-900" value={windowLabel}>
+                                {windowLabel}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Coming From</span>
+                          <input
+                            className="vh-input bg-white/5 border-white/10"
+                            onChange={(event) => setField("coming_from", event.target.value)}
+                            placeholder="e.g. Delhi"
+                            value={editorState.coming_from}
+                          />
+                        </label>
+
+                        <label className="space-y-2">
+                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Next Destination</span>
+                          <input
+                            className="vh-input bg-white/5 border-white/10"
+                            onChange={(event) => setField("going_to", event.target.value)}
+                            placeholder="e.g. Goa"
+                            value={editorState.going_to}
+                          />
+                        </label>
+                      </div>
+
+                      <div className="mt-6 rounded-[14px] border border-[rgba(57,247,44,0.24)] bg-[rgba(57,247,44,0.08)] p-4 text-sm text-white/80">
+                        Once submitted, you will be redirected to your confirmation screen with your guest-share link.
+                      </div>
+                    </section>
+                  ) : null}
+
+                  <div className="flex items-center justify-between gap-3">
+                    <Button
+                      className="rounded-[10px] border border-white/15 bg-transparent text-white hover:bg-white/10"
+                      onClick={previousStep}
+                      type="button"
+                      variant="outline"
+                    >
+                      Prev
+                    </Button>
+
+                    {activeStep < 3 ? (
+                      <Button className="rounded-[10px] bg-[var(--vh-pink)] text-white" onClick={nextStep} type="button">
+                        Next
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        className="rounded-[10px] bg-[var(--vh-pink)] text-white"
+                        disabled={!canEditActiveSlot || isSubmitting}
+                        onClick={() => void handleSubmit()}
+                        type="button"
+                      >
+                        {isSubmitting ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                        Submit
+                      </Button>
+                    )}
+                  </div>
+
+                  {!canEditActiveSlot ? (
+                    <div className="rounded-[14px] border border-[rgba(57,247,44,0.24)] bg-[rgba(57,247,44,0.08)] p-4 text-sm text-white/80">
+                      This guest slot is locked because it is already submitted or verified.
+                    </div>
+                  ) : null}
+                </div>
+
+                <aside className="space-y-5">
+                  <section className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 shadow-[var(--vh-shadow-lg)]">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Guests</p>
+                      <Button
+                        className="h-9 rounded-[10px] border border-white/15 bg-white/5 px-3 text-white hover:bg-white/10"
+                        disabled={isMutatingSlots}
+                        onClick={() => void handleAddSlot()}
+                        type="button"
+                        variant="ghost"
+                      >
+                        <Plus className="mr-1 h-4 w-4" />
+                        Add
+                      </Button>
+                    </div>
+
+                    <div className="mt-4 space-y-3">
+                      {slots.map((slot) => (
+                        <div
+                          key={slot.slot_id}
+                          className={cn(
+                            "rounded-[14px] border p-3 transition-colors",
+                            activeSlotId === slot.slot_id
+                              ? "border-[var(--vh-pink)] bg-[rgba(253,16,94,0.12)]"
+                              : "border-white/10 bg-white/5 hover:border-white/20",
+                          )}
+                        >
+                          <button
+                            className="w-full text-left"
+                            onClick={() => void selectSlot(slot.slot_id)}
+                            type="button"
+                          >
+                            <p className="text-xs uppercase tracking-[0.12em] text-white/50">{slot.label}</p>
+                            <p className="mt-1 text-sm font-semibold text-white">{slot.guest_name || "Guest details pending"}</p>
+                            <div className={`mt-3 inline-flex rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${slotStatusTone(slot.kyc_status)}`}>
+                              {slotStatusLabel(slot.kyc_status)}
+                            </div>
+                          </button>
+
+                          {slots.length > 1 ? (
+                            <button
+                              aria-label={`Delete ${slot.label}`}
+                              className="mt-3 inline-flex h-8 w-8 items-center justify-center rounded-[9px] border border-white/15 bg-white/5 text-white/75 hover:border-[var(--vh-hot)] hover:bg-[var(--vh-hot)] hover:text-white"
+                              disabled={isMutatingSlots}
+                              onClick={() => void handleDeleteSlot(slot.slot_id)}
+                              type="button"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          ) : null}
+                        </div>
+                      ))}
                     </div>
                   </section>
 
-                  <div className="rounded-[24px] border border-[rgba(253,16,94,0.3)] bg-[var(--vh-panel-strong)] p-6 shadow-[0_0_20px_rgba(253,16,94,0.1)] backdrop-blur-md">
-                    <p className="text-xs uppercase tracking-[0.16em] text-[var(--vh-pink)]">Active Slot</p>
-                    <h3 className="mt-3 font-['Space_Grotesk'] text-3xl font-bold uppercase tracking-[-0.04em] text-white">{activeSlot?.label || "Select a slot"}</h3>
-                    <p className="mt-3 text-sm leading-7 text-white/70">{activeSlot?.guest_name || "Fill the guest details, upload the documents if you have them, and submit the reviewed KYC form."}</p>
-                    <div className="mt-5 rounded-[20px] border border-[rgba(253,16,94,0.2)] bg-[rgba(253,16,94,0.05)] p-4 shadow-inner">
-                      <div className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] ${slotStatusTone(activeSlot?.kyc_status || "NOT_STARTED")}`}>
-                        {slotStatusLabel(activeSlot?.kyc_status || "NOT_STARTED")}
-                      </div>
-                      <p className="mt-4 text-sm font-medium text-white/80">Booking: <span className="text-white">{bookingTitle}</span></p>
-                      <p className="mt-2 text-sm font-medium text-white/80">Reservation: <span className="text-white">{ezeeReservationId}</span></p>
-                    </div>
-                    <Button asChild className="mt-5 w-full rounded-[12px] border border-white/15 bg-transparent text-white hover:bg-white/10 hover:border-white/30 transition-all" variant="outline">
-                      <Link href={`/bookings/${encodeURIComponent(ezeeReservationId)}`}>
-                        Back to booking
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-                </>
-              )}
+                  <section className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 shadow-[var(--vh-shadow-lg)]">
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Active slot</p>
+                    <h3 className="mt-2 font-['Space_Grotesk'] text-xl font-bold uppercase text-white">{activeSlot?.label || "Select a slot"}</h3>
+                    <p className="mt-2 text-sm text-white/70">
+                      {activeSlot?.guest_name || "Fill this slot, upload ID, and submit check-in."}
+                    </p>
 
-              {activeTab === "addons" && (
-                <div className="mt-8 rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 md:p-10 shadow-[var(--vh-shadow-lg)] backdrop-blur-md animate-vh-fade-in">
-                   <h2 className="font-['Space_Grotesk'] text-[24px] font-bold uppercase text-white">Pre-Book Your Extras</h2>
-                   <p className="mt-2 text-white/60 max-w-2xl">Select items now to have them ready. They will be added to your final bill to pay at the property.</p>
-                   
-                   <div className="mt-8 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                     {catalogItems.length === 0 ? (
-                        <p className="text-white/50 italic col-span-full">No add-ons available at this time.</p>
-                     ) : catalogItems.map(item => (
-                       <div key={item.id} className="rounded-[16px] border border-white/10 p-5 bg-white/5 flex flex-col justify-between hover:border-[var(--vh-cyan)] hover:bg-[rgba(234,239,254,0.05)] transition-all duration-300">
-                         <div>
-                           <h3 className="font-bold text-white text-lg">{item.name}</h3>
-                           <p className="text-sm font-semibold text-[var(--vh-cyan)] mt-1">₹ {item.base_price}</p>
-                         </div>
-                         <div className="mt-6 flex items-center justify-between">
-                            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-[8px] bg-transparent text-white border-white/20 hover:bg-white/10" onClick={() => setAddonQuantities(curr => ({...curr, [item.id]: Math.max(0, (curr[item.id] || 0) - 1)}))}>-</Button>
-                            <span className="font-bold text-white">{addonQuantities[item.id] || 0}</span>
-                            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-[8px] bg-transparent text-white border-white/20 hover:bg-[var(--vh-cyan)] hover:border-[var(--vh-cyan)] transition-colors hover:text-[var(--vh-surface)]" onClick={() => setAddonQuantities(curr => ({...curr, [item.id]: (curr[item.id] || 0) + 1}))}>+</Button>
-                         </div>
-                       </div>
-                     ))}
-                   </div>
-                </div>
-              )}
+                    <div className="mt-4 rounded-[14px] border border-white/10 bg-white/5 p-4 text-xs text-white/70">
+                      <p>Reservation: {ezeeReservationId}</p>
+                      <p className="mt-1">Property: {withBrandName(propertyName)}</p>
+                    </div>
+
+                    <Button asChild className="mt-4 w-full rounded-[10px] border border-white/15 bg-transparent text-white hover:bg-white/10" variant="outline">
+                      <Link href="/bookings">Back to bookings</Link>
+                    </Button>
+                  </section>
+                </aside>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <input
+        ref={frontUploadInputRef}
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => handleSelectedFile("front", event)}
+        type="file"
+      />
+      <input
+        ref={backUploadInputRef}
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => handleSelectedFile("back", event)}
+        type="file"
+      />
+      <input
+        ref={frontCameraInputRef}
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(event) => handleSelectedFile("front", event)}
+        type="file"
+      />
+      <input
+        ref={backCameraInputRef}
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(event) => handleSelectedFile("back", event)}
+        type="file"
+      />
+
+      {showUploadPreviewModal ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[20px] border border-white/12 bg-[var(--vh-section-a)] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+            <div className="flex items-center justify-between">
+              <p className="font-['Space_Grotesk'] text-lg font-bold uppercase tracking-[0.08em] text-white">Review image</p>
+              <button
+                aria-label="Close image preview"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 hover:bg-white/10"
+                onClick={dismissUploadPreview}
+                type="button"
+              >
+                x
+              </button>
+            </div>
+
+            <div className="mt-4 overflow-hidden rounded-[14px] border border-white/10">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img alt="Selected ID preview" className="h-auto max-h-[360px] w-full object-contain bg-black/40" src={uploadPreviewDraft?.objectUrl || ""} />
+            </div>
+
+            <p className="mt-3 text-sm text-white/70">
+              Confirm this {uploadPreviewDraft?.side || "ID"} image before upload.
+            </p>
+
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <Button className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/10" onClick={dismissUploadPreview} type="button" variant="outline">
+                Cancel
+              </Button>
+              <Button className="rounded-[10px] bg-[var(--vh-pink)] text-white" onClick={() => void applyUploadPreview()} type="button">
+                Apply
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {isCompletionModalOpen ? (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[20px] border border-white/12 bg-[var(--vh-section-a)] p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+            <p className="font-['Space_Grotesk'] text-xl font-bold uppercase tracking-[0.06em] text-white">
+              Web Check-in to {withBrandName(propertyName)} Done.
+            </p>
+            <p className="mt-3 text-sm text-white/70">
+              You are all set. Open your booking confirmation to manage add guests and arrival details.
+            </p>
+
+            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Button
+                className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/10"
+                onClick={() => setIsCompletionModalOpen(false)}
+                type="button"
+                variant="outline"
+              >
+                Stay Here
+              </Button>
+              <Button
+                className="rounded-[10px] bg-[var(--vh-pink)] text-white"
+                onClick={() => {
+                  setIsCompletionModalOpen(false);
+                  router.push(`/bookings/${encodeURIComponent(ezeeReservationId)}/confirmed`);
+                }}
+                type="button"
+              >
+                View Booking
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

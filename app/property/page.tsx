@@ -2,6 +2,7 @@ import { ColiveFlow } from "@/components/colive/colive-flow";
 import { Property } from "@/components/marketing/property";
 import {
   getDefaultPropertyId,
+  getRoomCatalogSnapshot,
   getRoomAvailabilitySnapshot,
   roomTypesToPropertyCategories,
 } from "@/lib/cx-api";
@@ -23,18 +24,23 @@ export default async function PropertyPage({ searchParams }: PropertyPageProps) 
   }
 
   const requestedPropertyId = params?.property_id || getDefaultPropertyId() || undefined;
-  const snapshot = await getRoomAvailabilitySnapshot({
-    propertyId: requestedPropertyId,
-    checkin: params?.checkin,
-    checkout: params?.checkout,
-  });
+  const hasDateWindow = Boolean(params?.checkin && params?.checkout);
+  const snapshot = hasDateWindow
+    ? await getRoomAvailabilitySnapshot({
+        propertyId: requestedPropertyId,
+        checkin: params?.checkin,
+        checkout: params?.checkout,
+      })
+    : await getRoomCatalogSnapshot({
+        propertyId: requestedPropertyId,
+      });
   const backendPropertyId = snapshot.propertyId || requestedPropertyId;
 
   return (
     <Property
       propertyId={backendPropertyId}
-      initialCheckIn={params?.checkin}
-      initialCheckOut={params?.checkout}
+      initialCheckIn={hasDateWindow ? params?.checkin : undefined}
+      initialCheckOut={hasDateWindow ? params?.checkout : undefined}
       initialRoomCategories={roomTypesToPropertyCategories(snapshot.roomTypes)}
     />
   );

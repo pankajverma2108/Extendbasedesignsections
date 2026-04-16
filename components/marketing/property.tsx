@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import {
   BatteryCharging,
@@ -100,6 +100,71 @@ const roomFeatureIcons: Record<string, typeof Wifi> = {
 };
 
 type RoomCategory = CxRoomCategory;
+
+type RoomApiPayload = {
+  categories?: unknown;
+  property_id?: unknown;
+  mode?: unknown;
+  availability_source?: unknown;
+  has_live_availability?: unknown;
+  availability_error?: unknown;
+  message?: unknown;
+};
+
+type AvailabilitySource = "catalog" | "ezee_live" | "live_provider" | "local_db_estimate" | "unknown";
+
+type CachedRoomPayload = {
+  expiresAt: number;
+  payload: RoomApiPayload;
+};
+
+const CATALOG_CACHE_TTL_MS = 5 * 60 * 1000;
+const AVAILABILITY_CACHE_TTL_MS = 60 * 1000;
+
+function roomCacheKey(params: { propertyId?: string; checkin?: string; checkout?: string }) {
+  const propertyPart = params.propertyId?.trim() || "default";
+  const checkinPart = params.checkin?.trim() || "none";
+  const checkoutPart = params.checkout?.trim() || "none";
+
+  return `${propertyPart}::${checkinPart}::${checkoutPart}`;
+}
+
+function getRoomSelectionKey(room: RoomCategory): string {
+  return room.roomTypeId?.trim() || room.slug;
+}
+
+function parseRoomsApiError(payload: unknown, fallback: string): string {
+  if (!payload || typeof payload !== "object") {
+    return fallback;
+  }
+
+  const message = (payload as { message?: unknown }).message;
+  return typeof message === "string" && message.trim() ? message : fallback;
+}
+
+function readCategories(payload: RoomApiPayload): RoomCategory[] {
+  return Array.isArray(payload.categories) ? (payload.categories as RoomCategory[]) : [];
+}
+
+function readAvailabilitySource(payload: RoomApiPayload): AvailabilitySource | null {
+  if (typeof payload.availability_source !== "string") {
+    return null;
+  }
+
+  const normalized = payload.availability_source.trim().toLowerCase();
+
+  if (
+    normalized === "catalog" ||
+    normalized === "ezee_live" ||
+    normalized === "live_provider" ||
+    normalized === "local_db_estimate" ||
+    normalized === "unknown"
+  ) {
+    return normalized;
+  }
+
+  return null;
+}
 
 function getLocalDate(days: number) {
   const date = new Date();
@@ -341,9 +406,9 @@ function DesktopBookingSummary({
   onContinue: () => void;
 }) {
   const nights = getNightCount(checkIn, checkOut);
-  const selectedRooms = roomCategoryList.filter((room) => (selectedCounts[room.slug] ?? 0) > 0);
+  const selectedRooms = roomCategoryList.filter((room) => (selectedCounts[getRoomSelectionKey(room)] ?? 0) > 0);
   const roomTotal = selectedRooms.reduce(
-    (sum, room) => sum + room.basePrice * (selectedCounts[room.slug] ?? 0) * nights,
+    (sum, room) => sum + room.basePrice * (selectedCounts[getRoomSelectionKey(room)] ?? 0) * nights,
     0,
   );
   const selectedEssentials = essentials.filter((item) => item.quantity > 0);
@@ -377,15 +442,15 @@ function DesktopBookingSummary({
         <div className="mt-5 space-y-3 border-t border-white/10 pt-5 text-sm text-white/82">
           {hasSelection ? (
             selectedRooms.map((room) => (
-              <div key={room.slug} className="flex items-start justify-between gap-3">
+              <div key={getRoomSelectionKey(room)} className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-semibold text-white">{room.title}</p>
                   <p className="text-xs text-white/55">
-                    Rs. {room.basePrice} x {selectedCounts[room.slug]} x {nights} {nights === 1 ? "night" : "nights"}
+                    Rs. {room.basePrice} x {selectedCounts[getRoomSelectionKey(room)]} x {nights} {nights === 1 ? "night" : "nights"}
                   </p>
                 </div>
                 <p className="font-semibold text-white">
-                  Rs. {room.basePrice * (selectedCounts[room.slug] ?? 0) * nights}
+                  Rs. {room.basePrice * (selectedCounts[getRoomSelectionKey(room)] ?? 0) * nights}
                 </p>
               </div>
             ))
@@ -492,9 +557,9 @@ function MobileStickySummary({
 }) {
   const [open, setOpen] = useState(false);
   const nights = getNightCount(checkIn, checkOut);
-  const selectedRooms = roomCategoryList.filter((room) => (selectedCounts[room.slug] ?? 0) > 0);
+  const selectedRooms = roomCategoryList.filter((room) => (selectedCounts[getRoomSelectionKey(room)] ?? 0) > 0);
   const roomTotal = selectedRooms.reduce(
-    (sum, room) => sum + room.basePrice * (selectedCounts[room.slug] ?? 0) * nights,
+    (sum, room) => sum + room.basePrice * (selectedCounts[getRoomSelectionKey(room)] ?? 0) * nights,
     0,
   );
   const selectedEssentials = essentials.filter((item) => item.quantity > 0);
@@ -527,14 +592,14 @@ function MobileStickySummary({
 
             <div className="mt-3 max-h-[34vh] space-y-3 overflow-y-auto pr-1 text-sm text-white/84">
               {selectedRooms.map((room) => (
-                <div key={room.slug} className="flex items-start justify-between gap-3">
+                <div key={getRoomSelectionKey(room)} className="flex items-start justify-between gap-3">
                   <div>
                     <p className="font-semibold text-white">
-                      {room.title} x {selectedCounts[room.slug]}
+                      {room.title} x {selectedCounts[getRoomSelectionKey(room)]}
                     </p>
                     <p className="text-xs text-white/58">Rs. {room.basePrice} / night</p>
                   </div>
-                  <p className="font-semibold text-white">Rs. {room.basePrice * (selectedCounts[room.slug] ?? 0) * nights}</p>
+                  <p className="font-semibold text-white">Rs. {room.basePrice * (selectedCounts[getRoomSelectionKey(room)] ?? 0) * nights}</p>
                 </div>
               ))}
 
@@ -734,6 +799,9 @@ function RoomDetailsPopup({
   const gallery = getRoomGallery(room);
   const activeImage = gallery[imageIndex] ?? gallery[0];
   const detailItems = Array.from(new Set([...room.features, ...room.amenitiesLegend]));
+  const isSoldOut = room.inventoryState === "sold_out";
+  const isAvailabilityPending = !room.hasLiveAvailability || room.inventoryState === "unknown";
+  const canBook = room.hasLiveAvailability && !isSoldOut;
 
   return (
     <div
@@ -794,18 +862,24 @@ function RoomDetailsPopup({
                   <span className="text-3xl font-bold text-white">Rs. {room.basePrice}</span>
                   <span className="text-xs text-white/55">/ night</span>
                 </div>
-                {room.availableCount > 0 && room.availableCount <= 2 && (
+                {room.inventoryState === "limited" && room.availableCount > 0 && (
                   <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-[rgba(255,204,102,0.12)] px-2 py-0.5 text-[10px] font-bold text-[var(--vh-amber)]">
                     ⚡ Only {room.availableCount} left!
                   </p>
                 )}
               </div>
-              {room.availableCount <= 0 ? (
+              {!canBook ? (
                 <div className="flex flex-col items-end gap-1">
-                  <span className="inline-flex animate-pulse items-center gap-1.5 rounded-full border border-[rgba(255,76,48,0.4)] bg-[rgba(255,76,48,0.12)] px-3 py-1.5 text-sm font-black uppercase tracking-[0.1em] text-[var(--vh-hot)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--vh-hot)]" />
-                    SOLD OUT
-                  </span>
+                  {isAvailabilityPending ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(0,209,255,0.34)] bg-[rgba(0,209,255,0.12)] px-3 py-1.5 text-sm font-black uppercase tracking-[0.1em] text-[var(--vh-cyan)]">
+                      Select dates
+                    </span>
+                  ) : (
+                    <span className="inline-flex animate-pulse items-center gap-1.5 rounded-full border border-[rgba(255,76,48,0.4)] bg-[rgba(255,76,48,0.12)] px-3 py-1.5 text-sm font-black uppercase tracking-[0.1em] text-[var(--vh-hot)]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[var(--vh-hot)]" />
+                      SOLD OUT
+                    </span>
+                  )}
                 </div>
               ) : count === 0 ? (
                 <Button className="h-10 rounded-full px-5" onClick={onIncrement} type="button">
@@ -824,7 +898,8 @@ function RoomDetailsPopup({
                   <span className="w-4 text-center text-sm font-semibold text-white">{count}</span>
                   <button
                     aria-label="Increment Count"
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)]"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)] disabled:cursor-not-allowed disabled:opacity-45"
+                    disabled={count >= room.availableCount}
                     onClick={onIncrement}
                     type="button"
                   >
@@ -876,35 +951,44 @@ export function Property({
   const { isAuthenticated, isRestoringSession, openAuthModal } = useGuestAuth();
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [selectedCounts, setSelectedCounts] = useState<Record<string, number>>({});
-  const [activeRoomSlug, setActiveRoomSlug] = useState<string | null>(null);
+  const [activeRoomKey, setActiveRoomKey] = useState<string | null>(null);
   const [activeRoomImageIndex, setActiveRoomImageIndex] = useState(0);
   const [roomCategoryList, setRoomCategoryList] = useState<RoomCategory[]>(
     initialRoomCategories.length > 0 ? initialRoomCategories : roomCategories,
   );
   const [resolvedPropertyId, setResolvedPropertyId] = useState(propertyId ?? "");
   const [propertyContextError, setPropertyContextError] = useState<string | null>(null);
-  const [isLoadingRooms, setIsLoadingRooms] = useState(false);
+  const [availabilitySyncError, setAvailabilitySyncError] = useState<string | null>(null);
+  const [availabilitySource, setAvailabilitySource] = useState<AvailabilitySource | null>(null);
+  const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
+  const [isRefreshingAvailability, setIsRefreshingAvailability] = useState(false);
+  const [availabilityRefreshVersion, setAvailabilityRefreshVersion] = useState(0);
   const [selectedEssentials] = useState<Record<string, number>>({});
   const [isAgeConfirmed, setIsAgeConfirmed] = useState(false);
   const [resumeReviewAfterAuth, setResumeReviewAfterAuth] = useState(false);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: fromDateString(initialCheckIn) ?? getLocalDate(0),
-    to: fromDateString(initialCheckOut) ?? getLocalDate(1),
-  });
+  const roomResponseCacheRef = useRef<Map<string, CachedRoomPayload>>(new Map());
+  const initialFrom = fromDateString(initialCheckIn);
+  const initialTo = fromDateString(initialCheckOut);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(
+    initialFrom && initialTo ? { from: initialFrom, to: initialTo } : undefined,
+  );
 
   const checkIn = toLocalDateString(dateRange?.from);
   const checkOut = toLocalDateString(dateRange?.to);
-  const activeRoom = roomCategoryList.find((room) => room.slug === activeRoomSlug) ?? null;
+  const hasCompleteDateRange = Boolean(checkIn && checkOut);
+  const hasLiveAvailability = roomCategoryList.some((room) => room.hasLiveAvailability);
+  const showRoomSkeleton = isLoadingCatalog && roomCategoryList.length === 0;
+  const activeRoom = roomCategoryList.find((room) => getRoomSelectionKey(room) === activeRoomKey) ?? null;
   const selectedRoomDrafts = useMemo<BookingDraftRoom[]>(
     () =>
       roomCategoryList
-        .filter((room) => (selectedCounts[room.slug] ?? 0) > 0)
+        .filter((room) => (selectedCounts[getRoomSelectionKey(room)] ?? 0) > 0)
         .map((room) => ({
           roomTypeId: room.roomTypeId,
           slug: room.slug,
           title: room.title,
           roomType: room.roomType,
-          quantity: selectedCounts[room.slug] ?? 0,
+          quantity: selectedCounts[getRoomSelectionKey(room)] ?? 0,
           basePrice: room.basePrice,
           totalPrice: room.totalPrice,
           availableCount: room.availableCount,
@@ -931,13 +1015,96 @@ export function Property({
     [selectedEssentialDrafts],
   );
 
-  const updateCount = (slug: string, nextValue: number) => {
-    const room = roomCategoryList.find((item) => item.slug === slug);
-    const maxCount = Math.max(0, room?.availableCount ?? 0);
+  const applyRoomCategories = useCallback((nextCategories: RoomCategory[]) => {
+    setRoomCategoryList(nextCategories);
+    setSelectedCounts((current) => {
+      const allowed = new Map(
+        nextCategories.map((room) => [
+          getRoomSelectionKey(room),
+          room.hasLiveAvailability && room.inventoryState !== "sold_out"
+            ? Math.max(0, room.availableCount)
+            : 0,
+        ]),
+      );
+
+      return Object.fromEntries(
+        Object.entries(current)
+          .map<[string, number]>(([roomKey, quantity]) => [roomKey, Math.min(quantity, allowed.get(roomKey) ?? 0)])
+          .filter((entry): entry is [string, number] => entry[1] > 0),
+      );
+    });
+  }, []);
+
+  const fetchRoomsPayload = useCallback(async (params: {
+    checkin?: string;
+    checkout?: string;
+    signal?: AbortSignal;
+  }): Promise<RoomApiPayload> => {
+    const cacheKey = roomCacheKey({
+      propertyId: resolvedPropertyId,
+      checkin: params.checkin,
+      checkout: params.checkout,
+    });
+    const now = Date.now();
+    const cached = roomResponseCacheRef.current.get(cacheKey);
+    const isAvailabilityRequest = Boolean(params.checkin && params.checkout);
+
+    if (cached && cached.expiresAt > now) {
+      const cachedSource = readAvailabilitySource(cached.payload);
+      if (!(isAvailabilityRequest && cachedSource === "local_db_estimate")) {
+        return cached.payload;
+      }
+
+      roomResponseCacheRef.current.delete(cacheKey);
+    }
+
+    const query = new URLSearchParams();
+    if (resolvedPropertyId) {
+      query.set("property_id", resolvedPropertyId);
+    }
+    if (params.checkin && params.checkout) {
+      query.set("checkin", params.checkin);
+      query.set("checkout", params.checkout);
+    }
+
+    const url = query.size > 0 ? `/api/cx/rooms?${query.toString()}` : "/api/cx/rooms";
+    const response = await fetch(url, {
+      cache: "no-store",
+      signal: params.signal,
+    });
+
+    const payload = (await response.json().catch(() => null)) as RoomApiPayload | null;
+
+    if (!response.ok) {
+      throw new Error(parseRoomsApiError(payload, "Unable to load rooms right now."));
+    }
+
+    const safePayload = payload ?? {};
+    const availabilitySource = readAvailabilitySource(safePayload);
+    const shouldCache = !isAvailabilityRequest || availabilitySource !== "local_db_estimate";
+
+    if (shouldCache) {
+      const ttl = isAvailabilityRequest ? AVAILABILITY_CACHE_TTL_MS : CATALOG_CACHE_TTL_MS;
+
+      roomResponseCacheRef.current.set(cacheKey, {
+        payload: safePayload,
+        expiresAt: now + ttl,
+      });
+    } else {
+      roomResponseCacheRef.current.delete(cacheKey);
+    }
+
+    return safePayload;
+  }, [resolvedPropertyId]);
+
+  const updateCount = (roomKey: string, nextValue: number) => {
+    const room = roomCategoryList.find((item) => getRoomSelectionKey(item) === roomKey);
+    const isBookable = room?.hasLiveAvailability && room.inventoryState !== "sold_out";
+    const maxCount = isBookable ? Math.max(0, room?.availableCount ?? 0) : 0;
 
     setSelectedCounts((current) => ({
       ...current,
-      [slug]: Math.min(maxCount, Math.max(0, nextValue)),
+      [roomKey]: Math.min(maxCount, Math.max(0, nextValue)),
     }));
   };
 
@@ -954,88 +1121,152 @@ export function Property({
 
   useEffect(() => {
     let mounted = true;
+    const controller = new AbortController();
 
-    async function loadRooms() {
-      if (!checkIn || !checkOut) {
-        return;
-      }
-
-      setIsLoadingRooms(true);
+    async function loadCatalog() {
+      setIsLoadingCatalog(true);
 
       try {
-        const params = new URLSearchParams({
-          checkin: checkIn,
-          checkout: checkOut,
-        });
-        if (resolvedPropertyId) {
-          params.set("property_id", resolvedPropertyId);
-        }
+        const payload = await fetchRoomsPayload({ signal: controller.signal });
 
-        const response = await fetch(`/api/cx/rooms?${params.toString()}`, {
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          if (mounted) {
-            setPropertyContextError("Room availability request failed. Retry once before continuing to checkout.");
-            toast.error("Could not refresh room availability.", {
-              description: "Retry once before continuing to checkout.",
-            });
-          }
+        if (!mounted) {
           return;
         }
 
-        const payload = (await response.json()) as { categories?: unknown; property_id?: unknown };
-        const nextCategories = Array.isArray(payload.categories) ? payload.categories : [];
+        const nextCategories = readCategories(payload);
         const nextPropertyId = typeof payload.property_id === "string" ? payload.property_id.trim() : "";
+        const nextAvailabilitySource = readAvailabilitySource(payload);
 
-        if (mounted && nextPropertyId && nextPropertyId !== resolvedPropertyId) {
+        if (nextPropertyId && nextPropertyId !== resolvedPropertyId) {
           setResolvedPropertyId(nextPropertyId);
         }
 
-        if (mounted) {
-          setPropertyContextError(
-            nextPropertyId || resolvedPropertyId
-              ? null
-              : "Availability loaded without a backend property context. Open this page with ?property_id=... or configure NEXT_PUBLIC_PROPERTY_ID before checkout.",
-          );
+        setAvailabilitySource(nextAvailabilitySource);
+
+        setPropertyContextError(
+          nextPropertyId || resolvedPropertyId
+            ? null
+            : "Room catalog loaded without backend property context. Open this page with ?property_id=... or configure NEXT_PUBLIC_PROPERTY_ID.",
+        );
+
+        if (nextCategories.length > 0) {
+          applyRoomCategories(nextCategories);
         }
 
-        if (mounted && nextCategories.length > 0) {
-          setRoomCategoryList(nextCategories as RoomCategory[]);
-          setSelectedCounts((current) => {
-            const allowed = new Map(
-              (nextCategories as RoomCategory[]).map((room) => [room.slug, Math.max(0, room.availableCount)]),
-            );
+        setAvailabilitySyncError(null);
+      } catch (error) {
+        if (!mounted || controller.signal.aborted) {
+          return;
+        }
 
-            return Object.fromEntries(
-              Object.entries(current)
-                .map<[string, number]>(([slug, quantity]) => [slug, Math.min(quantity, allowed.get(slug) ?? 0)])
-                .filter((entry): entry is [string, number] => entry[1] > 0),
-            );
-          });
-        }
-      } catch {
-        if (mounted) {
-          setPropertyContextError("Unable to refresh room availability right now. Retry before continuing to checkout.");
-          setRoomCategoryList((current) => (current.length > 0 ? current : roomCategories));
-          toast.error("Availability sync failed", {
-            description: "Please retry in a few seconds.",
-          });
-        }
+        setPropertyContextError("Unable to load room catalog right now. Please retry.");
+        setAvailabilitySyncError(null);
+        setRoomCategoryList((current) => (current.length > 0 ? current : roomCategories));
+        toast.error("Room catalog unavailable", {
+          description: error instanceof Error ? error.message : "Please retry in a few seconds.",
+        });
       } finally {
         if (mounted) {
-          setIsLoadingRooms(false);
+          setIsLoadingCatalog(false);
         }
       }
     }
 
-    loadRooms();
+    void loadCatalog();
 
     return () => {
       mounted = false;
+      controller.abort();
     };
-  }, [checkIn, checkOut, resolvedPropertyId]);
+  }, [applyRoomCategories, fetchRoomsPayload, resolvedPropertyId]);
+
+  useEffect(() => {
+    if (!hasCompleteDateRange) {
+      return;
+    }
+
+    let mounted = true;
+    const controller = new AbortController();
+
+    async function loadAvailability() {
+      setIsRefreshingAvailability(true);
+
+      try {
+        const payload = await fetchRoomsPayload({
+          checkin: checkIn,
+          checkout: checkOut,
+          signal: controller.signal,
+        });
+
+        if (!mounted) {
+          return;
+        }
+
+        const nextCategories = readCategories(payload);
+        const nextPropertyId = typeof payload.property_id === "string" ? payload.property_id.trim() : "";
+        const nextAvailabilitySource = readAvailabilitySource(payload);
+        const nextAvailabilityError =
+          typeof payload.availability_error === "string" && payload.availability_error.trim()
+            ? payload.availability_error
+            : null;
+
+        if (nextPropertyId && nextPropertyId !== resolvedPropertyId) {
+          setResolvedPropertyId(nextPropertyId);
+        }
+
+        if (nextCategories.length > 0) {
+          applyRoomCategories(nextCategories);
+        }
+
+        setAvailabilitySource(nextAvailabilitySource);
+
+        if (nextAvailabilitySource === "local_db_estimate") {
+          setAvailabilitySyncError("Live provider is down. Shown rates are estimates, so checkout is temporarily blocked. Retry to continue.");
+        } else {
+          setAvailabilitySyncError(nextAvailabilityError);
+        }
+      } catch (error) {
+        if (!mounted || controller.signal.aborted) {
+          return;
+        }
+
+        setAvailabilitySyncError("Live availability could not be refreshed. Showing latest cached rooms.");
+        toast.error("Live availability sync failed", {
+          description: error instanceof Error ? error.message : "Please retry in a few seconds.",
+        });
+      } finally {
+        if (mounted) {
+          setIsRefreshingAvailability(false);
+        }
+      }
+    }
+
+    void loadAvailability();
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
+  }, [availabilityRefreshVersion, applyRoomCategories, checkIn, checkOut, fetchRoomsPayload, hasCompleteDateRange, resolvedPropertyId]);
+
+  useEffect(() => {
+    if (!hasCompleteDateRange) {
+      setAvailabilitySyncError("Select check-in and check-out to load live availability.");
+      return;
+    }
+
+    if (isRefreshingAvailability) {
+      return;
+    }
+
+    if (!hasLiveAvailability) {
+      setAvailabilitySyncError((current) => current ?? "Live availability is pending. Please wait or retry.");
+    }
+  }, [hasCompleteDateRange, hasLiveAvailability, isRefreshingAvailability]);
+
+  const retryAvailability = () => {
+    setAvailabilityRefreshVersion((current) => current + 1);
+  };
 
   useEffect(() => {
     if (!resumeReviewAfterAuth || !isAuthenticated) {
@@ -1046,8 +1277,8 @@ export function Property({
     router.push("/bookingreview");
   }, [isAuthenticated, resumeReviewAfterAuth, router]);
 
-  const openRoomPopup = (slug: string) => {
-    setActiveRoomSlug(slug);
+  const openRoomPopup = (roomKey: string) => {
+    setActiveRoomKey(roomKey);
     setActiveRoomImageIndex(0);
   };
 
@@ -1062,9 +1293,35 @@ export function Property({
       return;
     }
 
-    if (!checkIn || !checkOut || selectedRoomDrafts.length === 0) {
+    if (!hasCompleteDateRange || !checkIn || !checkOut || selectedRoomDrafts.length === 0) {
       toast.error("Select at least one room", {
         description: "Pick your dates and rooms to continue to checkout.",
+      });
+      return;
+    }
+
+    if (!hasLiveAvailability) {
+      toast.error("Live availability not synced", {
+        description: "Please refresh availability before continuing.",
+      });
+      return;
+    }
+
+    if (availabilitySource === "local_db_estimate") {
+      toast.error("Checkout blocked", {
+        description: "Live provider is unavailable. Retry availability before continuing to payment.",
+      });
+      return;
+    }
+
+    const hasInvalidSelection = selectedRoomDrafts.some((draftRoom) => {
+      const room = roomCategoryList.find((item) => item.roomTypeId === draftRoom.roomTypeId || item.slug === draftRoom.slug);
+      return !room || !room.hasLiveAvailability || room.inventoryState === "sold_out";
+    });
+
+    if (hasInvalidSelection) {
+      toast.error("Room availability changed", {
+        description: "Please review your room selection and try again.",
       });
       return;
     }
@@ -1226,8 +1483,21 @@ export function Property({
                     {propertyContextError}
                   </div>
                 ) : null}
+                {availabilitySyncError ? (
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-[rgba(250,204,21,0.26)] bg-[rgba(250,204,21,0.1)] px-4 py-3 text-sm text-white/92">
+                    <span>{availabilitySyncError}</span>
+                    <Button className="h-8 rounded-full px-4 text-xs" onClick={retryAvailability} type="button">
+                      Retry
+                    </Button>
+                  </div>
+                ) : null}
+                {isRefreshingAvailability ? (
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--vh-cyan)]">
+                    Refreshing live availability...
+                  </p>
+                ) : null}
                 <div className="space-y-5">
-                {isLoadingRooms ? (
+                {showRoomSkeleton ? (
                   <>
                     <RoomCardSkeleton />
                     <RoomCardSkeleton />
@@ -1242,20 +1512,29 @@ export function Property({
                       src={encodeURI("/design-guidelines/Property Page/hospital-reception.svg")}
                       width={224}
                     />
-                    <p className="mt-4 text-base font-semibold text-white">Oh Sorry! There are no available rooms for this date.</p>
-                    <p className="mt-2 text-sm text-white/75">Please choose another day or mail us at thedailysocial01@gmail.com</p>
+                    <p className="mt-4 text-base font-semibold text-white">No room types are currently available for this property.</p>
+                    <p className="mt-2 text-sm text-white/75">Please retry or contact support at thedailysocial01@gmail.com.</p>
                   </div>
                 ) : (
                   roomCategoryList.map((room) => {
-                    const count = selectedCounts[room.slug] ?? 0;
+                    const roomKey = getRoomSelectionKey(room);
+                    const count = selectedCounts[roomKey] ?? 0;
                     const featureLabels = Array.from(new Set([...room.features, ...room.amenitiesLegend]));
                     const roomGallery = getRoomGallery(room);
+                    const isSoldOut = room.inventoryState === "sold_out";
+                    const isLimited = room.inventoryState === "limited";
+                    const isAvailabilityPending = !room.hasLiveAvailability || room.inventoryState === "unknown";
+                    const canBook = room.hasLiveAvailability && !isSoldOut;
 
                     return (
-                      <article key={room.slug} className="overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)]" style={{ backgroundColor: "#10111a" }}>
+                      <article
+                        key={roomKey}
+                        className={`overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)] ${isSoldOut ? "opacity-70 grayscale-[0.25]" : ""}`}
+                        style={{ backgroundColor: "#10111a" }}
+                      >
                         <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_188px]">
                           <div className="border-b border-white/10 lg:border-b-0 lg:border-r">
-                            <button className="group block w-full text-left" onClick={() => openRoomPopup(room.slug)} type="button">
+                            <button className="group block w-full text-left" onClick={() => openRoomPopup(roomKey)} type="button">
                               <ImageWithFallback
                                 alt={room.title}
                                 className="h-[180px] w-full object-cover transition duration-300 group-hover:scale-[1.03] lg:h-[170px]"
@@ -1265,10 +1544,10 @@ export function Property({
                             <div className="grid grid-cols-3 gap-1 p-1.5">
                               {roomGallery.slice(0, 3).map((galleryImage, index) => (
                                 <button
-                                  key={`${room.slug}-thumb-${index}`}
+                                  key={`${roomKey}-thumb-${index}`}
                                   className="overflow-hidden rounded-[8px] border border-white/10"
                                   onClick={() => {
-                                    openRoomPopup(room.slug);
+                                    openRoomPopup(roomKey);
                                     setActiveRoomImageIndex(index);
                                   }}
                                   type="button"
@@ -1281,12 +1560,12 @@ export function Property({
 
                           <div className="space-y-4 p-5">
                             <div className="flex flex-wrap items-center justify-between gap-3">
-                              <button className="text-left" onClick={() => openRoomPopup(room.slug)} type="button">
+                              <button className="text-left" onClick={() => openRoomPopup(roomKey)} type="button">
                                 <h3 className="text-xl font-semibold text-white hover:text-[var(--vh-cyan)]">{room.title}</h3>
                               </button>
                               <button
                                 className="text-sm font-semibold text-[var(--vh-cyan)] hover:text-white"
-                                onClick={() => openRoomPopup(room.slug)}
+                                onClick={() => openRoomPopup(roomKey)}
                                 type="button"
                               >
                                 View details
@@ -1316,27 +1595,35 @@ export function Property({
                             </div>
 
                             <div className="flex items-center justify-between gap-4">
-                              {room.availableCount <= 5 ? (
+                              {isSoldOut ? (
+                                <p className="text-sm font-semibold text-[var(--vh-hot)]">Sold out for selected dates</p>
+                              ) : isAvailabilityPending ? (
+                                <p className="text-sm font-semibold text-[var(--vh-cyan)]">Select dates to view live availability</p>
+                              ) : isLimited ? (
                                 <p className="text-sm font-semibold text-[var(--vh-hot)]">
-                                  Only {room.availableCount} {room.availableCount === 1 ? "bed" : "beds"} available
+                                  Only {room.availableCount} {room.availableCount === 1 ? "bed" : "beds"} left
                                 </p>
-                              ) : null}
+                              ) : (
+                                <p className="text-sm font-semibold text-white/80">{room.inventoryText}</p>
+                              )}
                             </div>
                           </div>
 
                           <div className="flex flex-col justify-between border-t border-white/10 p-5 lg:border-l lg:border-t-0">
                             <div>
-                              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">Price / night</p>
+                              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">
+                                {room.hasLiveAvailability ? "Live price / night" : "From / night"}
+                              </p>
                               <p className="mt-2 text-3xl font-bold text-[#c62828]">Rs. {room.basePrice}</p>
                             </div>
 
                             <div className="mt-5 flex items-center justify-end gap-2">
-                              {room.availableCount <= 0 ? (
+                              {!canBook ? (
                                 <Button className="w-full rounded-full" disabled type="button">
-                                  Sold out
+                                  {isSoldOut ? "Sold out" : "Check dates"}
                                 </Button>
                               ) : count === 0 ? (
-                                <Button className="w-full rounded-full" onClick={() => updateCount(room.slug, 1)} type="button">
+                                <Button className="w-full rounded-full" onClick={() => updateCount(roomKey, 1)} type="button">
                                   Add
                                 </Button>
                               ) : (
@@ -1344,7 +1631,7 @@ export function Property({
                                   <button
                                     aria-label="Decrement Count"
                                     className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)]"
-                                    onClick={() => updateCount(room.slug, count - 1)}
+                                    onClick={() => updateCount(roomKey, count - 1)}
                                     type="button"
                                   >
                                     <Minus className="h-4 w-4" />
@@ -1352,8 +1639,9 @@ export function Property({
                                   <span className="w-4 text-center text-sm font-semibold text-white">{count}</span>
                                   <button
                                     aria-label="Increment Count"
-                                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)]"
-                                    onClick={() => updateCount(room.slug, count + 1)}
+                                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--vh-surface-2)] disabled:cursor-not-allowed disabled:opacity-45"
+                                    disabled={count >= room.availableCount}
+                                    onClick={() => updateCount(roomKey, count + 1)}
                                     type="button"
                                   >
                                     <Plus className="h-4 w-4" />
@@ -1513,12 +1801,12 @@ export function Property({
         roomCategoryList={roomCategoryList}
       />
       <RoomDetailsPopup
-        count={activeRoom ? selectedCounts[activeRoom.slug] ?? 0 : 0}
+        count={activeRoom ? selectedCounts[getRoomSelectionKey(activeRoom)] ?? 0 : 0}
         imageIndex={activeRoomImageIndex}
-        onClose={() => setActiveRoomSlug(null)}
-        onDecrement={() => activeRoom && updateCount(activeRoom.slug, (selectedCounts[activeRoom.slug] ?? 0) - 1)}
+        onClose={() => setActiveRoomKey(null)}
+        onDecrement={() => activeRoom && updateCount(getRoomSelectionKey(activeRoom), (selectedCounts[getRoomSelectionKey(activeRoom)] ?? 0) - 1)}
         onImageChange={setActiveRoomImageIndex}
-        onIncrement={() => activeRoom && updateCount(activeRoom.slug, (selectedCounts[activeRoom.slug] ?? 0) + 1)}
+        onIncrement={() => activeRoom && updateCount(getRoomSelectionKey(activeRoom), (selectedCounts[getRoomSelectionKey(activeRoom)] ?? 0) + 1)}
         room={activeRoom}
       />
     </>

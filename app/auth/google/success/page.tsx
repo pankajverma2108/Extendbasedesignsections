@@ -2,7 +2,17 @@
 
 import { useEffect } from "react";
 
-import { consumePostAuthRedirect, getGuestMe, setStoredGuestToken } from "@/lib/guest-auth-api";
+import { clearStoredGuestToken, consumePostAuthRedirect, getGuestMe, setStoredGuestToken } from "@/lib/guest-auth-api";
+
+function buildGoogleAuthErrorUrl(reason: string, detail?: string): string {
+  const params = new URLSearchParams({ reason });
+
+  if (detail && detail.trim().length > 0) {
+    params.set("detail", detail);
+  }
+
+  return `/auth/google/error?${params.toString()}`;
+}
 
 export default function GoogleAuthSuccessPage() {
   useEffect(() => {
@@ -10,10 +20,25 @@ export default function GoogleAuthSuccessPage() {
 
     const finalizeGoogleLogin = async () => {
       const searchParams = new URLSearchParams(window.location.search);
-      const token = searchParams.get("token") ?? searchParams.get("access_token");
+
+      const callbackReason = searchParams.get("reason");
+      const callbackError = searchParams.get("error");
+      const callbackDetail =
+        searchParams.get("detail") ??
+        searchParams.get("message") ??
+        searchParams.get("error_description") ??
+        undefined;
+
+      if (callbackReason || callbackError) {
+        const mappedReason = callbackReason || (callbackError === "access_denied" ? "auth_failed" : "callback_failed");
+        window.location.replace(buildGoogleAuthErrorUrl(mappedReason, callbackDetail));
+        return;
+      }
+
+      const token = (searchParams.get("token") ?? searchParams.get("access_token") ?? "").trim();
 
       if (!token) {
-        window.location.replace("/auth/google/error?reason=missing_token");
+        window.location.replace(buildGoogleAuthErrorUrl("missing_token", callbackDetail));
         return;
       }
 
@@ -29,15 +54,15 @@ export default function GoogleAuthSuccessPage() {
           window.location.replace(nextPath);
         }
       } catch (error) {
+        clearStoredGuestToken();
+
         const detail =
           error instanceof Error && error.message.trim().length > 0
             ? error.message
             : "The returned Google session token was rejected by /guest/auth/me.";
 
         if (!cancelled) {
-          window.location.replace(
-            `/auth/google/error?reason=session_validation_failed&detail=${encodeURIComponent(detail)}`,
-          );
+          window.location.replace(buildGoogleAuthErrorUrl("session_validation_failed", detail));
         }
       }
     };

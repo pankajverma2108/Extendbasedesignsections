@@ -11,6 +11,8 @@ export type GuestProfile = {
   created_at: string;
   birthDate?: string | null;
   location?: string | null;
+  nationality?: string | null;
+  emergencyContact?: string | null;
   gender?: string | null;
   prefersEmail?: boolean;
   prefersPhone?: boolean;
@@ -50,6 +52,29 @@ const POST_AUTH_REDIRECT_FALLBACK_KEY = "vh_post_auth_redirect_fallback";
 
 const LOCAL_STORAGE_KEY = "vh_guest_access_token";
 const SESSION_STORAGE_KEY = "vh_guest_access_token_session";
+
+function resolveGoogleAuthBaseUrl(): string {
+  const apiBaseUrl = getApiBaseUrl();
+  const canonicalUrl = `${apiBaseUrl}${DEFAULT_GOOGLE_AUTH_PATH}`;
+  const configuredUrl = process.env.NEXT_PUBLIC_GUEST_GOOGLE_AUTH_URL?.trim();
+
+  if (!configuredUrl) {
+    return canonicalUrl;
+  }
+
+  try {
+    const apiOrigin = new URL(apiBaseUrl).origin;
+    const resolvedConfiguredUrl = new URL(configuredUrl, apiBaseUrl);
+
+    if (resolvedConfiguredUrl.origin !== apiOrigin) {
+      return canonicalUrl;
+    }
+
+    return resolvedConfiguredUrl.toString();
+  } catch {
+    return canonicalUrl;
+  }
+}
 
 export async function signupGuest(payload: GuestSignupPayload): Promise<GuestAuthResponse> {
   return requestJson<GuestAuthResponse>("/guest/auth/signup", {
@@ -133,7 +158,7 @@ export function consumePostAuthRedirect(): string | null {
 }
 
 export function getGuestGoogleAuthUrl(returnTo?: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_GUEST_GOOGLE_AUTH_URL?.trim() || `${getApiBaseUrl()}${DEFAULT_GOOGLE_AUTH_PATH}`;
+  const baseUrl = resolveGoogleAuthBaseUrl();
   const redirectPath = normalizeRedirectPath(returnTo);
 
   try {

@@ -1,20 +1,68 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Crown, Sparkles } from "lucide-react";
+import { gsap } from "gsap";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Flag,
+  Mail,
+  Phone,
+  Sparkles,
+  UserCircle2,
+  VenusAndMars,
+} from "lucide-react";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
+import ReflectiveCard from "@/components/profile/reflective-card";
 import { StickerTag } from "@/components/shared/sticker-tag";
+import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { upcomingEvents } from "@/content/events";
 import { isValidEmail, isValidPhone, normalizeEmail, normalizePhone } from "@/lib/guest-form-validation";
 
-function getSeasonFromDate(date: Date): string {
-  const month = date.getMonth();
-  if (month >= 2 && month <= 4) return "Spring";
-  if (month >= 5 && month <= 7) return "Summer";
-  if (month >= 8 && month <= 10) return "Autumn";
-  return "Winter";
+type EventCardsProps = {
+  events: typeof upcomingEvents;
+  accent: string;
+  border: string;
+};
+
+function EventCards({ events, accent, border }: EventCardsProps) {
+  return (
+    <div className="relative h-full w-full overflow-hidden rounded-2xl p-3" style={{ backgroundColor: "rgba(0,0,0,0.26)" }}>
+      <div className="grid h-full grid-rows-[1fr_auto] gap-3">
+        <div className="grid min-h-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {events.map((event) => (
+            <Link
+              key={event.title}
+              href={event.href}
+              className="group relative block min-h-[190px] overflow-hidden rounded-2xl border shadow-[0_14px_32px_rgba(0,0,0,0.35)]"
+              style={{ borderColor: border }}
+            >
+              <ImageWithFallback alt={event.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" src={event.image} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-3">
+                <p className="line-clamp-2 text-sm font-bold leading-5 text-white">{event.title}</p>
+                <p className="mt-1 text-[11px] uppercase tracking-[0.1em] text-white/75">{event.time}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+        <div className="flex justify-center pb-1">
+          <Button
+            onClick={() => (window.location.href = "/events")}
+            className="h-9 rounded-full px-4 text-xs font-bold uppercase tracking-[0.12em] text-white hover:opacity-90"
+            style={{ backgroundColor: accent }}
+          >
+            View All Events
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function buildPassportId(seed: string, createdAt: string): string {
@@ -36,39 +84,41 @@ function buildPassportId(seed: string, createdAt: string): string {
   return `VP-${digits}-${letters}-${year}`;
 }
 
+const CORAL_THEME = {
+  label: "Red",
+  accent: "#c62828",
+  accentMuted: "#8e1b1b",
+  accentSoft: "rgba(198, 40, 40, 0.16)",
+  panel: "rgba(198, 40, 40, 0.08)",
+  panelStrong: "rgba(198, 40, 40, 0.12)",
+  border: "rgba(198, 40, 40, 0.44)",
+  text: "#fff4ef",
+  chip: "rgba(255, 255, 255, 0.06)",
+  glow: "rgba(198, 40, 40, 0.24)",
+};
+
 export default function ProfilePage() {
   const router = useRouter();
   const { guest, isAuthenticated, isRestoringSession, openAuthModal, updateGuestProfile, signOut } = useGuestAuth();
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(guest?.name ?? "");
   const [email, setEmail] = useState(guest?.email ?? "");
   const [phone, setPhone] = useState(guest?.phone ?? "");
   const [birthDate, setBirthDate] = useState(guest?.birthDate ?? "");
+  const [nationality, setNationality] = useState(guest?.nationality ?? "");
   const [fromLocation, setFromLocation] = useState(guest?.location ?? "");
   const [gender, setGender] = useState(guest?.gender ?? "");
-  const [prefersEmail, setPrefersEmail] = useState(guest?.prefersEmail ?? true);
-  const [prefersPhone, setPrefersPhone] = useState(guest?.prefersPhone ?? false);
   const [error, setError] = useState<string | null>(null);
-
-  const memberSinceText = useMemo(() => {
-    const date = new Date(guest?.created_at || "2021-09-15");
-    const season = getSeasonFromDate(date);
-    const year = date.getFullYear();
-    return `Member since ${season} ${year}`;
-  }, [guest?.created_at]);
+  const guestId = guest?.id;
 
   const passportId = useMemo(() => {
-    return buildPassportId(guest?.id ?? "guest", guest?.created_at ?? "2021-09-15");
-  }, [guest?.created_at, guest?.id]);
+    return buildPassportId(guestId ?? "guest", guest?.created_at ?? "2021-09-15");
+  }, [guest?.created_at, guestId]);
 
-  const communicationPreference = useMemo(() => {
-    const channels = [
-      guest?.prefersEmail ? "Email" : null,
-      guest?.prefersPhone ? "Phone" : null,
-    ].filter(Boolean);
+  const featuredEvents = useMemo(() => upcomingEvents.slice(0, 3), []);
 
-    return channels.length > 0 ? channels.join(" + ") : "Not set";
-  }, [guest?.prefersEmail, guest?.prefersPhone]);
+  const theme = CORAL_THEME;
 
   useEffect(() => {
     if (isRestoringSession || isAuthenticated) {
@@ -79,11 +129,51 @@ export default function ProfilePage() {
     router.replace("/");
   }, [isAuthenticated, isRestoringSession, openAuthModal, router]);
 
+  useEffect(() => {
+    if (!rootRef.current || !guestId || isRestoringSession || !isAuthenticated) {
+      return;
+    }
+
+    const root = rootRef.current;
+
+    const context = gsap.context(() => {
+      const hero = root.querySelector("[data-gsap='hero']");
+      const side = root.querySelector("[data-gsap='side']");
+      const details = root.querySelector("[data-gsap='details']");
+      const fields = root.querySelectorAll(".vh-field-enter");
+
+      if (hero) {
+        gsap.fromTo(hero, { y: 22, opacity: 0, scale: 0.985 }, { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "power3.out" });
+      }
+
+      if (side) {
+        gsap.fromTo(side, { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.72, ease: "power3.out", delay: 0.08 });
+      }
+
+      if (details) {
+        gsap.fromTo(details, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.75, ease: "power3.out", delay: 0.16 });
+      }
+
+      if (fields.length > 0) {
+        gsap.fromTo(fields, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.42, ease: "power2.out", stagger: 0.045, delay: 0.08 });
+      }
+    }, rootRef);
+
+    return () => context.revert();
+  }, [guestId, isAuthenticated, isEditing, isRestoringSession]);
+
   if (isRestoringSession) {
     return (
       <section className="vh-section py-20 pt-28 md:pt-32">
         <div className="vh-container">
-          <div className="text-center text-white/75">Loading your vibe passport...</div>
+          <div className="mx-auto w-full max-w-[1060px] space-y-5 rounded-[20px] bg-white/[0.02] p-4 md:p-6">
+            <Skeleton className="h-10 w-56 rounded-full bg-white/10" />
+            <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+              <Skeleton className="h-[280px] rounded-2xl bg-white/8" />
+              <Skeleton className="h-[280px] rounded-2xl bg-white/8" />
+            </div>
+            <Skeleton className="h-[320px] rounded-2xl bg-white/8" />
+          </div>
         </div>
       </section>
     );
@@ -93,9 +183,10 @@ export default function ProfilePage() {
     return (
       <section className="vh-section py-20 pt-28 md:pt-32">
         <div className="vh-container">
-          <div className="mx-auto max-w-[520px] rounded-[12px] border border-white/15 bg-white/5 p-8 text-center">
-            <h1 className="text-3xl font-bold uppercase tracking-[1px] text-white">Vibe Passport</h1>
-            <p className="mt-2 text-white/75">Redirecting you to sign in...</p>
+          <div className="mx-auto w-full max-w-[560px] space-y-4 rounded-[16px] bg-white/[0.03] p-6">
+            <Skeleton className="mx-auto h-8 w-48 rounded-full bg-white/10" />
+            <Skeleton className="h-14 w-full rounded-xl bg-white/8" />
+            <Skeleton className="h-14 w-full rounded-xl bg-white/8" />
           </div>
         </div>
       </section>
@@ -107,10 +198,9 @@ export default function ProfilePage() {
     setEmail(guest.email);
     setPhone(guest.phone ?? "");
     setBirthDate(guest.birthDate ?? "");
+    setNationality(guest.nationality ?? "");
     setFromLocation(guest.location ?? "");
     setGender(guest.gender ?? "");
-    setPrefersEmail(guest.prefersEmail ?? true);
-    setPrefersPhone(guest.prefersPhone ?? false);
     setError(null);
     setIsEditing(true);
   };
@@ -145,20 +235,14 @@ export default function ProfilePage() {
       }
     }
 
-    if (!prefersEmail && !prefersPhone) {
-      setError("Select at least one communication preference.");
-      return;
-    }
-
     updateGuestProfile({
       name: normalizedName,
       email: normalizedEmail,
       phone: normalizedPhone || null,
       birthDate: birthDate || null,
       location: fromLocation.trim() || null,
+      nationality: nationality.trim() || null,
       gender: gender || null,
-      prefersEmail,
-      prefersPhone,
     });
 
     setIsEditing(false);
@@ -171,12 +255,24 @@ export default function ProfilePage() {
   };
 
   return (
-    <section className="vh-section pt-28 pb-20 md:pt-32">
+    <section ref={rootRef} className="vh-section relative overflow-x-hidden pt-28 pb-8 md:pt-32 md:pb-10">
+      <div className="pointer-events-none absolute inset-0 opacity-90">
+        <div className="absolute -left-24 top-32 h-64 w-64 rounded-full blur-3xl" style={{ backgroundColor: theme.glow }} />
+        <div className="absolute -right-20 top-52 h-72 w-72 rounded-full blur-3xl" style={{ backgroundColor: theme.accentSoft }} />
+        <div className="absolute left-1/2 top-20 h-56 w-56 -translate-x-1/2 rounded-full blur-3xl" style={{ backgroundColor: theme.accentSoft }} />
+      </div>
+
       <div className="vh-container">
-        <div className="mx-auto w-full max-w-[560px] overflow-hidden rounded-[14px] border border-[var(--vh-pink)]/20 bg-[var(--vh-section-b)] shadow-[0_24px_60px_rgba(0,0,0,0.36)]">
-          <header className="flex items-center justify-between border-b border-white/10 bg-[rgba(35,15,20,0.8)] px-4 py-3 backdrop-blur-sm">
+        <div
+          className="relative mx-auto w-full max-w-[1060px] overflow-hidden rounded-[20px] shadow-[0_30px_80px_rgba(0,0,0,0.45)]"
+          style={{
+            backgroundColor: "rgba(18, 16, 20, 0.96)",
+          }}
+        >
+          <header className="flex items-center justify-between border-b border-white/10 bg-[rgba(20,16,18,0.62)] px-4 py-3 backdrop-blur-sm md:px-6 md:py-4 vh-reveal">
             <button
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--vh-pink)] hover:bg-white/10"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10"
+              style={{ color: theme.accent }}
               onClick={() => router.back()}
               type="button"
               aria-label="Back"
@@ -184,120 +280,146 @@ export default function ProfilePage() {
               <ArrowLeft className="h-4 w-4" />
             </button>
 
-            <h1 className="font-['Space_Grotesk'] text-lg font-bold uppercase tracking-[0.12em] text-slate-100">
-              Vibe Passport
-            </h1>
+            <div className="text-center">
+              <p className="font-['Caveat'] text-xl md:text-2xl" style={{ color: theme.accentMuted }}>
+                Your signature guest identity
+              </p>
+              <h1 className="font-['Space_Grotesk'] text-lg font-bold uppercase tracking-[0.12em] text-slate-100 md:text-xl">
+                Daily Social Passport
+              </h1>
+            </div>
 
             <div className="h-10 w-10" aria-hidden="true" />
           </header>
 
-          <div className="space-y-8 px-4 py-6 md:px-6">
-            {/* Section: Profile Hero Card */}
-            <article className="relative overflow-visible rounded-xl border border-[var(--vh-pink)]/25 bg-[rgba(198,40,40,0.06)] px-5 py-6">
-              <div className="pointer-events-none absolute right-[1px] left-[1px] top-[1px] h-[5px] rounded-t-[10px] bg-gradient-to-r from-[var(--vh-cyan)] via-[var(--vh-pink)] to-[var(--vh-lime)]" />
-              <div className="absolute -top-3 right-0 z-30">
-                <StickerTag
-                  label="Verified Vibe"
-                  bg="#39FF14"
-                  text="#000000"
-                  rotate="rotate-[13deg]"
-                  className="rounded-[3px] border-2 border-[var(--vh-surface-2)] px-2 py-1 text-[9px] font-bold not-italic uppercase shadow-[0_3px_8px_rgba(0,0,0,0.22)]"
-                />
-              </div>
+          <div className="space-y-8 px-4 py-6 md:px-6 md:py-8">
+            <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+              <article
+                data-gsap="hero"
+                className="relative overflow-visible rounded-2xl px-3 py-3 vh-reveal vh-delay-2"
+                style={{ backgroundColor: theme.panel }}
+              >
+                <div className="absolute -top-3 right-0 z-30">
+                  <StickerTag
+                    label="Verified Guest"
+                    bg={theme.accent}
+                    text="#ffffff"
+                    rotate="rotate-[8deg]"
+                    className="rounded-[3px] border-2 border-[var(--vh-surface-2)] px-2 py-1 text-[9px] font-bold not-italic uppercase shadow-[0_3px_8px_rgba(0,0,0,0.22)]"
+                  />
+                </div>
 
-              <div className="flex flex-col items-center gap-5">
-                <div className="relative">
-                  <div className="flex h-28 w-28 items-center justify-center rounded-xl border-4 border-[var(--vh-pink)] bg-gradient-to-br from-[var(--vh-pink)] to-[var(--vh-pink-soft)] text-5xl font-extrabold text-white">
-                    {guest.name.charAt(0).toUpperCase()}
+                <div className="mx-auto w-full max-w-[320px]">
+                  <ReflectiveCard
+                    name={guest.name.toUpperCase()}
+                    roleLabel="The Daily Passport"
+                    idLabel={passportId}
+                    overlayColor="rgba(0, 0, 0, 0.2)"
+                    blurStrength={12}
+                    glassDistortion={30}
+                    metalness={1}
+                    roughness={0.75}
+                    displacementStrength={20}
+                    noiseScale={1}
+                    specularConstant={5}
+                    grayscale={0.15}
+                    color="#ffffff"
+                    useCamera={false}
+                    className="h-[440px] w-full"
+                  />
+                </div>
+              </article>
+
+              <section
+                data-gsap="side"
+                className="relative min-h-[452px] rounded-2xl p-2 vh-reveal vh-delay-3"
+                style={{ backgroundColor: theme.panelStrong }}
+              >
+                <div className="absolute -top-2 right-0 z-20">
+                  <StickerTag
+                    label="Event Gallery"
+                    bg={theme.accentMuted}
+                    text="#ffffff"
+                    rotate="rotate-[10deg]"
+                    className="rounded-[3px] border-2 border-[var(--vh-surface-2)] px-2 py-1 text-[9px] font-bold not-italic uppercase"
+                  />
+                </div>
+
+                <div className="flex h-full w-full flex-col">
+                  <h3 className="text-center font-['Space_Grotesk'] text-sm font-bold uppercase tracking-[0.16em] text-white/85">
+                    Upcoming Experiences
+                  </h3>
+                  <div className="mt-2 min-h-0 flex-1">
+                    <EventCards events={featuredEvents} accent={theme.accent} border={theme.border} />
                   </div>
-                  <span className="absolute -right-1 -bottom-1 inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-[var(--vh-section-b)] bg-[var(--vh-cyan)] text-black">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                  </span>
                 </div>
-
-                <div className="text-center">
-                  <h2 className="font-['Space_Grotesk'] text-3xl font-bold leading-none text-slate-100">{guest.name}</h2>
-                  {/* <p className="mt-2 font-['Space_Grotesk'] text-[13px] font-medium uppercase tracking-[0.22em] text-[var(--vh-pink)]">
-                    Global Nomad
-                  </p> */}
-                  <p className="mt-3 font-mono text-xs text-slate-400">ID: {passportId}</p>
-                </div>
-              </div>
-            </article>
-
-            {/* Section: Member Since Tag */}
-            <div className="relative flex items-center justify-center">
-              <div className="vh-rot-3 relative inline-flex items-center gap-2 rounded-xl bg-[#1E293B] px-5 py-2 text-sm text-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.05)] outline-2 outline-[rgba(198,40,40,0.40)] -outline-offset-2">
-                <Crown className="h-4 w-4 text-[var(--vh-pink)]" />
-                <span className="font-['Caveat'] text-lg">{memberSinceText}</span>
-              </div>
+              </section>
             </div>
 
-            {/* Section: Passport Details */}
-            <section className="rounded-lg border border-white/12 bg-white/[0.04] p-4">
-              <h3 className="font-['Space_Grotesk'] text-sm font-bold uppercase tracking-[0.14em] text-white/85">
-                Passport Details
-              </h3>
-              <div className="mt-3 grid gap-3 text-sm text-white/80 sm:grid-cols-2">
-                <div className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2.5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">Born On</p>
-                  <p className="mt-1 font-semibold text-white">{guest.birthDate || "Not set"}</p>
-                </div>
-                <div className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2.5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">I Am From</p>
-                  <p className="mt-1 font-semibold text-white">{guest.location || "Not set"}</p>
-                </div>
-                <div className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2.5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">Gender</p>
-                  <p className="mt-1 font-semibold text-white">{guest.gender || "Not set"}</p>
-                </div>
-                <div className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2.5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">Communication</p>
-                  <p className="mt-1 font-semibold text-white">{communicationPreference}</p>
-                </div>
-              </div>
-            </section>
-
-            {/* Section: Vibe Notes */}
-            <section className="relative rounded-lg border border-[var(--vh-cyan)]/35 bg-[rgba(0,240,255,0.08)] p-4">
-              <div className="absolute -top-2 right-0 z-10">
+            <section data-gsap="details" className="rounded-2xl p-4 md:p-5 vh-reveal vh-delay-4" style={{ backgroundColor: "rgba(255,255,255,0.04)" }}>
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h3 className="font-['Space_Grotesk'] text-base font-bold uppercase tracking-[0.14em] text-white/90">
+                  Profile Screen
+                </h3>
                 <StickerTag
-                  label="Top Guest"
-                  bg="#c62828"
-                  text="#FFFFFF"
+                  label="Premium Guest"
+                  bg={theme.accentMuted}
+                  text="#ffffff"
                   rotate="rotate-[10deg]"
-                  className="rounded-[3px] border-2 border-[var(--vh-surface-2)] px-2 py-1 text-[9px] font-bold not-italic uppercase shadow-[0_3px_8px_rgba(0,0,0,0.22)]"
+                  className="rounded-[3px] border-2 border-[var(--vh-surface-2)] px-2 py-1 text-[9px] font-bold not-italic uppercase"
                 />
               </div>
-              <h3 className="font-['Space_Grotesk'] text-sm font-bold uppercase tracking-[0.14em] text-[var(--vh-cyan)]">
-                Vibe Notes
-              </h3>
-              <p className="mt-3 font-['Caveat'] text-2xl leading-8 text-slate-200">
-                Always asks for extra pillows. Loves local coffee recommendations. Prefers sunrise views over sunset.
-              </p>
-            </section>
 
-            {/* Section: Profile Actions */}
-            {!isEditing ? (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Button onClick={startEdit} className="rounded-lg bg-[var(--vh-cyan)] text-black hover:opacity-90">
-                  <Sparkles className="h-4 w-4" />
-                  Edit Profile
-                </Button>
-                <Button onClick={signOut} variant="outline" className="rounded-lg border-[var(--vh-pink)] text-[var(--vh-pink)] hover:bg-[var(--vh-pink)]/10">
-                  Logout
-                </Button>
-              </div>
-            ) : (
-              /* Section: Edit Profile Form */
-              <section className="vh-panel-soft rounded-lg p-4">
-                <div className="space-y-3">
-                  <label className="block">
+              {!isEditing ? (
+                <>
+                  <div className="grid gap-3 text-sm text-white/85 sm:grid-cols-2 lg:grid-cols-3">
+                    {[
+                      { icon: <UserCircle2 className="h-3.5 w-3.5" />, label: "Full Name", value: guest.name || "Not set" },
+                      { icon: <VenusAndMars className="h-3.5 w-3.5" />, label: "Gender", value: guest.gender || "Not set" },
+                      { icon: <CalendarDays className="h-3.5 w-3.5" />, label: "Date Of Birth", value: guest.birthDate || "Not set" },
+                      { icon: <Flag className="h-3.5 w-3.5" />, label: "Nationality", value: guest.nationality || "Not set" },
+                      { icon: <Phone className="h-3.5 w-3.5" />, label: "Phone", value: guest.phone || "Not set" },
+                      { icon: <Mail className="h-3.5 w-3.5" />, label: "Email", value: guest.email || "Not set" },
+                    ].map((field, index) => (
+                      <div key={field.label} className="rounded-lg border px-3 py-3 vh-field-enter" style={{ borderColor: theme.border, backgroundColor: theme.chip, animationDelay: `${index * 70}ms` }}>
+                        <p className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white/50">
+                          <span style={{ color: theme.accent }}>{field.icon}</span>
+                          {field.label}
+                        </p>
+                        <p className="font-semibold text-white">{field.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Button onClick={startEdit} className="rounded-lg text-white hover:opacity-90" style={{ backgroundColor: theme.accentMuted }}>
+                      <Sparkles className="h-4 w-4" />
+                      Edit Profile
+                    </Button>
+                    <Button
+                      onClick={signOut}
+                      variant="outline"
+                      className="rounded-lg hover:bg-white/5"
+                      style={{ borderColor: theme.border, color: theme.accent }}
+                    >
+                      Logout
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <section className="vh-panel-soft rounded-lg border border-white/10 p-4 vh-field-enter" style={{ animationDelay: "120ms" }}>
+                  <p className="mb-4 font-['Caveat'] text-2xl leading-none" style={{ color: theme.accent }}>
+                    Fine tune your daily passport details
+                  </p>
+
+                  <div className="space-y-3">
+                    <label className="block vh-field-enter" style={{ animationDelay: "70ms" }}>
                     <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
                       Full Name
                     </span>
                     <input
-                      className="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[var(--vh-pink)]"
+                      className="w-full rounded-md border bg-white/5 px-3 py-2 text-sm text-white outline-none transition-all duration-200 focus:-translate-y-0.5"
+                      style={{ borderColor: theme.border }}
                       onChange={(e) => setName(e.target.value)}
                       type="text"
                       value={name}
@@ -305,12 +427,13 @@ export default function ProfilePage() {
                     />
                   </label>
 
-                  <label className="block">
+                  <label className="block vh-field-enter" style={{ animationDelay: "110ms" }}>
                     <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
                       Email
                     </span>
                     <input
-                      className="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[var(--vh-pink)]"
+                      className="w-full rounded-md border bg-white/5 px-3 py-2 text-sm text-white outline-none transition-all duration-200 focus:-translate-y-0.5"
+                      style={{ borderColor: theme.border }}
                       onChange={(e) => setEmail(e.target.value)}
                       type="email"
                       value={email}
@@ -318,12 +441,72 @@ export default function ProfilePage() {
                     />
                   </label>
 
-                  <label className="block">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block vh-field-enter" style={{ animationDelay: "150ms" }}>
+                      <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
+                        Gender
+                      </span>
+                      <select
+                        className="w-full rounded-md border bg-white/5 px-3 py-2 text-sm text-white outline-none transition-all duration-200 focus:-translate-y-0.5"
+                        style={{ borderColor: theme.border }}
+                        onChange={(e) => setGender(e.target.value)}
+                        value={gender}
+                      >
+                        <option className="bg-[var(--vh-surface-2)] text-white" value="">
+                          Select
+                        </option>
+                        <option className="bg-[var(--vh-surface-2)] text-white" value="Female">
+                          Female
+                        </option>
+                        <option className="bg-[var(--vh-surface-2)] text-white" value="Male">
+                          Male
+                        </option>
+                        <option className="bg-[var(--vh-surface-2)] text-white" value="Non-binary">
+                          Non-binary
+                        </option>
+                        <option className="bg-[var(--vh-surface-2)] text-white" value="Prefer not to say">
+                          Prefer not to say
+                        </option>
+                      </select>
+                    </label>
+
+                    <label className="block vh-field-enter" style={{ animationDelay: "190ms" }}>
+                      <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
+                        Date Of Birth
+                      </span>
+                      <input
+                        className="w-full rounded-md border bg-white/5 px-3 py-2 text-sm text-white outline-none transition-all duration-200 focus:-translate-y-0.5"
+                        style={{ borderColor: theme.border }}
+                        onChange={(e) => setBirthDate(e.target.value)}
+                        type="date"
+                        value={birthDate}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block vh-field-enter" style={{ animationDelay: "230ms" }}>
+                      <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
+                        Nationality
+                      </span>
+                      <input
+                        className="w-full rounded-md border bg-white/5 px-3 py-2 text-sm text-white outline-none transition-all duration-200 focus:-translate-y-0.5"
+                        style={{ borderColor: theme.border }}
+                        onChange={(e) => setNationality(e.target.value)}
+                        placeholder="Your nationality"
+                        type="text"
+                        value={nationality}
+                      />
+                    </label>
+                  </div>
+
+                  <label className="block vh-field-enter" style={{ animationDelay: "310ms" }}>
                     <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
                       Phone
                     </span>
                     <input
-                      className="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[var(--vh-pink)]"
+                      className="w-full rounded-md border bg-white/5 px-3 py-2 text-sm text-white outline-none transition-all duration-200 focus:-translate-y-0.5"
+                      style={{ borderColor: theme.border }}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="Optional"
                       type="tel"
@@ -331,85 +514,19 @@ export default function ProfilePage() {
                     />
                   </label>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="block">
-                      <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
-                        Born On
-                      </span>
-                      <input
-                        className="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[var(--vh-pink)]"
-                        onChange={(e) => setBirthDate(e.target.value)}
-                        type="date"
-                        value={birthDate}
-                      />
-                    </label>
-
-                    <label className="block">
-                      <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
-                        I Am From
-                      </span>
-                      <input
-                        className="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[var(--vh-pink)]"
-                        onChange={(e) => setFromLocation(e.target.value)}
-                        placeholder="City, Country"
-                        type="text"
-                        value={fromLocation}
-                      />
-                    </label>
-                  </div>
-
-                  <label className="block">
+                  <label className="block vh-field-enter" style={{ animationDelay: "390ms" }}>
                     <span className="mb-1 block font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
-                      Gender
+                      Location
                     </span>
-                    <select
-                      className="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[var(--vh-pink)]"
-                      onChange={(e) => setGender(e.target.value)}
-                      value={gender}
-                    >
-                      <option className="bg-[var(--vh-surface-2)] text-white" value="">
-                        Select
-                      </option>
-                      <option className="bg-[var(--vh-surface-2)] text-white" value="Female">
-                        Female
-                      </option>
-                      <option className="bg-[var(--vh-surface-2)] text-white" value="Male">
-                        Male
-                      </option>
-                      <option className="bg-[var(--vh-surface-2)] text-white" value="Non-binary">
-                        Non-binary
-                      </option>
-                      <option className="bg-[var(--vh-surface-2)] text-white" value="Prefer not to say">
-                        Prefer not to say
-                      </option>
-                    </select>
+                    <input
+                      className="w-full rounded-md border bg-white/5 px-3 py-2 text-sm text-white outline-none transition-all duration-200 focus:-translate-y-0.5"
+                      style={{ borderColor: theme.border }}
+                      onChange={(e) => setFromLocation(e.target.value)}
+                      placeholder="City, Country"
+                      type="text"
+                      value={fromLocation}
+                    />
                   </label>
-
-                  <div className="rounded-md border border-white/15 bg-white/[0.03] px-3 py-3">
-                    <p className="mb-2 font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
-                      Communication Preferences
-                    </p>
-                    <div className="flex flex-wrap gap-4 text-sm text-white/85">
-                      <label className="inline-flex items-center gap-2">
-                        <input
-                          checked={prefersEmail}
-                          className="h-4 w-4 accent-[var(--vh-pink)]"
-                          onChange={(e) => setPrefersEmail(e.target.checked)}
-                          type="checkbox"
-                        />
-                        Email
-                      </label>
-                      <label className="inline-flex items-center gap-2">
-                        <input
-                          checked={prefersPhone}
-                          className="h-4 w-4 accent-[var(--vh-cyan)]"
-                          onChange={(e) => setPrefersPhone(e.target.checked)}
-                          type="checkbox"
-                        />
-                        Phone
-                      </label>
-                    </div>
-                  </div>
                 </div>
 
                 {error ? (
@@ -419,15 +536,16 @@ export default function ProfilePage() {
                 ) : null}
 
                 <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <Button onClick={saveEdit} className="rounded-lg bg-[var(--vh-pink)]">
-                    Save
+                  <Button onClick={saveEdit} className="rounded-lg text-black hover:opacity-90" style={{ backgroundColor: theme.accent }}>
+                    Save Profile
                   </Button>
                   <Button onClick={cancelEdit} variant="outline" className="rounded-lg">
                     Cancel
                   </Button>
                 </div>
               </section>
-            )}
+              )}
+            </section>
           </div>
         </div>
       </div>

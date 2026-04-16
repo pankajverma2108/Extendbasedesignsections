@@ -2,7 +2,7 @@ import { HeroCarousel } from "@/components/marketing/widgets/hero-carousel";
 import { HomeSections } from "@/components/marketing/pages/home-sections";
 import { BookingWidget } from "@/components/marketing/widgets/booking-widget";
 import { heroImages, homePageContent } from "@/content/home";
-import { getDefaultPropertyId, getPublicEvents, getRoomAvailability, roomTypesToHomeCards } from "@/lib/cx-api";
+import { getDefaultPropertyId, getPublicEvents, getRoomCatalog, roomTypesToHomeCards } from "@/lib/cx-api";
 
 type HomePageProps = {
   searchParams?: Promise<{
@@ -16,11 +16,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const propertyDestinationHref = propertyId
     ? `/property?property_id=${encodeURIComponent(propertyId)}`
     : "/property";
-  let roomTypes = await getRoomAvailability({ propertyId });
+  let roomTypes = await getRoomCatalog({ propertyId });
   const usedFallbackRooms = roomTypes.every((room) => room.id.startsWith("fallback-"));
 
   if (propertyId && usedFallbackRooms) {
-    roomTypes = await getRoomAvailability();
+    roomTypes = await getRoomCatalog();
   }
 
   const dynamicHomeRooms = roomTypesToHomeCards(roomTypes);

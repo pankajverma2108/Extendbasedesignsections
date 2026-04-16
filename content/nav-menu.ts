@@ -10,14 +10,9 @@ function buildPropertyHref(propertyId: string): string {
 
 export const hostelNavItems: HostelNavItem[] = [
   {
-    id: "tds-koramangala-a",
+    id: "60765",
     label: "TDS, Property A - Koramangala",
-    href: buildPropertyHref("tds-koramangala-a"),
-  },
-  {
-    id: "tds-koramangala-2",
-    label: "TDS, Property B - Koramangala",
-    href: buildPropertyHref("tds-koramangala-b"),
+    href: buildPropertyHref("60765"),
   },
 ];
 

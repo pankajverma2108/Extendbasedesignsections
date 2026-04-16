@@ -8,6 +8,20 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/bookings/:eri/pre-arrival',
+        destination: '/bookings/:eri/web-check-in',
+        permanent: false,
+      },
+      {
+        source: '/bookings/:eri',
+        destination: '/bookings/:eri/web-check-in',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

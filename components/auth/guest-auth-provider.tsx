@@ -25,6 +25,8 @@ type GuestProfileUpdatePayload = {
   phone: string | null;
   birthDate?: string | null;
   location?: string | null;
+  nationality?: string | null;
+  emergencyContact?: string | null;
   gender?: string | null;
   prefersEmail?: boolean;
   prefersPhone?: boolean;
@@ -53,6 +55,8 @@ type ProfileOverrides = {
   phone: string | null;
   birthDate: string | null;
   location: string | null;
+  nationality: string | null;
+  emergencyContact: string | null;
   gender: string | null;
   prefersEmail: boolean;
   prefersPhone: boolean;
@@ -81,6 +85,9 @@ function readProfileOverrides(): ProfileOverrides | null {
       phone: typeof parsed.phone === "string" || parsed.phone === null ? parsed.phone : null,
       birthDate: typeof parsed.birthDate === "string" || parsed.birthDate === null ? parsed.birthDate : null,
       location: typeof parsed.location === "string" || parsed.location === null ? parsed.location : null,
+      nationality: typeof parsed.nationality === "string" || parsed.nationality === null ? parsed.nationality : null,
+      emergencyContact:
+        typeof parsed.emergencyContact === "string" || parsed.emergencyContact === null ? parsed.emergencyContact : null,
       gender: typeof parsed.gender === "string" || parsed.gender === null ? parsed.gender : null,
       prefersEmail: typeof parsed.prefersEmail === "boolean" ? parsed.prefersEmail : true,
       prefersPhone: typeof parsed.prefersPhone === "boolean" ? parsed.prefersPhone : false,
@@ -103,6 +110,8 @@ function mergeWithOverrides(guest: GuestProfile): GuestProfile {
     phone: overrides.phone ?? guest.phone,
     birthDate: overrides.birthDate ?? guest.birthDate ?? null,
     location: overrides.location ?? guest.location ?? null,
+    nationality: overrides.nationality ?? guest.nationality ?? null,
+    emergencyContact: overrides.emergencyContact ?? guest.emergencyContact ?? null,
     gender: overrides.gender ?? guest.gender ?? null,
     prefersEmail: overrides.prefersEmail ?? guest.prefersEmail ?? true,
     prefersPhone: overrides.prefersPhone ?? guest.prefersPhone ?? false,
@@ -305,6 +314,8 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
         phone: payload.phone,
         birthDate: payload.birthDate ?? current.birthDate ?? null,
         location: payload.location ?? current.location ?? null,
+        nationality: payload.nationality ?? current.nationality ?? null,
+        emergencyContact: payload.emergencyContact ?? current.emergencyContact ?? null,
         gender: payload.gender ?? current.gender ?? null,
         prefersEmail: payload.prefersEmail ?? current.prefersEmail ?? true,
         prefersPhone: payload.prefersPhone ?? current.prefersPhone ?? false,
@@ -317,6 +328,8 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
           phone: nextProfile.phone,
           birthDate: nextProfile.birthDate ?? null,
           location: nextProfile.location ?? null,
+          nationality: nextProfile.nationality ?? null,
+          emergencyContact: nextProfile.emergencyContact ?? null,
           gender: nextProfile.gender ?? null,
           prefersEmail: nextProfile.prefersEmail ?? true,
           prefersPhone: nextProfile.prefersPhone ?? false,

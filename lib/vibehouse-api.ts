@@ -1,7 +1,17 @@
-const DEFAULT_API_BASE_URL = "https://vibehousebackend-production.up.railway.app";
+const DEFAULT_API_BASE_URL = "https://api.thedailysocial.co.in";
+
+function normalizeApiBaseUrl(value: string | undefined): string {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return DEFAULT_API_BASE_URL;
+  }
+
+  return trimmed.replace(/\/+$/, "");
+}
 
 export function getApiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL;
+  return normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_BASE_URL);
 }
 
 export function parseApiError(data: unknown, fallback: string): string {

@@ -149,17 +149,18 @@ declare global {
 
 const RAZORPAY_SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
 const COLIVE_FLOW_SNAPSHOT_KEY = "vh_colive_flow_snapshot";
+const CANONICAL_PROPERTY_ID_REGEX = /^\d+$/;
 
 const coliveBackendMap: Record<string, ColivePropertyBackendMap> = {
   "koramangala-a": {
-    propertyId: process.env.NEXT_PUBLIC_COLIVE_KORAMANGALA_A_PROPERTY_ID?.trim() || "prop-koramangala-a",
+    propertyId: process.env.NEXT_PUBLIC_COLIVE_KORAMANGALA_A_PROPERTY_ID?.trim() || "",
     rooms: {
       dorm: process.env.NEXT_PUBLIC_COLIVE_KORAMANGALA_A_DORM_ROOM_TYPE_ID?.trim() || "rt-ka-4dorm",
       private: process.env.NEXT_PUBLIC_COLIVE_KORAMANGALA_A_PRIVATE_ROOM_TYPE_ID?.trim() || "rt-ka-queen",
     },
   },
   "koramangala-b": {
-    propertyId: process.env.NEXT_PUBLIC_COLIVE_KORAMANGALA_B_PROPERTY_ID?.trim() || "prop-koramangala-b",
+    propertyId: process.env.NEXT_PUBLIC_COLIVE_KORAMANGALA_B_PROPERTY_ID?.trim() || "",
     rooms: {
       dorm: process.env.NEXT_PUBLIC_COLIVE_KORAMANGALA_B_DORM_ROOM_TYPE_ID?.trim() || "rt-kb-4dorm",
       private: process.env.NEXT_PUBLIC_COLIVE_KORAMANGALA_B_PRIVATE_ROOM_TYPE_ID?.trim() || "rt-kb-queen",
@@ -892,6 +893,11 @@ export function ColiveFlow({ initialLocation = "bangalore" }: { initialLocation?
 
     if (!backendPropertyId || !backendRoomTypeId) {
       setCheckoutError("Could not resolve room mapping for this property. Please reselect your property and room once.");
+      return;
+    }
+
+    if (!CANONICAL_PROPERTY_ID_REGEX.test(backendPropertyId)) {
+      setCheckoutError("Property mapping is not configured for live booking. Please contact support.");
       return;
     }
 

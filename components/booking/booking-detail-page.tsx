@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
@@ -20,13 +19,21 @@ import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { StickerTag } from "@/components/shared/sticker-tag";
 import { Button } from "@/components/ui/button";
 import { propertyHero, propertyGuidelines } from "@/content/rooms";
+import { withBrandName, toBrandCheckinLink } from "@/lib/branding";
+import { getClientCache, setClientCache } from "@/lib/client-cache";
 import { getConfirmedBookingSnapshot } from "@/lib/booking-session";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { linkGuestBooking, type BookingSlotSummary, type LinkGuestBookingResponse } from "@/lib/booking-api";
+import { toSafeErrorMessage } from "@/lib/ui-error";
 
 import { BookingEmptyState, BookingPageShell, formatCurrency } from "./booking-shell";
 
 const EMPTY_SLOTS: BookingSlotSummary[] = [];
+const BOOKING_DETAIL_CACHE_TTL_MS = 1000 * 60 * 3;
+
+function bookingDetailCacheKey(ezeeReservationId: string): string {
+  return `vh:booking-detail:${ezeeReservationId}`;
+}
 
 function prettyStatus(value?: string): string {
   if (!value) {
@@ -68,6 +75,40 @@ function formatPosterDate(value?: string | null): string {
   }).format(date).toUpperCase();
 }
 
+function getArrivalCredential(seed: string, prefix: string, size: number): string {
+  let hash = 0;
+
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
+  }
+
+  return `${prefix}${String(hash % 10 ** size).padStart(size, "0")}`;
+}
+
+function buildQrPattern(seed: string): boolean[] {
+  const cells: boolean[] = [];
+  let hash = 2166136261;
+
+  for (let index = 0; index < seed.length; index += 1) {
+    hash ^= seed.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  for (let index = 0; index < 81; index += 1) {
+    hash = Math.imul(hash ^ (index + 97), 2246822519);
+    const row = Math.floor(index / 9);
+    const col = index % 9;
+    const inCornerFinder =
+      (row < 3 && col < 3) ||
+      (row < 3 && col > 5) ||
+      (row > 5 && col < 3);
+
+    cells.push(inCornerFinder || ((hash >>> 29) & 1) === 1);
+  }
+
+  return cells;
+}
+
 export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: string }) {
   const { isAuthenticated, isRestoringSession, openAuthModal } = useGuestAuth();
   const [bookingDetail, setBookingDetail] = useState<LinkGuestBookingResponse | null>(null);
@@ -101,6 +142,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
       return;
     }
     const token = storedToken;
+    const cacheKey = bookingDetailCacheKey(ezeeReservationId);
 
     let cancelled = false;
 
@@ -108,14 +150,21 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
       setIsLoading(true);
       setErrorMessage(null);
 
+      const cachedDetail = getClientCache<LinkGuestBookingResponse>(cacheKey, BOOKING_DETAIL_CACHE_TTL_MS);
+      if (cachedDetail && !cancelled) {
+        setBookingDetail(cachedDetail);
+        setIsLoading(false);
+      }
+
       try {
         const response = await linkGuestBooking(token, ezeeReservationId);
         if (!cancelled) {
           setBookingDetail(response);
+          setClientCache(cacheKey, response);
         }
       } catch (error) {
         if (!cancelled) {
-          setErrorMessage(error instanceof Error ? error.message : "Unable to load this booking right now.");
+          setErrorMessage(toSafeErrorMessage(error, "Unable to load this booking right now."));
         }
       } finally {
         if (!cancelled) {
@@ -137,15 +186,15 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
     () => slots.filter((slot) => slot.kyc_status === "PRE_VERIFIED" || slot.kyc_status === "VERIFIED").length,
     [slots],
   );
-
-  const scannerImage = encodeURI("/design-guidelines/booking summary/Rickrolling_QR_code.png");
+  const accessPasscode = useMemo(() => getArrivalCredential(ezeeReservationId, "#", 6), [ezeeReservationId]);
+  const qrPattern = useMemo(() => buildQrPattern(ezeeReservationId), [ezeeReservationId]);
 
   if (isRestoringSession || isLoading) {
     return (
       <BookingPageShell
         badge="Booking Detail"
         title="Loading your booking"
-        description="Pulling the linked booking, guest slots, and confirmation state from the backend."
+        description="Pulling your linked booking, guest slots, and confirmation state."
       >
         <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-8 text-center text-white/72">
           Loading booking detail...
@@ -183,7 +232,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
       >
         <BookingEmptyState
           title="This booking is not available yet"
-          description={errorMessage || "Either the booking has not been linked for this guest account yet, or the backend has not returned it yet."}
+          description={errorMessage || "Either the booking has not been linked for this guest account yet, or it is still being prepared."}
           ctaHref="/bookings"
           ctaLabel="Open my bookings"
         />
@@ -193,7 +242,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
 
   const booking = bookingDetail?.booking;
   const roomSummary = booking?.room_type_name ?? snapshotFallback?.roomSummary ?? "Room details pending";
-  const propertyName = snapshotFallback?.propertyName ?? "The Daily Social";
+  const propertyName = withBrandName(snapshotFallback?.propertyName ?? booking?.property_id);
   const roomNumber = booking?.room_number || "Assigned at check-in";
   const totalGuests = slots.length || booking?.no_of_guests || 1;
   const amountPaid = snapshotFallback?.amountPaid ?? 0;
@@ -264,16 +313,19 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
 
                     <div className="mt-7 flex justify-center">
                       <div className="border-4 border-[var(--vh-surface-2)] bg-white p-3 rounded-xl shadow-sm hover:scale-105 transition-transform duration-300">
-                        <Image
-                          alt="Rickrolling scanner"
-                          className="h-[220px] w-[220px] rounded-md object-cover"
-                          height={220}
-                          priority={false}
-                          src={scannerImage}
-                          width={220}
-                        />
+                        <div className="grid grid-cols-9 gap-1 bg-[var(--vh-surface-2)] p-3 rounded-md">
+                          {qrPattern.map((filled, index) => (
+                            <div
+                              key={`${ezeeReservationId}-${index}`}
+                              className={filled ? "h-3 w-3 bg-white rounded-sm" : "h-3 w-3 bg-[var(--vh-surface-2)]"}
+                            />
+                          ))}
+                        </div>
                         <p className="mt-2 text-center font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--vh-surface-2)]">
                           Scan for room access
+                        </p>
+                        <p className="text-center font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--vh-surface-2)]/70">
+                          Access code {accessPasscode}
                         </p>
                       </div>
                     </div>
@@ -464,7 +516,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                             <CalendarDays className="mt-1 h-4 w-4 shrink-0 text-[var(--vh-cyan)]" />
                             <div>
                               <p className="font-semibold text-white">Check-in from {propertyGuidelines.checkIn}</p>
-                              <p className="mt-1 text-sm text-white/66">Room assignment and access instructions keep syncing after payment capture.</p>
+                              <p className="mt-1 text-sm text-white/66">Room assignment and access instructions continue updating after payment capture.</p>
                             </div>
                           </div>
                         </div>
@@ -485,14 +537,17 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                       <p className="mt-4 text-sm leading-7 text-white/72">
                         {snapshotFallback
                           ? `Payment ${snapshotFallback.paymentId} was recorded for ${formatCurrency(snapshotFallback.amountPaid)}.`
-                          : "Payment confirmation was recorded, but the local fallback snapshot is unavailable on this device."}
+                          : "Payment confirmation was recorded, but recent payment details are unavailable on this device."}
                       </p>
                       <div className="mt-6 space-y-3">
                         <Button asChild className="w-full rounded-[12px] bg-[var(--vh-pink)] py-6 h-auto whitespace-normal text-center text-sm md:text-base font-black uppercase tracking-[0.12em] shadow-[0_4px_0_0_var(--vh-border)] hover:translate-y-[2px] hover:shadow-[0_2px_0_0_var(--vh-border)] transition-all duration-200 print:hidden">
-                          <Link href={`/bookings/${encodeURIComponent(ezeeReservationId)}/pre-arrival`} className="flex-col md:flex-row gap-2">
-                            <span>Pre-arrival setup</span>
+                          <Link href={toBrandCheckinLink(ezeeReservationId)} className="flex-col md:flex-row gap-2">
+                            <span>Start web check-in</span>
                             <ChevronRight className="h-5 w-5" />
                           </Link>
+                        </Button>
+                        <Button asChild className="w-full rounded-[8px] border border-white/15 bg-transparent text-white hover:bg-white/8 print:hidden" variant="outline">
+                          <Link href={`/bookings/${encodeURIComponent(ezeeReservationId)}/confirmed`}>Open confirmation page</Link>
                         </Button>
                         <Button onClick={() => window.print()} className="w-full rounded-[8px] border border-[var(--vh-cyan)]/30 bg-[rgba(234,239,254,0.05)] text-[var(--vh-cyan)] hover:bg-[rgba(234,239,254,0.1)] transition-all duration-200 print:hidden" variant="outline">
                           <Download className="mr-2 h-4 w-4" />
