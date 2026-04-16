@@ -92,9 +92,9 @@ const STEPS: Array<{ id: Step; label: string }> = [
 ];
 
 const ID_TYPES = [
-  { value: "AADHAAR", label: "Aadhaar Card" },
+  { value: "AADHAAR", label: "Aadhar" },
   { value: "PASSPORT", label: "Passport" },
-  { value: "DRIVING_LICENCE", label: "Driving Licence" },
+  { value: "DRIVING_LICENCE", label: "Driving License" },
   { value: "VOTER_ID", label: "Voter ID" },
 ];
 
@@ -1170,7 +1170,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                     <section className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 md:p-6 shadow-[var(--vh-shadow-lg)]">
                       <div className="flex items-center justify-between gap-3">
                         <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase tracking-[-0.03em] text-white">
-                          Required Details
+                          Just one ID needed
                         </h2>
                         <Popover>
                           <PopoverTrigger asChild>
@@ -1188,7 +1188,11 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                         </Popover>
                       </div>
 
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <p className="mt-2 text-sm text-white/65">
+                        Choose one document to upload.
+                      </p>
+
+                      <div className="mt-4 grid gap-3">
                         {ID_TYPES.map((idType) => (
                           <button
                             key={idType.value}
@@ -1353,7 +1357,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                     <section className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 md:p-6 shadow-[var(--vh-shadow-lg)]">
                       <div className="flex items-center justify-between gap-3">
                         <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase tracking-[-0.03em] text-white">
-                          Arrival Details
+                          Final Details
                         </h2>
                         <Clock3 className="h-5 w-5 text-[var(--vh-cyan)]" />
                       </div>
@@ -1424,7 +1428,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                         type="button"
                       >
                         {isSubmitting ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-                        Submit
+                        Finish Check-in
                       </Button>
                     )}
                   </div>
@@ -1584,6 +1588,9 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
       {isCompletionModalOpen ? (
         <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-[20px] border border-white/12 bg-[var(--vh-section-a)] p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[rgba(57,247,44,0.28)] bg-[rgba(57,247,44,0.08)]">
+              <CheckCircle2 className="h-10 w-10 text-[var(--vh-lime)]" />
+            </div>
             <p className="font-['Space_Grotesk'] text-xl font-bold uppercase tracking-[0.06em] text-white">
               Web Check-in to {withBrandName(propertyName)} Done.
             </p>
@@ -1591,15 +1598,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
               You are all set. Open your booking confirmation to manage add guests and arrival details.
             </p>
 
-            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Button
-                className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/10"
-                onClick={() => setIsCompletionModalOpen(false)}
-                type="button"
-                variant="outline"
-              >
-                Stay Here
-              </Button>
+            <div className="mt-6 grid grid-cols-1 gap-3">
               <Button
                 className="rounded-[10px] bg-[var(--vh-pink)] text-white"
                 onClick={() => {

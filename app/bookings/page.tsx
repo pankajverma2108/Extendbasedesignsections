@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { ChevronRight, LoaderCircle, MapPin, Search } from "lucide-react";
+import { toast } from "sonner";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { Button } from "@/components/ui/button";
@@ -10,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StickerTag } from "@/components/shared/sticker-tag";
 import { propertyHero } from "@/content/rooms";
 import { getGuestBookings, linkGuestBooking, type GuestBookingMineItem } from "@/lib/booking-api";
-import { withBrandName, toBrandCheckinLink } from "@/lib/branding";
+import { withBrandName } from "@/lib/branding";
 import { getClientCache, setClientCache } from "@/lib/client-cache";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { toSafeErrorMessage } from "@/lib/ui-error";
@@ -182,7 +184,7 @@ function BookingSummaryTicket({ booking }: { booking: GuestBookingMineItem }) {
 
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         <Button asChild className="rounded-full bg-[var(--vh-pink)] text-white hover:bg-[var(--vh-pink)]/90">
-          <Link href={toBrandCheckinLink(booking.ezee_reservation_id)}>
+          <Link href={`/bookings/${encodeURIComponent(booking.ezee_reservation_id)}`}>
             Open booking
             <ChevronRight className="ml-2 h-4 w-4" />
           </Link>
@@ -199,6 +201,7 @@ function BookingSummaryTicket({ booking }: { booking: GuestBookingMineItem }) {
 
 export default function BookingsPage() {
   const { guest, isAuthenticated, isRestoringSession, openAuthModal } = useGuestAuth();
+  const searchParams = useSearchParams();
   const [bookings, setBookings] = useState<GuestBookingMineItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -207,6 +210,20 @@ export default function BookingsPage() {
   const [isLinkingBooking, setIsLinkingBooking] = useState(false);
   const [linkSuccess, setLinkSuccess] = useState<string | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [freshToastShown, setFreshToastShown] = useState(false);
+
+  useEffect(() => {
+    const freshReservation = searchParams.get("fresh");
+    if (!freshReservation || freshToastShown) {
+      return;
+    }
+
+    toast.success("Booking confirmed", {
+      description: `${freshReservation} is now available in My Bookings.`,
+    });
+    setBookingFilter("active");
+    setFreshToastShown(true);
+  }, [freshToastShown, searchParams]);
 
   useEffect(() => {
     if (isRestoringSession) {

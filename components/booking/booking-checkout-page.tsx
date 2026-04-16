@@ -1048,8 +1048,8 @@ export function BookingCheckoutPage() {
                 createdAt: Date.now(),
               });
               setFlowStage("confirmed");
-              toast.success("Payment successful! Redirecting to web check-in...");
-              router.push(`/bookings/${encodeURIComponent(orderSummary.ezee_reservation_id)}/web-check-in?fresh=1`);
+              toast.success("Payment successful! Redirecting to My Bookings...");
+              router.push(`/bookings?fresh=${encodeURIComponent(orderSummary.ezee_reservation_id)}`);
               resolve();
             } catch (error) {
               clearPendingBookingOrder();
