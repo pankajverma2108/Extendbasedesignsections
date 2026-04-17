@@ -20,7 +20,7 @@ export function QrScanner({
     () => `aadhaar-secure-qr-${Math.random().toString(36).slice(2, 11)}`,
     [],
   );
-  const scannerRef = useRef<{ stop: () => Promise<void>; clear: () => Promise<void> } | null>(
+  const scannerRef = useRef<{ stop: () => Promise<void>; clear: () => void } | null>(
     null,
   );
   const [booting, setBooting] = useState(false);
@@ -49,7 +49,7 @@ export function QrScanner({
     }
 
     try {
-      await scanner.clear();
+      scanner.clear();
     } catch {
       // Ignore clear errors during teardown.
     }
@@ -82,7 +82,6 @@ export function QrScanner({
             fps: 10,
             qrbox: { width: 240, height: 240 },
             aspectRatio: 1,
-            rememberLastUsedCamera: true,
           },
           (decodedText) => {
             publishStatus("Scanning complete.");

@@ -38,7 +38,8 @@ function base64ToBytes(value: string): Uint8Array {
   const normalized = normalizeBase64(value);
   const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
   const binary = atob(padded);
-  const bytes = new Uint8Array(binary.length);
+  const buffer = new ArrayBuffer(binary.length);
+  const bytes = new Uint8Array(buffer);
 
   for (let index = 0; index < binary.length; index += 1) {
     bytes[index] = binary.charCodeAt(index);
@@ -47,13 +48,18 @@ function base64ToBytes(value: string): Uint8Array {
   return bytes;
 }
 
+function bytesToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
+}
+
 function pemToArrayBuffer(pem: string): ArrayBuffer {
   const clean = pem
     .replace(/-----BEGIN PUBLIC KEY-----/g, "")
     .replace(/-----END PUBLIC KEY-----/g, "")
     .replace(/\s+/g, "");
-
-  return base64ToBytes(clean).buffer;
+  return bytesToArrayBuffer(base64ToBytes(clean));
 }
 
 function resolveGender(value?: string): AadhaarSecureQrData["gender"] {
@@ -190,8 +196,8 @@ export async function verifyUidaiDigitalSignature(
       ["verify"],
     );
 
-    const payloadBytes = new TextEncoder().encode(secureQrData.signedData);
-    const signatureBytes = base64ToBytes(secureQrData.signature);
+    const payloadBytes = bytesToArrayBuffer(new TextEncoder().encode(secureQrData.signedData));
+    const signatureBytes = bytesToArrayBuffer(base64ToBytes(secureQrData.signature));
 
     return crypto.subtle.verify("RSASSA-PKCS1-v1_5", importedKey, signatureBytes, payloadBytes);
   } catch {

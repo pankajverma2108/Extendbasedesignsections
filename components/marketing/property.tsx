@@ -39,6 +39,7 @@ import {
 import { toast } from "sonner";
 import { buildBookingSignature, saveBookingDraft, type BookingDraftRoom } from "@/lib/booking-session";
 import type { CxRoomCategory } from "@/lib/cx-api";
+import { cn } from "@/lib/utils";
 import {
   homePageContent,
   upsellBentoItems,
