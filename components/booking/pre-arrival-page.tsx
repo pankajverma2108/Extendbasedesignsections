@@ -5,27 +5,24 @@ import { useRouter } from "next/navigation";
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
-  Camera,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   Clock3,
   FileSearch,
-  Info,
   LoaderCircle,
-  Plus,
-  Trash2,
   Upload,
   User,
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { QrScanner } from "@/components/booking/QrScanner";
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
-import { StickerTag } from "@/components/shared/sticker-tag";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  addBookingKycSlot,
-  deleteBookingKycSlot,
   getBookingKycDetail,
   getBookingKycSlots,
   getBookingKycUploadUrl,
@@ -40,14 +37,20 @@ import {
 import { withBrandName } from "@/lib/branding";
 import { getClientCache, setClientCache } from "@/lib/client-cache";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
+import {
+  generateUidReferenceId,
+  parseAadhaarSecureQrPayload,
+  stripImageMetadata,
+  validateIdDocumentFile,
+  verifyUidaiDigitalSignature,
+} from "@/lib/securityUtils";
 import { toSafeErrorMessage } from "@/lib/ui-error";
 import { cn } from "@/lib/utils";
 
 import { BookingEmptyState, BookingPageShell } from "./booking-shell";
 
 type Step = 1 | 2 | 3;
-type UploadSide = "front" | "back";
-type GenderValue = "MALE" | "FEMALE" | "OTHER";
+type GenderValue = "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY";
 
 type KycEditorState = {
   nationality_type: string;
@@ -64,16 +67,14 @@ type KycEditorState = {
   going_to: string;
   purpose: string;
   arrival_time: string;
-  front_image_key?: string;
-  back_image_key?: string;
-  front_image_url?: string;
-  back_image_url?: string;
+  document_file_key?: string;
+  document_file_url?: string;
+  aadhaar_uid_reference?: string;
   consent_terms: boolean;
   consent_age: boolean;
 };
 
 type UploadPreviewDraft = {
-  side: UploadSide;
   file: File;
   objectUrl: string;
 };
@@ -85,11 +86,111 @@ type SlotsCachePayload = {
   bookingStatus?: string | null;
 };
 
-const STEPS: Array<{ id: Step; label: string }> = [
-  { id: 1, label: "Basic Info" },
-  { id: 2, label: "Gov. ID" },
-  { id: 3, label: "Time" },
+const STEPS: Array<{ id: Step; label: string; icon: typeof User; sticker: string }> = [
+  { id: 1, label: "Basic Info", icon: User, sticker: "Names first" },
+  { id: 2, label: "Gov. ID", icon: FileSearch, sticker: "ID ready" },
+  { id: 3, label: "Time", icon: Clock3, sticker: "Final step" },
 ];
+
+type KycFieldErrors = Partial<Record<
+  | "first_name"
+  | "last_name"
+  | "email"
+  | "date_of_birth"
+  | "nationality_type"
+  | "permanent_address"
+  | "id_type"
+  | "document_file_key"
+  | "id_number"
+  | "consent_terms"
+  | "consent_age"
+  | "arrival_time"
+  | "coming_from"
+  | "going_to"
+  | "contact_number"
+  | "purpose",
+  string
+>>;
+
+const NAME_REGEX = /^[A-Za-z][A-Za-z' -]{1,49}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const CONTACT_REGEX = /^\+\d{10,15}$/;
+const PLACE_REGEX = /^[A-Za-z][A-Za-z0-9,'.\-\s]{1,79}$/;
+
+function idNumberRegex(idType: string): RegExp {
+  switch (idType) {
+    case "AADHAAR":
+      return /^X{4}-X{4}-\d{4}$/i;
+    case "PASSPORT":
+      return /^[A-PR-WY][1-9]\d{6}$/i;
+    case "DRIVING_LICENCE":
+      return /^[A-Z]{2}\d{2}\d{11,13}$/i;
+    case "VOTER_ID":
+      return /^[A-Z]{3}\d{7}$/i;
+    default:
+      return /^.{4,30}$/;
+  }
+}
+
+function idNumberHint(idType: string): string {
+  switch (idType) {
+    case "AADHAAR":
+      return "Scan the Aadhaar Secure QR to populate a masked number.";
+    case "PASSPORT":
+      return "Passport format looks invalid.";
+    case "DRIVING_LICENCE":
+      return "Driving licence format looks invalid.";
+    case "VOTER_ID":
+      return "Voter ID format looks invalid.";
+    default:
+      return "ID number format looks invalid.";
+  }
+}
+
+function stepTabButtonClasses(isActive: boolean, isComplete: boolean): string {
+  if (isActive || isComplete) {
+    return "bg-[var(--vh-pink)] text-white shadow-[4px_4px_0px_rgba(0,0,0,0.45)] outline outline-1 outline-black";
+  }
+
+  return "bg-white/5 text-white/45 outline outline-1 outline-white/20";
+}
+
+function mergeFieldErrors(...parts: KycFieldErrors[]): KycFieldErrors {
+  return parts.reduce<KycFieldErrors>((acc, item) => ({ ...acc, ...item }), {});
+}
+
+function parseDateString(value?: string): Date | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return undefined;
+  }
+
+  return parsed;
+}
+
+function toInputDateString(value: Date): string {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatDobDate(value?: string): string {
+  const parsed = parseDateString(value);
+  if (!parsed) {
+    return "Select date";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(parsed);
+}
 
 const ID_TYPES = [
   { value: "AADHAAR", label: "Aadhar" },
@@ -194,10 +295,9 @@ function createEditorState(
     going_to: kyc.going_to || "",
     purpose: kyc.purpose || "LEISURE",
     arrival_time: ARRIVAL_WINDOWS[1],
-    front_image_key: undefined,
-    back_image_key: undefined,
-    front_image_url: kyc.front_image_url || undefined,
-    back_image_url: kyc.back_image_url || undefined,
+    document_file_key: undefined,
+    document_file_url: kyc.front_image_url || kyc.back_image_url || undefined,
+    aadhaar_uid_reference: undefined,
     consent_terms: Boolean(kyc.consent_given),
     consent_age: Boolean(kyc.consent_given),
   };
@@ -233,6 +333,9 @@ function normalizeGender(value?: string | null): GenderValue {
   }
   if (raw === "female") {
     return "FEMALE";
+  }
+  if (raw === "prefer_not_to_say" || raw === "prefer not to say") {
+    return "PREFER_NOT_TO_SAY";
   }
   return "OTHER";
 }
@@ -288,97 +391,123 @@ function normalizeOcrDate(input?: string | null): string {
   return normalizeBirthDate(input);
 }
 
-function slotStatusLabel(status: string): string {
-  return status.replaceAll("_", " ");
-}
-
-function slotStatusTone(status: string): string {
-  if (status === "PRE_VERIFIED" || status === "VERIFIED") {
-    return "border-[rgba(57,247,44,0.2)] bg-[rgba(57,247,44,0.08)] text-[var(--vh-lime)]";
-  }
-
-  if (status === "PENDING") {
-    return "border-[rgba(255,204,102,0.2)] bg-[rgba(255,204,102,0.08)] text-[var(--vh-amber)]";
-  }
-
-  if (status === "REJECTED") {
-    return "border-[rgba(255,76,48,0.2)] bg-[rgba(255,76,48,0.08)] text-[var(--vh-hot)]";
-  }
-
-  return "border-white/10 bg-white/5 text-white/70";
-}
-
 function isPaymentPendingStatus(status?: string | null): boolean {
   const normalized = (status || "").trim().toUpperCase();
   return normalized === "PENDING_PAYMENT" || normalized === "PAYMENT_PENDING" || normalized === "UNPAID";
 }
 
-function validateStepOne(state: KycEditorState): string[] {
-  const errors: string[] = [];
+function validateStepOne(state: KycEditorState): KycFieldErrors {
+  const errors: KycFieldErrors = {};
 
-  if (!state.first_name.trim()) {
-    errors.push("First name is required.");
+  const firstName = state.first_name.trim();
+  const lastName = state.last_name.trim();
+  const email = state.email.trim();
+  const contact = state.contact_number.trim();
+  const address = state.permanent_address.trim();
+
+  if (!firstName) {
+    errors.first_name = "First name is required.";
+  } else if (!NAME_REGEX.test(firstName)) {
+    errors.first_name = "Use letters only for first name.";
   }
-  if (!state.last_name.trim()) {
-    errors.push("Last name is required.");
+
+  if (!lastName) {
+    errors.last_name = "Last name is required.";
+  } else if (!NAME_REGEX.test(lastName)) {
+    errors.last_name = "Use letters only for last name.";
   }
+
+  if (!email) {
+    errors.email = "Email is required.";
+  } else if (!EMAIL_REGEX.test(email)) {
+    errors.email = "Enter a valid email address.";
+  }
+
   if (!state.date_of_birth || !/^\d{4}-\d{2}-\d{2}$/.test(state.date_of_birth)) {
-    errors.push("Date of birth is required.");
+    errors.date_of_birth = "Date of birth is required.";
   } else if (!isAdult(state.date_of_birth)) {
-    errors.push("Guest must be at least 18 years old.");
+    errors.date_of_birth = "Guest must be at least 18 years old.";
   }
+
   if (!state.nationality_type.trim()) {
-    errors.push("Nationality is required.");
+    errors.nationality_type = "Nationality is required.";
   }
-  if (!state.permanent_address.trim()) {
-    errors.push("Address is required.");
+
+  if (!CONTACT_REGEX.test(contact)) {
+    errors.contact_number = "Contact number must include country code (example: +918765432109).";
+  }
+
+  if (!address) {
+    errors.permanent_address = "Address is required.";
+  } else if (address.length < 8) {
+    errors.permanent_address = "Address is too short.";
   }
 
   return errors;
 }
 
-function validateStepTwo(state: KycEditorState): string[] {
-  const errors: string[] = [];
+function validateStepTwo(state: KycEditorState): KycFieldErrors {
+  const errors: KycFieldErrors = {};
+  const idNumber = state.id_number.trim().toUpperCase();
+
   if (!state.id_type.trim()) {
-    errors.push("Select one government ID type.");
+    errors.id_type = "Select one government ID type.";
   }
-  if (!state.front_image_url || !state.front_image_key) {
-    errors.push("Upload the front side of your ID.");
+
+  if (state.id_type === "AADHAAR") {
+    if (!state.aadhaar_uid_reference) {
+      errors.document_file_key = "Scan and verify the Aadhaar Secure QR before continuing.";
+    }
+  } else if (!state.document_file_url || !state.document_file_key) {
+    errors.document_file_key = "Upload one ID document (max 5MB, PDF/JPEG/PNG).";
   }
-  if (!state.id_number.trim()) {
-    errors.push("ID number is required.");
+
+  if (!idNumber) {
+    errors.id_number = "ID number is required.";
+  } else if (!idNumberRegex(state.id_type).test(idNumber)) {
+    errors.id_number = idNumberHint(state.id_type);
   }
+
   if (!state.consent_terms) {
-    errors.push("Please accept Terms and Conditions.");
+    errors.consent_terms = "Please accept Terms and Conditions.";
   }
+
   if (!state.consent_age) {
-    errors.push("Age confirmation is required.");
+    errors.consent_age = "Age confirmation is required.";
   }
+
   return errors;
 }
 
-function validateStepThree(state: KycEditorState): string[] {
-  const errors: string[] = [];
+function validateStepThree(state: KycEditorState): KycFieldErrors {
+  const errors: KycFieldErrors = {};
+  const comingFrom = state.coming_from.trim();
+  const goingTo = state.going_to.trim();
   if (!state.arrival_time.trim()) {
-    errors.push("Select your expected arrival window.");
+    errors.arrival_time = "Select your expected arrival window.";
   }
-  if (!state.coming_from.trim()) {
-    errors.push("Please enter where you are coming from.");
+
+  if (!comingFrom) {
+    errors.coming_from = "Please enter where you are coming from.";
+  } else if (!PLACE_REGEX.test(comingFrom)) {
+    errors.coming_from = "Coming from can only include letters and basic punctuation.";
   }
-  if (!state.going_to.trim()) {
-    errors.push("Please enter your next destination.");
+
+  if (!goingTo) {
+    errors.going_to = "Please enter your next destination.";
+  } else if (!PLACE_REGEX.test(goingTo)) {
+    errors.going_to = "Next destination can only include letters and basic punctuation.";
   }
-  if (!/^\+\d{10,15}$/.test(state.contact_number.trim())) {
-    errors.push("Contact number must include country code (for example +918765432109).");
-  }
+
   if (!PURPOSES.includes(state.purpose)) {
-    errors.push("Select a valid travel purpose.");
+    errors.purpose = "Select a valid travel purpose.";
   }
+
   return errors;
 }
 
-function validateForSubmit(state: KycEditorState): string[] {
-  return [...validateStepOne(state), ...validateStepTwo(state), ...validateStepThree(state)];
+function validateForSubmit(state: KycEditorState): KycFieldErrors {
+  return mergeFieldErrors(validateStepOne(state), validateStepTwo(state), validateStepThree(state));
 }
 
 export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: string }) {
@@ -404,19 +533,19 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
   );
 
   const [isLoading, setIsLoading] = useState(true);
-  const [isMutatingSlots, setIsMutatingSlots] = useState(false);
-  const [isUploadingFront, setIsUploadingFront] = useState(false);
-  const [isUploadingBack, setIsUploadingBack] = useState(false);
+  const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const [isRunningOcr, setIsRunningOcr] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dobPickerOpen, setDobPickerOpen] = useState(false);
+  const [isAadhaarScannerOpen, setIsAadhaarScannerOpen] = useState(false);
+  const [scanStatus, setScanStatus] = useState("Scan the Aadhaar Secure QR for verification.");
+  const [scanAnnouncement, setScanAnnouncement] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<KycFieldErrors>({});
   const [uploadPreviewDraft, setUploadPreviewDraft] = useState<UploadPreviewDraft | null>(null);
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
 
-  const frontUploadInputRef = useRef<HTMLInputElement | null>(null);
-  const backUploadInputRef = useRef<HTMLInputElement | null>(null);
-  const frontCameraInputRef = useRef<HTMLInputElement | null>(null);
-  const backCameraInputRef = useRef<HTMLInputElement | null>(null);
+  const documentUploadInputRef = useRef<HTMLInputElement | null>(null);
   const slotsRef = useRef<BookingSlotSummary[]>([]);
   const activeSlotIdRef = useRef<string | null>(null);
 
@@ -448,23 +577,32 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     activeSlot?.kyc_status !== "PRE_VERIFIED" &&
     activeSlot?.kyc_status !== "VERIFIED";
 
-  const progressPercent = useMemo(() => {
-    if (activeStep === 1) {
-      return 34;
-    }
-    if (activeStep === 2) {
-      return 67;
-    }
-    return 100;
-  }, [activeStep]);
-
-  const frontPreview = editorState.front_image_url;
-  const backPreview = editorState.back_image_url;
+  const documentPreview = editorState.document_file_url;
 
   const showUploadPreviewModal = Boolean(uploadPreviewDraft);
 
   const setField = <K extends keyof KycEditorState>(key: K, value: KycEditorState[K]) => {
-    setEditorState((current) => ({ ...current, [key]: value }));
+    setEditorState((current) => {
+      if (key === "id_type") {
+        const nextIdType = String(value);
+        return {
+          ...current,
+          id_type: nextIdType,
+          id_number: "",
+          document_file_key: undefined,
+          document_file_url: undefined,
+          aadhaar_uid_reference: undefined,
+          [key]: value,
+        };
+      }
+
+      return { ...current, [key]: value };
+    });
+    setFieldErrors((current) => ({
+      ...current,
+      [key]: undefined,
+      ...(key === "id_type" ? { id_number: undefined, document_file_key: undefined } : {}),
+    }));
   };
 
   useEffect(() => {
@@ -482,6 +620,12 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
       }
     };
   }, [uploadPreviewDraft?.objectUrl]);
+
+  useEffect(() => {
+    if (editorState.id_type !== "AADHAAR" && isAadhaarScannerOpen) {
+      setIsAadhaarScannerOpen(false);
+    }
+  }, [editorState.id_type, isAadhaarScannerOpen]);
 
   useEffect(() => {
     if (!errorMessage) {
@@ -653,79 +797,26 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     void loadSlots();
   }, [isAuthenticated, isRestoringSession, loadSlots]);
 
-  async function selectSlot(slotId: string) {
-    const token = getStoredGuestToken();
-    if (!token) {
-      return;
-    }
-
-    setActiveSlotId(slotId);
-    setActiveStep(1);
-    setErrorMessage(null);
-
-    try {
-      await loadSlotDetail(token, slotId);
-    } catch (error) {
-      setErrorMessage(toSafeErrorMessage(error, "Unable to open this guest slot."));
-    }
-  }
-
-  async function handleAddSlot() {
-    const token = getStoredGuestToken();
-    if (!token) {
-      setErrorMessage("Your session ended. Please sign in again.");
-      return;
-    }
-
-    setIsMutatingSlots(true);
-    setErrorMessage(null);
-
-    try {
-      const nextSlot = await addBookingKycSlot(token, ezeeReservationId);
-      toast.success("Guest slot added", {
-        description: `${nextSlot.label} is ready for details.`,
-      });
-      await loadSlots(nextSlot.slot_id);
-      setActiveStep(1);
-    } catch (error) {
-      setErrorMessage(toSafeErrorMessage(error, "Unable to add another guest slot."));
-    } finally {
-      setIsMutatingSlots(false);
-    }
-  }
-
-  async function handleDeleteSlot(slotId: string) {
-    const token = getStoredGuestToken();
-    if (!token) {
-      setErrorMessage("Your session ended. Please sign in again.");
-      return;
-    }
-
-    setIsMutatingSlots(true);
-    setErrorMessage(null);
-
-    try {
-      const response = await deleteBookingKycSlot(token, ezeeReservationId, slotId);
-      toast.success("Guest slot removed", {
-        description: response.message,
-      });
-      await loadSlots();
-      setActiveStep(1);
-    } catch (error) {
-      setErrorMessage(toSafeErrorMessage(error, "Unable to delete this slot."));
-    } finally {
-      setIsMutatingSlots(false);
-    }
-  }
-
-  function handleSelectedFile(side: UploadSide, event: ChangeEvent<HTMLInputElement>) {
+  async function handleSelectedFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) {
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      setErrorMessage("Only image files are supported for ID upload.");
+    const validation = await validateIdDocumentFile(file);
+    if (!validation.valid) {
+      setFieldErrors((current) => ({
+        ...current,
+        document_file_key: validation.error || "Unsupported document.",
+      }));
+      event.target.value = "";
+      return;
+    }
+
+    setFieldErrors((current) => ({ ...current, document_file_key: undefined }));
+
+    if (file.type === "application/pdf") {
+      await handleUpload(file);
       event.target.value = "";
       return;
     }
@@ -734,51 +825,43 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     if (uploadPreviewDraft?.objectUrl) {
       URL.revokeObjectURL(uploadPreviewDraft.objectUrl);
     }
-    setUploadPreviewDraft({ side, file, objectUrl });
+    setUploadPreviewDraft({ file, objectUrl });
     event.target.value = "";
   }
 
-  async function handleUpload(side: UploadSide, file: File) {
+  async function handleUpload(file: File) {
     const token = getStoredGuestToken();
     if (!token) {
       setErrorMessage("Your session ended. Please sign in again.");
       return;
     }
 
-    if (side === "front") {
-      setIsUploadingFront(true);
-    } else {
-      setIsUploadingBack(true);
-    }
+    setIsUploadingDocument(true);
     setErrorMessage(null);
 
     try {
+      const sanitizedFile = await stripImageMetadata(file);
       const upload = await getBookingKycUploadUrl(token, ezeeReservationId, {
-        file_name: file.name,
-        content_type: file.type || "application/octet-stream",
+        file_name: sanitizedFile.name,
+        content_type: sanitizedFile.type || "application/octet-stream",
       });
 
-      await uploadFileToPresignedUrl(upload.uploadUrl, file);
+      await uploadFileToPresignedUrl(upload.uploadUrl, sanitizedFile);
       const publicUrl = publicFileUrlFromUploadUrl(upload.uploadUrl);
 
       setEditorState((current) => ({
         ...current,
-        ...(side === "front"
-          ? { front_image_key: upload.fileKey, front_image_url: publicUrl }
-          : { back_image_key: upload.fileKey, back_image_url: publicUrl }),
+        document_file_key: upload.fileKey,
+        document_file_url: publicUrl,
       }));
 
       toast.success("ID uploaded", {
-        description: `${side === "front" ? "Front" : "Back"} image uploaded successfully.`,
+        description: "Document uploaded successfully.",
       });
     } catch (error) {
       setErrorMessage(toSafeErrorMessage(error, "Document upload failed. Please try again."));
     } finally {
-      if (side === "front") {
-        setIsUploadingFront(false);
-      } else {
-        setIsUploadingBack(false);
-      }
+      setIsUploadingDocument(false);
     }
   }
 
@@ -787,10 +870,10 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
       return;
     }
 
-    const { side, file, objectUrl } = uploadPreviewDraft;
+    const { file, objectUrl } = uploadPreviewDraft;
     setUploadPreviewDraft(null);
     URL.revokeObjectURL(objectUrl);
-    await handleUpload(side, file);
+    await handleUpload(file);
   }
 
   function dismissUploadPreview() {
@@ -802,7 +885,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
 
   async function handleRunOcr() {
     const token = getStoredGuestToken();
-    if (!token || !activeSlotId || !editorState.front_image_key) {
+    if (!token || !activeSlotId || !editorState.document_file_key || editorState.id_type === "AADHAAR") {
       return;
     }
 
@@ -811,8 +894,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
 
     try {
       const ocr = await runBookingKycOcr(token, ezeeReservationId, activeSlotId, {
-        front_image_key: editorState.front_image_key,
-        ...(editorState.back_image_key ? { back_image_key: editorState.back_image_key } : {}),
+        front_image_key: editorState.document_file_key,
       });
 
       setEditorState((current) => {
@@ -840,12 +922,93 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     }
   }
 
+  const handleAadhaarScanSuccess = useCallback(
+    async (decodedText: string) => {
+      setScanAnnouncement("");
+      setErrorMessage(null);
+
+      const secureData = parseAadhaarSecureQrPayload(decodedText);
+      if (!secureData) {
+        setScanStatus("Invalid QR payload.");
+        setScanAnnouncement("Invalid Aadhaar Secure QR payload.");
+        setFieldErrors((current) => ({
+          ...current,
+          id_number: "Invalid Secure QR. Scan a valid Aadhaar Secure QR code.",
+        }));
+        return;
+      }
+
+      const uidaiPublicKey = process.env.NEXT_PUBLIC_UIDAI_QR_PUBLIC_KEY_PEM;
+      if (!uidaiPublicKey) {
+        setScanStatus("UIDAI public key not configured.");
+        setScanAnnouncement("UIDAI digital signature key is missing.");
+        setFieldErrors((current) => ({
+          ...current,
+          id_number: "UIDAI signature key is missing. Configure NEXT_PUBLIC_UIDAI_QR_PUBLIC_KEY_PEM.",
+        }));
+        return;
+      }
+
+      const isSignatureValid = await verifyUidaiDigitalSignature(
+        secureData,
+        uidaiPublicKey,
+      );
+
+      if (!isSignatureValid) {
+        setScanStatus("Invalid QR signature.");
+        setScanAnnouncement("Invalid QR signature. Scan could not be verified.");
+        setFieldErrors((current) => ({
+          ...current,
+          id_number: "Invalid QR signature. Please scan a valid Aadhaar Secure QR.",
+        }));
+        return;
+      }
+
+      const uidReference =
+        secureData.uidToken
+        || await generateUidReferenceId(
+          `${secureData.maskedAadhaar}|${secureData.name}|${secureData.dateOfBirth}`,
+        );
+
+      setEditorState((current) => {
+        const [firstName, ...lastNameParts] = secureData.name.trim().split(/\s+/).filter(Boolean);
+
+        return {
+          ...current,
+          first_name: firstName || current.first_name,
+          last_name: lastNameParts.join(" ") || current.last_name,
+          date_of_birth: normalizeBirthDate(secureData.dateOfBirth) || current.date_of_birth,
+          gender: normalizeGender(secureData.gender),
+          permanent_address: secureData.address || current.permanent_address,
+          id_number: secureData.maskedAadhaar,
+          aadhaar_uid_reference: uidReference,
+          document_file_key: undefined,
+          document_file_url: undefined,
+        };
+      });
+
+      setScanStatus("Scanning complete.");
+      setScanAnnouncement("Aadhaar Secure QR verified successfully.");
+      setFieldErrors((current) => ({
+        ...current,
+        id_number: undefined,
+        document_file_key: undefined,
+      }));
+      setIsAadhaarScannerOpen(false);
+
+      toast.success("Secure QR verified", {
+        description: "Masked Aadhaar and UID reference captured.",
+      });
+    },
+    [],
+  );
+
   function nextStep() {
     const stepErrors =
-      activeStep === 1 ? validateStepOne(editorState) : activeStep === 2 ? validateStepTwo(editorState) : [];
+      activeStep === 1 ? validateStepOne(editorState) : activeStep === 2 ? validateStepTwo(editorState) : {};
 
-    if (stepErrors.length > 0) {
-      setErrorMessage(stepErrors[0]);
+    if (Object.keys(stepErrors).length > 0) {
+      setFieldErrors((current) => ({ ...current, ...stepErrors }));
       return;
     }
 
@@ -860,6 +1023,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     }
 
     setErrorMessage(null);
+    setFieldErrors({});
     setActiveStep((current) => Math.max(1, current - 1) as Step);
   }
 
@@ -871,8 +1035,34 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     }
 
     const validationErrors = validateForSubmit(editorState);
-    if (validationErrors.length > 0) {
-      setErrorMessage(validationErrors[0]);
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors((current) => ({ ...current, ...validationErrors }));
+
+      const hasStepOneError = Object.keys(validationErrors).some((key) => [
+        "first_name",
+        "last_name",
+        "email",
+        "date_of_birth",
+        "contact_number",
+        "nationality_type",
+        "permanent_address",
+      ].includes(key));
+      const hasStepTwoError = Object.keys(validationErrors).some((key) => [
+        "id_type",
+        "document_file_key",
+        "id_number",
+        "consent_terms",
+        "consent_age",
+      ].includes(key));
+
+      if (hasStepOneError) {
+        setActiveStep(1);
+      } else if (hasStepTwoError) {
+        setActiveStep(2);
+      } else {
+        setActiveStep(3);
+      }
+
       return;
     }
 
@@ -881,24 +1071,28 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
       id_type: editorState.id_type,
       full_name: `${editorState.first_name} ${editorState.last_name}`.replace(/\s+/g, " ").trim(),
       date_of_birth: editorState.date_of_birth,
-      id_number: editorState.id_number.trim(),
+      // Aadhaar flow sends only UID token/reference (never a 12-digit number).
+      id_number: editorState.id_type === "AADHAAR"
+        ? (editorState.aadhaar_uid_reference || editorState.id_number.trim())
+        : editorState.id_number.trim(),
       permanent_address: editorState.permanent_address.trim(),
       contact_number: editorState.contact_number.trim(),
       coming_from: editorState.coming_from.trim(),
       going_to: editorState.going_to.trim(),
       purpose: editorState.purpose,
-      front_image_url: editorState.front_image_url,
-      back_image_url: editorState.back_image_url,
+      front_image_url: editorState.id_type === "AADHAAR" ? undefined : editorState.document_file_url,
+      back_image_url: undefined,
       consent_given: editorState.consent_terms && editorState.consent_age,
     };
 
     setIsSubmitting(true);
     setErrorMessage(null);
+    setFieldErrors({});
 
     try {
       await submitBookingKyc(token, ezeeReservationId, activeSlotId, payload);
       toast.success("Web check-in submitted", {
-        description: `${activeSlot?.label || "Guest slot"} is submitted successfully.`,
+        description: "Your details are submitted successfully.",
       });
       await loadSlots(activeSlotId);
       setIsCompletionModalOpen(true);
@@ -978,585 +1172,511 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
   }
 
   return (
-    <section className="vh-section min-h-screen bg-[var(--vh-section-b)] pt-24 md:pt-28 animate-vh-fade-in">
-      <div className="vh-container">
-        <div className="mx-auto max-w-6xl">
-          <div className="animate-vh-slide-up overflow-hidden rounded-[28px] border border-[rgba(253,16,94,0.14)] bg-[var(--vh-section-a)] shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
-            <div className="flex items-center justify-between border-b border-[rgba(253,16,94,0.1)] bg-[rgba(253,16,94,0.03)] px-4 py-4 md:px-6 backdrop-blur-md">
-              <Button asChild className="h-10 w-10 rounded-[12px] border border-white/10 bg-transparent p-0 text-white shadow-none hover:bg-white/10" variant="ghost">
-                <Link href={`/bookings/${encodeURIComponent(ezeeReservationId)}`} aria-label="Back to booking detail">
-                  <ArrowLeft className="h-4 w-4" />
-                </Link>
-              </Button>
-              <div className="text-center">
-                <p className="font-['Space_Grotesk'] text-lg font-bold uppercase tracking-[0.08em] text-slate-100">
-                  Web Check-In
-                </p>
-                <p className="text-xs uppercase tracking-[0.14em] text-white/50">{withBrandName(propertyName)}</p>
-              </div>
-              <div className="h-10 w-10" />
+    <section className="min-h-screen bg-[#111111] pb-12 pt-24 animate-vh-fade-in md:pt-28">
+      <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
+        <div className="mx-auto max-w-[980px]">
+          <div className="relative min-h-10">
+            <Button
+              asChild
+              className="absolute left-0 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full border border-white/10 bg-transparent p-0 text-white shadow-none hover:bg-white/10"
+              variant="ghost"
+            >
+              <Link aria-label="Back to booking detail" href={`/bookings/${encodeURIComponent(ezeeReservationId)}`}>
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <h1 className="vh-title text-center text-[26px] leading-[1.12] text-white md:text-[30px]">Web Check-In</h1>
+          </div>
+
+          <p className="mt-2 text-center text-sm text-[#99A1AF]">{propertyName}</p>
+          <p className="mt-1 text-center text-xs uppercase tracking-[0.12em] text-[#6A7282]">{bookingTitle}</p>
+
+          {errorMessage ? (
+            <div className="mt-4 rounded-[12px] border border-[rgba(255,106,95,0.35)] bg-[rgba(255,106,95,0.1)] px-4 py-3 text-sm text-[#ffd9d4]" role="alert">
+              {errorMessage}
             </div>
+          ) : null}
 
-            <div className="px-4 py-6 md:px-6">
-              {errorMessage ? (
-                <div className="rounded-[20px] border border-[rgba(255,107,107,0.24)] bg-[rgba(255,107,107,0.1)] px-4 py-3 text-sm text-[var(--vh-hot)]">
-                  {errorMessage}
-                </div>
-              ) : null}
+          <div className="mx-auto mb-8 mt-8 flex max-w-[760px] items-center justify-center">
+            <div className="grid w-full items-start gap-3" style={{ gridTemplateColumns: `repeat(${STEPS.length}, minmax(0, 1fr))` }}>
+              {STEPS.map((step, index) => {
+                const isCurrent = step.id === activeStep;
+                const isDone = step.id < activeStep;
+                const Icon = step.icon;
 
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <StickerTag
-                  label={`${completedSlotCount}/${slots.length} Slots Ready`}
-                  bg="#39ff14"
-                  text="#111827"
-                  rotate="rotate-[-2deg]"
-                  className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.1em]"
-                />
-                <StickerTag
-                  label={bookingTitle}
-                  bg="#fef08a"
-                  text="#111827"
-                  rotate="rotate-[2deg]"
-                  className="px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.1em]"
-                />
-              </div>
-
-              <div className="mt-6 rounded-[16px] border border-[rgba(253,16,94,0.2)] bg-[rgba(253,16,94,0.06)] p-3">
-                <div className="flex items-center justify-between text-xs uppercase tracking-[0.12em] text-white/70">
-                  <span>Step progress</span>
-                  <span>{activeStep}/3</span>
-                </div>
-                <div className="mt-3 h-2 rounded-full bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-[var(--vh-pink)] to-[#ff4c30] transition-all duration-300"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-                <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                  {STEPS.map((step) => {
-                    const isCurrent = step.id === activeStep;
-                    const isDone = step.id < activeStep;
-
-                    return (
-                      <button
-                        key={step.id}
-                        className={cn(
-                          "rounded-[12px] border px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] transition-colors",
-                          isCurrent
-                            ? "border-[var(--vh-pink)] bg-[rgba(253,16,94,0.2)] text-white"
-                            : isDone
-                              ? "border-[rgba(57,247,44,0.3)] bg-[rgba(57,247,44,0.12)] text-[var(--vh-lime)]"
-                              : "border-white/10 bg-white/5 text-white/60",
-                        )}
-                        onClick={() => {
-                          if (step.id <= activeStep) {
-                            setActiveStep(step.id);
-                          }
-                        }}
-                        type="button"
-                      >
+                return (
+                  <div key={step.id} className="relative flex flex-col items-center gap-3">
+                    {index < STEPS.length - 1 ? (
+                      <div className={`absolute left-[calc(50%+28px)] top-6 hidden h-[2px] w-[calc(100%-56px)] md:block ${activeStep > step.id ? "bg-[var(--vh-pink)]" : "bg-white/10"}`} />
+                    ) : null}
+                    <button
+                      className={`inline-flex h-12 w-12 items-center justify-center rounded-[14px] ${stepTabButtonClasses(isCurrent, isDone)}`}
+                      onClick={() => {
+                        if (step.id <= activeStep) {
+                          setActiveStep(step.id);
+                        }
+                      }}
+                      type="button"
+                    >
+                      <Icon className="h-5 w-5" />
+                    </button>
+                    <div className="flex flex-col items-center gap-2">
+                      <p className={`text-center text-[11px] font-bold uppercase tracking-[0.08em] ${isCurrent || isDone ? "text-white" : "text-white/45"}`}>
                         {step.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
-                <div className="space-y-6">
-                  {activeStep === 1 ? (
-                    <section className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 md:p-6 shadow-[var(--vh-shadow-lg)]">
-                      <div className="flex items-center justify-between gap-3">
-                        <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase tracking-[-0.03em] text-white">
-                          Basic Info
-                        </h2>
-                        <User className="h-5 w-5 text-[var(--vh-cyan)]" />
-                      </div>
-
-                      <p className="mt-2 text-sm text-white/65">
-                        Prefilled from your profile where available. Adjust anything before continuing.
                       </p>
+                      <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${isCurrent || isDone ? "bg-white/10 text-white/75" : "bg-white/5 text-white/35"}`}>
+                        {step.sticker}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
-                      <div className="mt-5 grid gap-4 md:grid-cols-2">
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">First Name</span>
-                          <input
-                            className="vh-input bg-white/5 border-white/10"
-                            onChange={(event) => setField("first_name", event.target.value)}
-                            placeholder="First name"
-                            value={editorState.first_name}
-                          />
-                        </label>
+          <div className="mt-6">
+            <div className="rounded-[16px] border border-white/5 bg-[#1A1A1A] p-5 md:p-8">
+              {activeStep === 1 ? (
+                <section>
+                  <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-[20px] font-bold leading-7 text-white">Basic Info</h2>
+                    <User className="h-5 w-5 text-[#99A1AF]" />
+                  </div>
 
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Last Name</span>
-                          <input
-                            className="vh-input bg-white/5 border-white/10"
-                            onChange={(event) => setField("last_name", event.target.value)}
-                            placeholder="Last name"
-                            value={editorState.last_name}
-                          />
-                        </label>
+                  <div className="mt-5 grid gap-4 md:grid-cols-2">
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">First Name</span>
+                      <input
+                        className={`h-12 w-full rounded-[10px] border bg-[#212121] px-4 text-sm text-white outline-none placeholder:text-[#6A7282] ${fieldErrors.first_name ? "border-[#ff6a5f]" : "border-white/10 focus:border-[var(--vh-pink)]"}`}
+                        onChange={(event) => setField("first_name", event.target.value)}
+                        placeholder="First name"
+                        value={editorState.first_name}
+                      />
+                      {fieldErrors.first_name ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.first_name}</p> : null}
+                    </label>
 
-                        <label className="space-y-2 md:col-span-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Email</span>
-                          <input
-                            className="vh-input bg-white/5 border-white/10"
-                            onChange={(event) => setField("email", event.target.value)}
-                            placeholder="Email"
-                            type="email"
-                            value={editorState.email}
-                          />
-                        </label>
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Last Name</span>
+                      <input
+                        className={`h-12 w-full rounded-[10px] border bg-[#212121] px-4 text-sm text-white outline-none placeholder:text-[#6A7282] ${fieldErrors.last_name ? "border-[#ff6a5f]" : "border-white/10 focus:border-[var(--vh-pink)]"}`}
+                        onChange={(event) => setField("last_name", event.target.value)}
+                        placeholder="Last name"
+                        value={editorState.last_name}
+                      />
+                      {fieldErrors.last_name ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.last_name}</p> : null}
+                    </label>
 
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Date Of Birth</span>
-                          <input
-                            className="vh-input bg-white/5 border-white/10"
-                            onChange={(event) => setField("date_of_birth", event.target.value)}
-                            type="date"
-                            value={editorState.date_of_birth}
-                          />
-                        </label>
+                    <label className="space-y-2 md:col-span-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Email</span>
+                      <input
+                        className={`h-12 w-full rounded-[10px] border bg-[#212121] px-4 text-sm text-white outline-none placeholder:text-[#6A7282] ${fieldErrors.email ? "border-[#ff6a5f]" : "border-white/10 focus:border-[var(--vh-pink)]"}`}
+                        onChange={(event) => setField("email", event.target.value)}
+                        placeholder="Email"
+                        type="email"
+                        value={editorState.email}
+                      />
+                      {fieldErrors.email ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.email}</p> : null}
+                    </label>
 
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Gender</span>
-                          <select
-                            className="vh-input bg-white/5 border-white/10"
-                            onChange={(event) => setField("gender", event.target.value as GenderValue)}
-                            value={editorState.gender}
-                          >
-                            <option className="text-slate-900" value="MALE">Male</option>
-                            <option className="text-slate-900" value="FEMALE">Female</option>
-                            <option className="text-slate-900" value="OTHER">Other</option>
-                          </select>
-                        </label>
-
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Nationality</span>
-                          <select
-                            className="vh-input bg-white/5 border-white/10"
-                            onChange={(event) => setField("nationality_type", event.target.value)}
-                            value={editorState.nationality_type}
-                          >
-                            <option className="text-slate-900" value="INDIAN">Indian</option>
-                          </select>
-                        </label>
-
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Contact Number</span>
-                          <input
-                            className="vh-input bg-white/5 border-white/10"
-                            onChange={(event) => setField("contact_number", normalizeContactNumber(event.target.value))}
-                            placeholder="+918765432109"
-                            value={editorState.contact_number}
-                          />
-                        </label>
-
-                        <label className="space-y-2 md:col-span-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Address</span>
-                          <textarea
-                            className="vh-input min-h-[110px] resize-y bg-white/5 border-white/10"
-                            onChange={(event) => setField("permanent_address", event.target.value)}
-                            placeholder="Full address"
-                            value={editorState.permanent_address}
-                          />
-                        </label>
-                      </div>
-                    </section>
-                  ) : null}
-
-                  {activeStep === 2 ? (
-                    <section className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 md:p-6 shadow-[var(--vh-shadow-lg)]">
-                      <div className="flex items-center justify-between gap-3">
-                        <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase tracking-[-0.03em] text-white">
-                          Just one ID needed
-                        </h2>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button
-                              aria-label="Upload guidance"
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 hover:bg-white/10"
-                              type="button"
-                            >
-                              <Info className="h-4 w-4" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-72 border-white/15 bg-[var(--vh-section-a)] p-4 text-sm text-white/80">
-                            Upload one valid government ID. You can use camera capture for quick mobile upload, then run ID scan to prefill fields.
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-
-                      <p className="mt-2 text-sm text-white/65">
-                        Choose one document to upload.
-                      </p>
-
-                      <div className="mt-4 grid gap-3">
-                        {ID_TYPES.map((idType) => (
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Date Of Birth</span>
+                      <Popover onOpenChange={setDobPickerOpen} open={dobPickerOpen}>
+                        <PopoverTrigger asChild>
                           <button
-                            key={idType.value}
-                            className={cn(
-                              "rounded-[12px] border px-4 py-3 text-left transition-colors",
-                              editorState.id_type === idType.value
-                                ? "border-[var(--vh-pink)] bg-[rgba(253,16,94,0.12)] text-white"
-                                : "border-white/10 bg-white/5 text-white/75 hover:border-white/20",
-                            )}
-                            onClick={() => setField("id_type", idType.value)}
+                            className={`flex h-12 w-full items-center justify-between rounded-[10px] border bg-[#212121] px-4 text-left text-sm text-white outline-none ${fieldErrors.date_of_birth ? "border-[#ff6a5f]" : "border-white/10 hover:border-white/20"}`}
                             type="button"
                           >
-                            <p className="text-sm font-bold uppercase tracking-[0.08em]">{idType.label}</p>
+                            <span>{formatDobDate(editorState.date_of_birth)}</span>
+                            <ChevronDown className="h-4 w-4 text-[#99A1AF]" />
                           </button>
-                        ))}
+                        </PopoverTrigger>
+                        <PopoverContent align="start" className="z-[220] w-auto border-white/10 bg-[#10111a] p-2">
+                          <Calendar
+                            captionLayout="dropdown"
+                            className="vh-calendar-dark vh-calendar-balanced rounded-[16px]"
+                            disabled={{ after: new Date() }}
+                            fromYear={1900}
+                            mode="single"
+                            onSelect={(nextDate) => {
+                              if (!nextDate) {
+                                return;
+                              }
+
+                              setField("date_of_birth", toInputDateString(nextDate));
+                              setDobPickerOpen(false);
+                            }}
+                            selected={parseDateString(editorState.date_of_birth)}
+                            toYear={new Date().getFullYear()}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      {fieldErrors.date_of_birth ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.date_of_birth}</p> : null}
+                    </label>
+
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Gender</span>
+                      <Select onValueChange={(value) => setField("gender", value as GenderValue)} value={editorState.gender}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MALE">Male</SelectItem>
+                          <SelectItem value="FEMALE">Female</SelectItem>
+                          <SelectItem value="OTHER">Other</SelectItem>
+                          <SelectItem value="PREFER_NOT_TO_SAY">Prefer not to say</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </label>
+
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Nationality</span>
+                      <Select onValueChange={(value) => setField("nationality_type", value)} value={editorState.nationality_type}>
+                        <SelectTrigger className={fieldErrors.nationality_type ? "border-[#ff6a5f]" : ""}>
+                          <SelectValue placeholder="Select nationality" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="INDIAN">Indian</SelectItem>
+                          <SelectItem value="OTHER">Other Nationality</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {fieldErrors.nationality_type ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.nationality_type}</p> : null}
+                    </label>
+
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Contact Number</span>
+                      <input
+                        className={`h-12 w-full rounded-[10px] border bg-[#212121] px-4 text-sm text-white outline-none placeholder:text-[#6A7282] ${fieldErrors.contact_number ? "border-[#ff6a5f]" : "border-white/10 focus:border-[var(--vh-pink)]"}`}
+                        onChange={(event) => setField("contact_number", normalizeContactNumber(event.target.value))}
+                        placeholder="+918765432109"
+                        value={editorState.contact_number}
+                      />
+                      {fieldErrors.contact_number ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.contact_number}</p> : null}
+                    </label>
+
+                    <label className="space-y-2 md:col-span-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Address</span>
+                      <textarea
+                        className={`min-h-[120px] w-full resize-y rounded-[10px] border bg-[#212121] px-4 py-3 text-sm text-white outline-none placeholder:text-[#6A7282] ${fieldErrors.permanent_address ? "border-[#ff6a5f]" : "border-white/10 focus:border-[var(--vh-pink)]"}`}
+                        onChange={(event) => setField("permanent_address", event.target.value)}
+                        placeholder="Full address"
+                        value={editorState.permanent_address}
+                      />
+                      {fieldErrors.permanent_address ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.permanent_address}</p> : null}
+                    </label>
+                  </div>
+                </section>
+              ) : null}
+
+              {activeStep === 2 ? (
+                <section>
+                  <h2 className="text-[20px] font-bold leading-7 text-white">Just one ID needed</h2>
+                  <p className="mt-2 text-sm text-[#99A1AF]">Choose one document to upload.</p>
+                  {fieldErrors.id_type ? <p className="mt-2 text-xs text-[#ff6a5f]">{fieldErrors.id_type}</p> : null}
+
+                  <div className="mt-4 grid gap-3">
+                    {ID_TYPES.map((idType) => (
+                      <button
+                        key={idType.value}
+                        className={cn(
+                          "flex items-center justify-between rounded-[14px] border px-4 py-4 text-left transition-colors",
+                          editorState.id_type === idType.value
+                            ? "border-[var(--vh-pink)] bg-[rgba(198,40,40,0.12)] text-[var(--vh-pink)]"
+                            : "border-white/10 bg-[#212121] text-white hover:border-white/20",
+                        )}
+                        onClick={() => setField("id_type", idType.value)}
+                        type="button"
+                      >
+                        <p className="text-base font-semibold tracking-[0.02em]">{idType.label}</p>
+                        {editorState.id_type === idType.value ? <Upload className="h-4 w-4" /> : null}
+                      </button>
+                    ))}
+                  </div>
+
+                  {editorState.id_type === "AADHAAR" ? (
+                    <div className="mt-5 space-y-4">
+                      <div className="rounded-[12px] border border-[rgba(241,88,36,0.3)] bg-[rgba(241,88,36,0.08)] p-4 text-sm text-[#ffd9d4]">
+                        UIDAI compliance mode is active. Aadhaar uploads are disabled. Scan only the Aadhaar Secure QR
+                        from the physical card or mAadhaar app.
                       </div>
 
-                      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                        <div className="rounded-[16px] border border-dashed border-white/20 bg-white/5 p-4">
-                          <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Front side</p>
-                          <div className="relative mt-3 flex h-40 items-center justify-center overflow-hidden rounded-[12px] border border-white/10 bg-black/20">
-                            {frontPreview ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img alt="Front ID preview" className="h-full w-full object-cover" src={frontPreview} />
-                            ) : (
-                              <p className="text-xs uppercase tracking-[0.12em] text-white/40">No file selected</p>
-                            )}
-                            {isRunningOcr ? (
-                              <div className="pointer-events-none absolute inset-0 bg-black/35">
-                                <div className="vh-scan-line absolute left-0 right-0 h-[2px] bg-[var(--vh-cyan)] shadow-[0_0_12px_rgba(58,95,132,0.85)]" />
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mt-3 grid grid-cols-2 gap-2">
-                            <Button
-                              className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/8"
-                              disabled={!canEditActiveSlot || isUploadingFront}
-                              onClick={() => frontCameraInputRef.current?.click()}
-                              type="button"
-                              variant="outline"
-                            >
-                              <Camera className="mr-2 h-4 w-4" />
-                              Camera
-                            </Button>
-                            <Button
-                              className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/8"
-                              disabled={!canEditActiveSlot || isUploadingFront}
-                              onClick={() => frontUploadInputRef.current?.click()}
-                              type="button"
-                              variant="outline"
-                            >
-                              {isUploadingFront ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                              Upload
-                            </Button>
-                          </div>
-                        </div>
+                      <Button
+                        className="rounded-[10px] bg-[var(--vh-pink)] text-white hover:bg-[var(--vh-pink-soft)]"
+                        disabled={!canEditActiveSlot}
+                        onClick={() => setIsAadhaarScannerOpen((current) => !current)}
+                        type="button"
+                      >
+                        <Upload className="h-4 w-4" />
+                        {isAadhaarScannerOpen ? "Stop Secure QR Scan" : "Start Secure QR Scan"}
+                      </Button>
 
-                        <div className="rounded-[16px] border border-dashed border-white/20 bg-white/5 p-4">
-                          <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Back side</p>
-                          <div className="relative mt-3 flex h-40 items-center justify-center overflow-hidden rounded-[12px] border border-white/10 bg-black/20">
-                            {backPreview ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img alt="Back ID preview" className="h-full w-full object-cover" src={backPreview} />
-                            ) : (
-                              <p className="text-xs uppercase tracking-[0.12em] text-white/40">Optional</p>
-                            )}
-                            {isRunningOcr ? (
-                              <div className="pointer-events-none absolute inset-0 bg-black/35">
-                                <div className="vh-scan-line absolute left-0 right-0 h-[2px] bg-[var(--vh-cyan)] shadow-[0_0_12px_rgba(58,95,132,0.85)]" />
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="mt-3 grid grid-cols-2 gap-2">
-                            <Button
-                              className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/8"
-                              disabled={!canEditActiveSlot || isUploadingBack}
-                              onClick={() => backCameraInputRef.current?.click()}
-                              type="button"
-                              variant="outline"
-                            >
-                              <Camera className="mr-2 h-4 w-4" />
-                              Camera
-                            </Button>
-                            <Button
-                              className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/8"
-                              disabled={!canEditActiveSlot || isUploadingBack}
-                              onClick={() => backUploadInputRef.current?.click()}
-                              type="button"
-                              variant="outline"
-                            >
-                              {isUploadingBack ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                              Upload
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
+                      <p aria-live="polite" className="text-sm text-[#99A1AF]">{scanStatus}</p>
+                      <p aria-live="polite" className="sr-only">{scanAnnouncement}</p>
 
-                      <div className="mt-4 flex flex-wrap items-center gap-3">
-                        <Button
-                          className="rounded-[10px] bg-[var(--vh-pink)] text-white"
-                          disabled={!canEditActiveSlot || !editorState.front_image_key || isRunningOcr}
-                          onClick={() => void handleRunOcr()}
-                          type="button"
-                        >
-                          {isRunningOcr ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <FileSearch className="mr-2 h-4 w-4" />}
-                          {isRunningOcr ? "Scanning ID" : "Scan ID"}
-                        </Button>
-                        <p className="text-sm text-white/65">Run scan to auto-fill name, DOB, ID number, and address.</p>
-                      </div>
+                      {isAadhaarScannerOpen ? (
+                        <QrScanner
+                          active={isAadhaarScannerOpen}
+                          onError={(message) => {
+                            setScanStatus(message);
+                            setScanAnnouncement(message);
+                          }}
+                          onScanSuccess={(decodedText) => {
+                            void handleAadhaarScanSuccess(decodedText);
+                          }}
+                          onStatusChange={(statusText) => {
+                            setScanStatus(statusText);
+                          }}
+                        />
+                      ) : null}
 
-                      <div className="mt-5 grid gap-4 md:grid-cols-2">
+                      <div className="grid gap-4 md:grid-cols-2">
                         <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">ID Number</span>
+                          <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Masked Aadhaar</span>
                           <input
-                            className="vh-input bg-white/5 border-white/10"
-                            onChange={(event) => setField("id_number", event.target.value)}
-                            placeholder="As printed on ID"
+                            className="h-12 w-full rounded-[10px] border border-white/10 bg-[#212121] px-4 text-sm text-white outline-none"
+                            placeholder="XXXX-XXXX-1234"
+                            readOnly
                             value={editorState.id_number}
                           />
                         </label>
-
                         <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Purpose</span>
-                          <select
-                            className="vh-input bg-white/5 border-white/10"
-                            onChange={(event) => setField("purpose", event.target.value)}
-                            value={editorState.purpose}
-                          >
-                            {PURPOSES.map((purpose) => (
-                              <option key={purpose} className="text-slate-900" value={purpose}>
-                                {purpose}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      </div>
-
-                      <div className="mt-5 space-y-3 rounded-[14px] border border-white/12 bg-white/5 p-4">
-                        <label className="flex items-start gap-3 text-sm text-white/80">
+                          <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">UID Reference</span>
                           <input
-                            checked={editorState.consent_terms}
-                            className="mt-1 accent-[var(--vh-pink)]"
-                            onChange={(event) => setField("consent_terms", event.target.checked)}
-                            type="checkbox"
-                          />
-                          I acknowledge and accept the Terms and Conditions.
-                        </label>
-                        <label className="flex items-start gap-3 text-sm text-white/80">
-                          <input
-                            checked={editorState.consent_age}
-                            className="mt-1 accent-[var(--vh-pink)]"
-                            onChange={(event) => setField("consent_age", event.target.checked)}
-                            type="checkbox"
-                          />
-                          I confirm that I am above the age of 18.
-                        </label>
-                      </div>
-                    </section>
-                  ) : null}
-
-                  {activeStep === 3 ? (
-                    <section className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 md:p-6 shadow-[var(--vh-shadow-lg)]">
-                      <div className="flex items-center justify-between gap-3">
-                        <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase tracking-[-0.03em] text-white">
-                          Final Details
-                        </h2>
-                        <Clock3 className="h-5 w-5 text-[var(--vh-cyan)]" />
-                      </div>
-
-                      <div className="mt-5 grid gap-4">
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Time of Arrival</span>
-                          <select
-                            className="vh-input bg-white/5 border-white/10"
-                            onChange={(event) => setField("arrival_time", event.target.value)}
-                            value={editorState.arrival_time}
-                          >
-                            {ARRIVAL_WINDOWS.map((windowLabel) => (
-                              <option key={windowLabel} className="text-slate-900" value={windowLabel}>
-                                {windowLabel}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Coming From</span>
-                          <input
-                            className="vh-input bg-white/5 border-white/10"
-                            onChange={(event) => setField("coming_from", event.target.value)}
-                            placeholder="e.g. Delhi"
-                            value={editorState.coming_from}
-                          />
-                        </label>
-
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Next Destination</span>
-                          <input
-                            className="vh-input bg-white/5 border-white/10"
-                            onChange={(event) => setField("going_to", event.target.value)}
-                            placeholder="e.g. Goa"
-                            value={editorState.going_to}
+                            className="h-12 w-full rounded-[10px] border border-white/10 bg-[#212121] px-4 text-sm text-white outline-none"
+                            placeholder="Generated after verification"
+                            readOnly
+                            value={editorState.aadhaar_uid_reference || ""}
                           />
                         </label>
                       </div>
-
-                      <div className="mt-6 rounded-[14px] border border-[rgba(57,247,44,0.24)] bg-[rgba(57,247,44,0.08)] p-4 text-sm text-white/80">
-                        Once submitted, you will be redirected to your confirmation screen with your guest-share link.
-                      </div>
-                    </section>
-                  ) : null}
-
-                  <div className="flex items-center justify-between gap-3">
-                    <Button
-                      className="rounded-[10px] border border-white/15 bg-transparent text-white hover:bg-white/10"
-                      onClick={previousStep}
-                      type="button"
-                      variant="outline"
-                    >
-                      Prev
-                    </Button>
-
-                    {activeStep < 3 ? (
-                      <Button className="rounded-[10px] bg-[var(--vh-pink)] text-white" onClick={nextStep} type="button">
-                        Next
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        className="rounded-[10px] bg-[var(--vh-pink)] text-white"
-                        disabled={!canEditActiveSlot || isSubmitting}
-                        onClick={() => void handleSubmit()}
-                        type="button"
-                      >
-                        {isSubmitting ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-                        Finish Check-in
-                      </Button>
-                    )}
-                  </div>
-
-                  {!canEditActiveSlot ? (
-                    <div className="rounded-[14px] border border-[rgba(57,247,44,0.24)] bg-[rgba(57,247,44,0.08)] p-4 text-sm text-white/80">
-                      This guest slot is locked because it is already submitted or verified.
                     </div>
-                  ) : null}
-                </div>
-
-                <aside className="space-y-5">
-                  <section className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 shadow-[var(--vh-shadow-lg)]">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Guests</p>
-                      <Button
-                        className="h-9 rounded-[10px] border border-white/15 bg-white/5 px-3 text-white hover:bg-white/10"
-                        disabled={isMutatingSlots}
-                        onClick={() => void handleAddSlot()}
-                        type="button"
-                        variant="ghost"
-                      >
-                        <Plus className="mr-1 h-4 w-4" />
-                        Add
-                      </Button>
-                    </div>
-
-                    <div className="mt-4 space-y-3">
-                      {slots.map((slot) => (
-                        <div
-                          key={slot.slot_id}
-                          className={cn(
-                            "rounded-[14px] border p-3 transition-colors",
-                            activeSlotId === slot.slot_id
-                              ? "border-[var(--vh-pink)] bg-[rgba(253,16,94,0.12)]"
-                              : "border-white/10 bg-white/5 hover:border-white/20",
+                  ) : (
+                    <div className="mt-5 space-y-4">
+                      <div className="rounded-[12px] border border-white/10 bg-[#212121] p-4">
+                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Upload ID Document</p>
+                        <div className="relative mt-3 flex h-44 items-center justify-center overflow-hidden rounded-[10px] border border-white/10 bg-black/30">
+                          {documentPreview ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img alt="ID preview" className="h-full w-full object-cover" src={documentPreview} />
+                          ) : (
+                            <p className="text-xs uppercase tracking-[0.12em] text-[#6A7282]">No file selected</p>
                           )}
-                        >
-                          <button
-                            className="w-full text-left"
-                            onClick={() => void selectSlot(slot.slot_id)}
-                            type="button"
-                          >
-                            <p className="text-xs uppercase tracking-[0.12em] text-white/50">{slot.label}</p>
-                            <p className="mt-1 text-sm font-semibold text-white">{slot.guest_name || "Guest details pending"}</p>
-                            <div className={`mt-3 inline-flex rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${slotStatusTone(slot.kyc_status)}`}>
-                              {slotStatusLabel(slot.kyc_status)}
+                          {isRunningOcr ? (
+                            <div className="pointer-events-none absolute inset-0 bg-black/35">
+                              <div className="vh-scan-line absolute left-0 right-0 h-[2px] bg-[var(--vh-pink)] shadow-[0_0_12px_rgba(198,40,40,0.7)]" />
                             </div>
-                          </button>
-
-                          {slots.length > 1 ? (
-                            <button
-                              aria-label={`Delete ${slot.label}`}
-                              className="mt-3 inline-flex h-8 w-8 items-center justify-center rounded-[9px] border border-white/15 bg-white/5 text-white/75 hover:border-[var(--vh-hot)] hover:bg-[var(--vh-hot)] hover:text-white"
-                              disabled={isMutatingSlots}
-                              onClick={() => void handleDeleteSlot(slot.slot_id)}
-                              type="button"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
                           ) : null}
                         </div>
-                      ))}
+                        <div className="mt-3">
+                          <Button
+                            className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/8"
+                            disabled={!canEditActiveSlot || isUploadingDocument}
+                            onClick={() => documentUploadInputRef.current?.click()}
+                            type="button"
+                            variant="outline"
+                          >
+                            {isUploadingDocument ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                            Upload
+                          </Button>
+                        </div>
+                      </div>
+
+                      {fieldErrors.document_file_key ? (
+                        <p className="text-xs text-[#ff6a5f]" role="alert">{fieldErrors.document_file_key}</p>
+                      ) : null}
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Button
+                          className="rounded-[10px] bg-[var(--vh-pink)] text-white hover:bg-[var(--vh-pink-soft)]"
+                          disabled={!canEditActiveSlot || !editorState.document_file_key || isRunningOcr}
+                          onClick={() => void handleRunOcr()}
+                          type="button"
+                        >
+                          {isRunningOcr ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <FileSearch className="h-4 w-4" />}
+                          {isRunningOcr ? "Scanning ID" : "Scan ID"}
+                        </Button>
+                        <p className="text-sm text-[#99A1AF]">Run scan to auto-fill name, DOB, ID number, and address.</p>
+                      </div>
                     </div>
-                  </section>
+                  )}
 
-                  <section className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 shadow-[var(--vh-shadow-lg)]">
-                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/60">Active slot</p>
-                    <h3 className="mt-2 font-['Space_Grotesk'] text-xl font-bold uppercase text-white">{activeSlot?.label || "Select a slot"}</h3>
-                    <p className="mt-2 text-sm text-white/70">
-                      {activeSlot?.guest_name || "Fill this slot, upload ID, and submit check-in."}
-                    </p>
+                  <div className="mt-5 grid gap-4 md:grid-cols-2">
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">ID Number</span>
+                      <input
+                        className={`h-12 w-full rounded-[10px] border bg-[#212121] px-4 text-sm text-white outline-none placeholder:text-[#6A7282] ${fieldErrors.id_number ? "border-[#ff6a5f]" : "border-white/10 focus:border-[var(--vh-pink)]"} ${editorState.id_type === "AADHAAR" ? "opacity-90" : ""}`}
+                        onChange={(event) => setField("id_number", event.target.value)}
+                        placeholder={editorState.id_type === "AADHAAR" ? "Masked Aadhaar from secure QR" : "As printed on ID"}
+                        readOnly={editorState.id_type === "AADHAAR"}
+                        value={editorState.id_number}
+                      />
+                      {fieldErrors.id_number ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.id_number}</p> : null}
+                    </label>
 
-                    <div className="mt-4 rounded-[14px] border border-white/10 bg-white/5 p-4 text-xs text-white/70">
-                      <p>Reservation: {ezeeReservationId}</p>
-                      <p className="mt-1">Property: {withBrandName(propertyName)}</p>
-                    </div>
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Purpose</span>
+                      <Select onValueChange={(value) => setField("purpose", value)} value={editorState.purpose}>
+                        <SelectTrigger className={fieldErrors.purpose ? "border-[#ff6a5f]" : ""}>
+                          <SelectValue placeholder="Select purpose" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PURPOSES.map((purpose) => (
+                            <SelectItem key={purpose} value={purpose}>{purpose}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldErrors.purpose ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.purpose}</p> : null}
+                    </label>
+                  </div>
 
-                    <Button asChild className="mt-4 w-full rounded-[10px] border border-white/15 bg-transparent text-white hover:bg-white/10" variant="outline">
-                      <Link href="/bookings">Back to bookings</Link>
-                    </Button>
-                  </section>
-                </aside>
+                  <div className="mt-5 space-y-3 rounded-[12px] border border-white/10 bg-[#212121] p-4">
+                    <label className="flex items-start gap-3 text-sm text-[#D1D5DC]">
+                      <input
+                        checked={editorState.consent_terms}
+                        className="mt-1 accent-[var(--vh-pink)]"
+                        onChange={(event) => setField("consent_terms", event.target.checked)}
+                        type="checkbox"
+                      />
+                      <span>
+                        I hereby consent to provide my identity details for guest registration as required by local law.
+                        I understand my data is encrypted and processed according to <Link className="underline decoration-white/40 underline-offset-4" href="/policies">[Privacy Policy]</Link>.
+                      </span>
+                    </label>
+                    {fieldErrors.consent_terms ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.consent_terms}</p> : null}
+                    <label className="flex items-start gap-3 text-sm text-[#D1D5DC]">
+                      <input
+                        checked={editorState.consent_age}
+                        className="mt-1 accent-[var(--vh-pink)]"
+                        onChange={(event) => setField("consent_age", event.target.checked)}
+                        type="checkbox"
+                      />
+                      I confirm that I am above the age of 18.
+                    </label>
+                    {fieldErrors.consent_age ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.consent_age}</p> : null}
+                  </div>
+                </section>
+              ) : null}
+
+              {activeStep === 3 ? (
+                <section>
+                  <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-[20px] font-bold leading-7 text-white">Final Details</h2>
+                    <Clock3 className="h-5 w-5 text-[#99A1AF]" />
+                  </div>
+
+                  <div className="mt-5 grid gap-4">
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Time of Arrival</span>
+                      <Select onValueChange={(value) => setField("arrival_time", value)} value={editorState.arrival_time}>
+                        <SelectTrigger className={fieldErrors.arrival_time ? "border-[#ff6a5f]" : ""}>
+                          <SelectValue placeholder="Select arrival slot" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ARRIVAL_WINDOWS.map((windowLabel) => (
+                            <SelectItem key={windowLabel} value={windowLabel}>{windowLabel}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldErrors.arrival_time ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.arrival_time}</p> : null}
+                    </label>
+
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Coming From</span>
+                      <input
+                        className={`h-12 w-full rounded-[10px] border bg-[#212121] px-4 text-sm text-white outline-none placeholder:text-[#6A7282] ${fieldErrors.coming_from ? "border-[#ff6a5f]" : "border-white/10 focus:border-[var(--vh-pink)]"}`}
+                        onChange={(event) => setField("coming_from", event.target.value)}
+                        placeholder="e.g. Delhi"
+                        value={editorState.coming_from}
+                      />
+                      {fieldErrors.coming_from ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.coming_from}</p> : null}
+                    </label>
+
+                    <label className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Next Destination</span>
+                      <input
+                        className={`h-12 w-full rounded-[10px] border bg-[#212121] px-4 text-sm text-white outline-none placeholder:text-[#6A7282] ${fieldErrors.going_to ? "border-[#ff6a5f]" : "border-white/10 focus:border-[var(--vh-pink)]"}`}
+                        onChange={(event) => setField("going_to", event.target.value)}
+                        placeholder="e.g. Goa"
+                        value={editorState.going_to}
+                      />
+                      {fieldErrors.going_to ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.going_to}</p> : null}
+                    </label>
+                  </div>
+
+                  <div className="mt-6 rounded-[12px] border border-[rgba(5,223,114,0.3)] bg-[rgba(5,223,114,0.08)] p-4 text-sm text-[#D1D5DC]">
+                    Once submitted, you will be redirected to your confirmation screen with your guest-share link.
+                  </div>
+                </section>
+              ) : null}
+
+              <div className="mt-8 flex items-center justify-between gap-3">
+                <Button
+                  className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/10"
+                  onClick={previousStep}
+                  type="button"
+                  variant="outline"
+                >
+                  Prev
+                </Button>
+
+                {activeStep < 3 ? (
+                  <Button className="rounded-[10px] bg-[var(--vh-pink)] text-white hover:bg-[var(--vh-pink-soft)]" onClick={nextStep} type="button">
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    className="rounded-[10px] bg-[var(--vh-pink)] text-white hover:bg-[var(--vh-pink-soft)]"
+                    disabled={!canEditActiveSlot || isSubmitting}
+                    onClick={() => void handleSubmit()}
+                    type="button"
+                  >
+                    {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                    Finish Check-in
+                  </Button>
+                )}
               </div>
+
+              {!canEditActiveSlot ? (
+                <div className="mt-4 rounded-[12px] border border-[rgba(5,223,114,0.3)] bg-[rgba(5,223,114,0.08)] p-4 text-sm text-[#D1D5DC]">
+                  This check-in entry is locked because it is already submitted or verified.
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-6 rounded-[16px] border border-white/5 bg-[#1A1A1A] p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Booking Summary</p>
+              <div className="mt-3 rounded-[10px] border border-white/10 bg-[#212121] p-3 text-xs text-[#99A1AF]">
+                <p>Reservation: {ezeeReservationId}</p>
+                <p className="mt-1">Property: {propertyName}</p>
+                <p className="mt-1">Guests completed: {completedSlotCount}/{slots.length}</p>
+              </div>
+
+              <Button asChild className="mt-4 w-full rounded-[10px] border border-white/15 bg-transparent text-white hover:bg-white/10" variant="outline">
+                <Link href="/bookings">Back to bookings</Link>
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
       <input
-        ref={frontUploadInputRef}
-        accept="image/*"
+        ref={documentUploadInputRef}
+        accept="application/pdf,image/jpeg,image/png"
         className="hidden"
-        onChange={(event) => handleSelectedFile("front", event)}
-        type="file"
-      />
-      <input
-        ref={backUploadInputRef}
-        accept="image/*"
-        className="hidden"
-        onChange={(event) => handleSelectedFile("back", event)}
-        type="file"
-      />
-      <input
-        ref={frontCameraInputRef}
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={(event) => handleSelectedFile("front", event)}
-        type="file"
-      />
-      <input
-        ref={backCameraInputRef}
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={(event) => handleSelectedFile("back", event)}
+        onChange={(event) => {
+          void handleSelectedFile(event);
+        }}
         type="file"
       />
 
       {showUploadPreviewModal ? (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[20px] border border-white/12 bg-[var(--vh-section-a)] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
-            <div className="flex items-center justify-between">
-              <p className="font-['Space_Grotesk'] text-lg font-bold uppercase tracking-[0.08em] text-white">Review image</p>
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 px-4">
+          <div className="w-full max-w-[448px] overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[0_25px_50px_rgba(0,0,0,0.35)]">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+              <p className="text-lg font-bold text-white">Crop Image</p>
               <button
                 aria-label="Close image preview"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 hover:bg-white/10"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#99A1AF] hover:bg-white/10"
                 onClick={dismissUploadPreview}
                 type="button"
               >
@@ -1564,43 +1684,58 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
               </button>
             </div>
 
-            <div className="mt-4 overflow-hidden rounded-[14px] border border-white/10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt="Selected ID preview" className="h-auto max-h-[360px] w-full object-contain bg-black/40" src={uploadPreviewDraft?.objectUrl || ""} />
-            </div>
+            <div className="p-4">
+              <div className="overflow-hidden rounded-[10px] border border-[#4A5565] bg-[#1E2939]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  alt="Selected ID preview"
+                  className="h-[248px] w-full object-contain"
+                  src={uploadPreviewDraft?.objectUrl || ""}
+                />
+              </div>
 
-            <p className="mt-3 text-sm text-white/70">
-              Confirm this {uploadPreviewDraft?.side || "ID"} image before upload.
-            </p>
+              <p className="mt-4 text-center text-sm text-[#99A1AF]">
+                Make sure the details on the document are clearly visible.
+              </p>
 
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <Button className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/10" onClick={dismissUploadPreview} type="button" variant="outline">
-                Cancel
-              </Button>
-              <Button className="rounded-[10px] bg-[var(--vh-pink)] text-white" onClick={() => void applyUploadPreview()} type="button">
-                Apply
-              </Button>
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <Button
+                  className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/10"
+                  onClick={dismissUploadPreview}
+                  type="button"
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button className="rounded-[10px] bg-[var(--vh-pink)] text-white hover:bg-[var(--vh-pink-soft)]" onClick={() => void applyUploadPreview()} type="button">
+                  Apply
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       ) : null}
 
       {isCompletionModalOpen ? (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[20px] border border-white/12 bg-[var(--vh-section-a)] p-6 text-center shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-[rgba(57,247,44,0.28)] bg-[rgba(57,247,44,0.08)]">
-              <CheckCircle2 className="h-10 w-10 text-[var(--vh-lime)]" />
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-[rgba(17,17,17,0.95)] px-4">
+          <div className="w-full max-w-xl text-center">
+            <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-full border border-[rgba(0,201,80,0.2)] bg-[rgba(0,201,80,0.1)] shadow-[0_0_100px_rgba(34,197,94,0.2)]">
+              <div className="flex h-[142px] w-[142px] items-center justify-center rounded-full border border-[rgba(0,201,80,0.3)]">
+                <CheckCircle2 className="h-14 w-14 text-[#00C950]" />
+              </div>
             </div>
-            <p className="font-['Space_Grotesk'] text-xl font-bold uppercase tracking-[0.06em] text-white">
-              Web Check-in to {withBrandName(propertyName)} Done.
+
+            <p className="mt-8 text-3xl font-black leading-10 text-white md:text-[30px] md:leading-[36px]">
+              Web Check-in to <br />
+              <span className="text-[var(--vh-pink)]">{propertyName}</span>
             </p>
-            <p className="mt-3 text-sm text-white/70">
-              You are all set. Open your booking confirmation to manage add guests and arrival details.
+            <p className="mt-3 text-xl font-bold uppercase tracking-[0.1em] text-white">
+              Done.
             </p>
 
-            <div className="mt-6 grid grid-cols-1 gap-3">
+            <div className="mt-8 flex justify-center">
               <Button
-                className="rounded-[10px] bg-[var(--vh-pink)] text-white"
+                className="h-14 rounded-full bg-white px-10 text-sm font-black uppercase tracking-[0.08em] text-black hover:bg-white/90"
                 onClick={() => {
                   setIsCompletionModalOpen(false);
                   router.push(`/bookings/${encodeURIComponent(ezeeReservationId)}/confirmed`);

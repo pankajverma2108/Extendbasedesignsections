@@ -1232,9 +1232,9 @@ export function BookingCheckoutPage() {
   ];
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-[#230f14] pb-28 text-white lg:pb-12">
+    <div className="min-h-screen overflow-x-clip bg-[#111111] pb-28 text-white lg:pb-12">
       <section className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-20 md:px-6 md:pb-12 md:pt-24">
-        <div className="relative overflow-hidden rounded-[26px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(0,240,255,0.14),transparent_28%),radial-gradient(circle_at_top_right,rgba(255,223,0,0.12),transparent_24%),linear-gradient(135deg,rgba(46,13,18,0.96),rgba(20,8,12,0.96))] px-4 py-5 shadow-[10px_10px_0px_rgba(0,0,0,0.24)] sm:rounded-[30px] sm:px-5 sm:py-6 md:px-8 md:py-8">
+        <div className="relative overflow-hidden rounded-[26px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(58,95,132,0.16),transparent_28%),radial-gradient(circle_at_top_right,rgba(198,40,40,0.12),transparent_24%),linear-gradient(135deg,rgba(26,26,26,0.96),rgba(17,17,17,0.96))] px-4 py-5 shadow-[10px_10px_0px_rgba(0,0,0,0.24)] sm:rounded-[30px] sm:px-5 sm:py-6 md:px-8 md:py-8">
           <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end lg:gap-6">
             <div className="space-y-4 sm:space-y-5">
               <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:gap-3 sm:overflow-visible sm:pb-0">
@@ -1345,7 +1345,7 @@ export function BookingCheckoutPage() {
           <div className="space-y-6">
             {activeTab === "guest" ? (
               <>
-                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[rgba(35,15,20,0.6)] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
+                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
                   <div className="border-l-[8px] border-l-[#c62828] p-6 md:p-8">
                     <div className="mb-6 flex items-start justify-between gap-4">
                       <div>
@@ -1483,7 +1483,7 @@ export function BookingCheckoutPage() {
                   </div>
                 </div>
 
-                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[rgba(35,15,20,0.6)] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
+                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
                   <div className="border-l-[8px] border-l-[#ffdf00] p-6 md:p-8">
                     <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase text-white">Coupon codes</h2>
                     <div className="mt-5 flex gap-3">
@@ -1518,7 +1518,7 @@ export function BookingCheckoutPage() {
                   </div>
                 </div>
 
-                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[rgba(35,15,20,0.6)] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
+                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
                   <div className="border-l-[8px] border-l-[#00f0ff] p-6 md:p-8">
                     <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase text-white">Booking policies</h2>
                     <div className="mt-4">
@@ -1542,7 +1542,7 @@ export function BookingCheckoutPage() {
 
             {activeTab === "addons" ? (
               <>
-                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[rgba(35,15,20,0.6)] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
+                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
                   <div className="border-l-[8px] border-l-[#ffdf00] p-6 md:p-8">
                     <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase text-white">Add essentials</h2>
                     <p className="mt-2 text-sm leading-6 text-white/62">
@@ -1624,7 +1624,7 @@ export function BookingCheckoutPage() {
                   </div>
                 </div>
 
-                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[rgba(35,15,20,0.6)] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
+                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
                   <div className="border-l-[8px] border-l-[#00f0ff] p-6 md:p-8">
                     <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase text-white">Add to your stay</h2>
                     <p className="mt-2 text-sm leading-6 text-white/62">
@@ -1695,7 +1695,7 @@ export function BookingCheckoutPage() {
             ) : null}
 
             {activeTab === "confirmation" ? (
-              <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[rgba(35,15,20,0.6)] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
+              <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
                 <div className="border-l-[8px] border-l-[#c62828] p-6 md:p-8">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
@@ -1809,7 +1809,7 @@ export function BookingCheckoutPage() {
         </div>
       </section>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[rgba(35,15,20,0.95)] backdrop-blur-md lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[rgba(17,17,17,0.96)] backdrop-blur-md lg:hidden">
         <div className="h-1 bg-[#c62828]" />
         <div className="flex items-center justify-between gap-4 px-5 py-4">
           <div>
@@ -1838,7 +1838,7 @@ export function BookingCheckoutPage() {
       </div>
 
       <div className={`fixed inset-0 z-[60] transition ${showMobileSummary ? "pointer-events-auto bg-black/80" : "pointer-events-none bg-transparent"}`}>
-        <div className={`absolute bottom-0 left-0 right-0 max-h-[85vh] rounded-t-[28px] border-t border-white/10 bg-[#1c0c10] transition-transform duration-300 ${showMobileSummary ? "translate-y-0" : "translate-y-full"}`}>
+        <div className={`absolute bottom-0 left-0 right-0 max-h-[85vh] rounded-t-[28px] border-t border-white/10 bg-[#1A1A1A] transition-transform duration-300 ${showMobileSummary ? "translate-y-0" : "translate-y-full"}`}>
           <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
             <div>
               <p className="text-lg font-bold uppercase text-white">Booking details</p>

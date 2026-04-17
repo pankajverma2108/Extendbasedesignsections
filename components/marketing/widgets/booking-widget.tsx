@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { forwardRef, useMemo, useState } from "react";
+import { forwardRef, useEffect, useMemo, useState } from "react";
 import type { ComponentPropsWithoutRef } from "react";
 import type { DateRange } from "react-day-picker";
 import { ArrowRight, CalendarDays, ChevronDown } from "lucide-react";
@@ -152,6 +152,20 @@ export function BookingWidget({
     to: initialTo < initialFrom ? initialFrom : initialTo,
   });
   const [open, setOpen] = useState(false);
+  const [isDesktopCalendar, setIsDesktopCalendar] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    const sync = (nextMatch: boolean) => setIsDesktopCalendar(nextMatch);
+
+    sync(mediaQuery.matches);
+    const handleChange = (event: MediaQueryListEvent) => sync(event.matches);
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, []);
 
   const checkIn = toInputDateString(dateRange?.from);
   const checkOut = toInputDateString(dateRange?.to);
@@ -193,13 +207,16 @@ export function BookingWidget({
             </PopoverTrigger>
             <PopoverContent
               align="center"
-              className="z-[200] w-[min(100vw-2rem,360px)] border-white/10 bg-[var(--vh-panel-strong)] p-3"
+              className={cn(
+                "z-[200] w-auto border-white/10 bg-[var(--vh-panel-strong)] p-3",
+                isDesktopCalendar ? "max-w-[min(100vw-2rem,860px)]" : "max-w-[min(100vw-2rem,360px)]",
+              )}
             >
               <Calendar
                 className="vh-calendar-dark vh-calendar-balanced rounded-[22px]"
                 defaultMonth={dateRange?.from}
                 mode="range"
-                numberOfMonths={1}
+                numberOfMonths={isDesktopCalendar ? 2 : 1}
                 onSelect={(nextValue, selectedDay) => {
                   const resolvedRange = resolveNextRange(dateRange, nextValue, selectedDay);
 
@@ -248,13 +265,16 @@ export function BookingWidget({
         </PopoverTrigger>
         <PopoverContent
           align="center"
-          className="z-[200] w-[min(100vw-2rem,420px)] border-white/10 bg-[var(--vh-panel-strong)] p-3"
+          className={cn(
+            "z-[200] w-auto border-white/10 bg-[var(--vh-panel-strong)] p-3",
+            isDesktopCalendar ? "max-w-[min(100vw-2rem,860px)]" : "max-w-[min(100vw-2rem,420px)]",
+          )}
         >
           <Calendar
             className="vh-calendar-dark vh-calendar-balanced rounded-[22px]"
             defaultMonth={dateRange?.from}
             mode="range"
-            numberOfMonths={1}
+            numberOfMonths={isDesktopCalendar ? 2 : 1}
             onSelect={(nextValue, selectedDay) => {
               const resolvedRange = resolveNextRange(dateRange, nextValue, selectedDay);
 

@@ -56,17 +56,19 @@ export function BookingPageShell({
 }: {
   badge: string;
   title: string;
-  description: string;
+  description?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="vh-section min-h-screen pt-28 md:pt-32">
-      <div className="mx-auto w-full max-w-[1400px] px-4 md:px-6 lg:px-10">
+    <section className="min-h-screen bg-[#111111] pb-20 pt-24 md:pb-24 md:pt-28">
+      <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
         <div className="flex flex-col gap-8">
-          <div className="max-w-3xl">
-            <p className="vh-chip">{badge}</p>
-            <h1 className="mt-4 font-suez text-4xl uppercase tracking-[-0.05em] text-white md:text-6xl">{title}</h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-white/76 md:text-lg">{description}</p>
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="inline-flex rounded-full border border-[rgba(198,40,40,0.35)] bg-[rgba(198,40,40,0.12)] px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-pink)]">
+              {badge}
+            </p>
+            <h1 className="vh-title mt-4 text-center text-[26px] leading-[1.12] text-white md:text-[30px]">{title}</h1>
+            {description ? <p className="mt-3 max-w-2xl text-base leading-7 text-[#99A1AF]">{description}</p> : null}
           </div>
           {children}
         </div>
@@ -193,10 +195,10 @@ export function BookingEmptyState({
   ctaLabel?: string;
 }) {
   return (
-    <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-8 text-center shadow-[var(--vh-shadow-lg)]">
-      <h2 className="font-suez text-3xl uppercase tracking-[-0.04em] text-white">{title}</h2>
-      <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/72">{description}</p>
-      <Button asChild className="mt-6 rounded-full px-6">
+    <div className="rounded-[16px] border border-white/12 bg-[#1A1A1A] p-8 text-center shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
+      <h2 className="text-3xl font-black tracking-tight text-white">{title}</h2>
+      <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#99A1AF]">{description}</p>
+      <Button asChild className="mt-6 rounded-[10px] bg-[var(--vh-pink)] px-6 text-white hover:bg-[var(--vh-pink-soft)]">
         <Link href={ctaHref}>
           {ctaLabel}
           <ChevronRight className="ml-2 h-4 w-4" />

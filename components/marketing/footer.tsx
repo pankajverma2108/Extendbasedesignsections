@@ -4,7 +4,7 @@ import { footerLinks, siteMeta } from "@/content/site";
 
 export function Footer() {
   return (
-    <footer className="border-t-2 border-[var(--vh-border)] bg-[var(--vh-surface-2)] px-4 py-10 md:px-6">
+    <footer className="border-t-2 border-[var(--vh-border)] bg-[#111111] px-4 py-10 md:px-6">
       <div className="vh-container">
         <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="md:col-span-2">

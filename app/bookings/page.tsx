@@ -3,16 +3,16 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { ChevronRight, LoaderCircle, MapPin, Search } from "lucide-react";
+import { LoaderCircle, MapPin, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
+import { StickerTag } from "@/components/shared/sticker-tag";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StickerTag } from "@/components/shared/sticker-tag";
 import { propertyHero } from "@/content/rooms";
 import { getGuestBookings, linkGuestBooking, type GuestBookingMineItem } from "@/lib/booking-api";
-import { withBrandName } from "@/lib/branding";
+import { toBrandCheckinLink, withBrandName } from "@/lib/branding";
 import { getClientCache, setClientCache } from "@/lib/client-cache";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { toSafeErrorMessage } from "@/lib/ui-error";
@@ -37,6 +37,17 @@ function isActiveBooking(booking: GuestBookingMineItem): boolean {
   return checkoutDate >= now.getTime() && booking.status !== "CANCELLED" && booking.status !== "COMPLETED";
 }
 
+function bookingCardHref(booking: GuestBookingMineItem): string {
+  const totalSlots = Math.max(booking.total_slots ?? 1, 1);
+  const completedSlots = booking.kyc_completed_slots ?? 0;
+
+  if (completedSlots >= totalSlots) {
+    return `/bookings/${encodeURIComponent(booking.ezee_reservation_id)}/confirmed`;
+  }
+
+  return toBrandCheckinLink(booking.ezee_reservation_id);
+}
+
 function formatPosterDate(value?: string | null): string {
   if (!value) {
     return "TBA";
@@ -53,56 +64,18 @@ function formatPosterDate(value?: string | null): string {
   }).format(date).toUpperCase();
 }
 
-function getArrivalCredential(seed: string, prefix: string, size: number): string {
-  let hash = 0;
-
-  for (let index = 0; index < seed.length; index += 1) {
-    hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
-  }
-
-  return `${prefix}${String(hash % 10 ** size).padStart(size, "0")}`;
-}
-
-function buildQrPattern(seed: string): boolean[] {
-  const cells: boolean[] = [];
-  let hash = 2166136261;
-
-  for (let index = 0; index < seed.length; index += 1) {
-    hash ^= seed.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-
-  for (let index = 0; index < 81; index += 1) {
-    hash = Math.imul(hash ^ (index + 97), 2246822519);
-    const row = Math.floor(index / 9);
-    const col = index % 9;
-    const inCornerFinder =
-      (row < 3 && col < 3) ||
-      (row < 3 && col > 5) ||
-      (row > 5 && col < 3);
-
-    cells.push(inCornerFinder || ((hash >>> 29) & 1) === 1);
-  }
-
-  return cells;
-}
-
 function BookingListSkeleton() {
   return (
-    <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-      {Array.from({ length: 2 }).map((_, index) => (
-        <div key={index} className="relative mx-auto w-full max-w-[340px] pt-6">
-          <Skeleton className="absolute -top-0 right-2 h-10 w-32 rounded-[10px] bg-white/10" />
-          <div className="rounded-[16px] border border-white/15 bg-[rgba(246,241,234,0.9)] p-6 shadow-[8px_8px_0_0_var(--vh-pink)]">
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-28 rounded-full bg-black/10" />
-              <Skeleton className="h-11 w-36 rounded-[8px] bg-black/10" />
-            </div>
-
-            <Skeleton className="mt-5 h-24 w-full rounded-[12px] bg-black/10" />
+    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div key={index} className="relative mx-auto w-full max-w-[340px] pt-5 sm:max-w-none sm:pt-6">
+          <Skeleton className="absolute right-2 top-0 h-9 w-24 rounded-[10px] bg-white/10" />
+          <div className="rounded-[16px] border border-white/10 bg-[rgba(245,240,233,0.88)] p-5">
+            <Skeleton className="h-3 w-24 bg-black/10" />
+            <Skeleton className="mt-3 h-10 w-32 bg-black/10" />
+            <Skeleton className="mt-5 h-20 w-full rounded-[12px] bg-black/10" />
             <Skeleton className="mt-4 h-16 w-full rounded-[12px] bg-black/10" />
-            <Skeleton className="mt-5 h-36 w-full rounded-[12px] bg-black/10" />
-            <Skeleton className="mt-4 h-9 w-full rounded-full bg-black/10" />
+            <Skeleton className="mt-4 h-32 w-full rounded-[12px] bg-black/10" />
           </div>
         </div>
       ))}
@@ -113,88 +86,55 @@ function BookingListSkeleton() {
 function BookingSummaryTicket({ booking }: { booking: GuestBookingMineItem }) {
   const active = isActiveBooking(booking);
   const propertyLabel = withBrandName(booking.property_id);
-  const qrPattern = useMemo(() => buildQrPattern(booking.ezee_reservation_id), [booking.ezee_reservation_id]);
-  const accessPasscode = useMemo(() => getArrivalCredential(booking.ezee_reservation_id, "#", 6), [booking.ezee_reservation_id]);
   const roomNumber = booking.room_number || "Assigned at check-in";
-  const normalizedStatus = booking.status.replaceAll("_", " ");
-  const totalSlots = Math.max(booking.total_slots ?? 0, 1);
-  const completedSlots = booking.kyc_completed_slots ?? 0;
+  const destinationHref = bookingCardHref(booking);
 
   return (
-    <article className="relative mx-auto w-full max-w-[340px] pt-6">
-      <div className="absolute -right-1 -top-1 z-10 rotate-[10deg] rounded-[11px] border-2 border-[var(--vh-surface-2)] bg-[var(--vh-pink)] px-5 py-2 shadow-[0_8px_16px_rgba(0,0,0,0.25)]">
-        <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-white">
-          {active ? "You are in" : "Archived"}
-        </p>
-      </div>
-
-      <div className="-rotate-1 rounded-[16px] border-2 border-[var(--vh-border)] bg-[#f6f1ea] p-6 text-[var(--vh-surface-2)] shadow-[8px_8px_0_0_var(--vh-pink)] transition-transform duration-300 hover:-translate-y-1 hover:-rotate-2">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-surface)]/70">Confirmation Receipt</p>
-          <p className="mt-2 break-all text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--vh-surface)]/55">Reservation {booking.ezee_reservation_id}</p>
-          <div className="mt-2 font-['Space_Grotesk'] text-[44px] font-black leading-[0.92] text-[var(--vh-surface)]">
-            <p>{formatPosterDate(booking.checkin_date)}</p>
-            <p>{formatPosterDate(booking.checkout_date)}</p>
-          </div>
+    <article className="relative mx-auto w-full max-w-[340px] pt-5 sm:max-w-none sm:pt-6">
+      <Link
+        aria-label={`Open booking ${booking.ezee_reservation_id}`}
+        className="group block focus-visible:outline-none"
+        href={destinationHref}
+      >
+        <div className="absolute right-2 top-0 z-10 rounded-[11px] border-2 border-[var(--vh-surface-2)] bg-[var(--vh-pink)] px-4 py-1.5 shadow-[0_8px_16px_rgba(0,0,0,0.25)] md:rotate-[10deg] md:px-5 md:py-2">
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-white">{active ? "You're in" : "Past stay"}</p>
         </div>
 
-        <div className="mt-6 rounded-[12px] bg-[var(--vh-surface)] px-5 py-4 text-white">
-          <p className="text-[11px] uppercase tracking-[0.12em] text-white/60">Room Details</p>
-          <p className="mt-1 text-xl font-bold tracking-tight">{booking.room_type_name || "Room details pending"}</p>
-          <p className="text-base font-semibold text-white/80">{roomNumber}</p>
-        </div>
-
-        <div className="mt-5 rounded-[12px] border border-dashed border-[rgba(45,39,75,0.16)] bg-white/55 px-4 py-3 text-sm text-[var(--vh-surface-2)]/78">
-          Keep this receipt handy. Status is {normalizedStatus.toLowerCase()} and KYC is {completedSlots}/{totalSlots} complete.
-        </div>
-
-        <div className="mt-5 flex justify-center">
-          <div className="rounded-[12px] border-4 border-[var(--vh-surface-2)] bg-white p-3">
-            <div className="grid grid-cols-9 gap-1 rounded-[8px] bg-[var(--vh-surface-2)] p-3">
-              {qrPattern.map((filled, index) => (
-                <div
-                  key={`${booking.ezee_reservation_id}-${index}`}
-                  className={filled ? "h-3 w-3 rounded-sm bg-white" : "h-3 w-3 bg-[var(--vh-surface-2)]"}
-                />
-              ))}
-            </div>
-            <p className="mt-2 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--vh-surface-2)]">
-              Scan for room access
-            </p>
-            <p className="text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--vh-surface-2)]/70">
-              Access code {accessPasscode}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 flex items-start gap-2 text-sm text-[var(--vh-surface)]/80">
-          <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+        <div className="rounded-[16px] border-2 border-[var(--vh-border)] bg-[var(--vh-ice)] p-4 text-[var(--vh-surface-2)] shadow-[8px_8px_0_0_var(--vh-pink)] transition-transform duration-300 sm:p-6 md:-rotate-1 md:hover:-translate-y-1 md:hover:-rotate-2 md:group-hover:-translate-y-1 md:group-hover:-rotate-2">
           <div>
-            <p>{propertyLabel}</p>
-            <p>{propertyHero.address}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-surface)]/70">Confirmation Receipt</p>
+            <p className="mt-2 break-all text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--vh-surface)]/55">
+              Reservation {booking.ezee_reservation_id}
+            </p>
+            <div className="mt-2 font-['Space_Grotesk'] text-[36px] font-black leading-[0.92] text-[var(--vh-surface)] sm:text-[44px]">
+              <p>{formatPosterDate(booking.checkin_date)}</p>
+              <p>{formatPosterDate(booking.checkout_date)}</p>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-[12px] bg-[var(--vh-surface)] px-4 py-4 text-white sm:mt-6 sm:px-5">
+            <p className="text-[11px] uppercase tracking-[0.12em] text-white/60">Room Details</p>
+            <p className="mt-1 text-lg font-bold tracking-tight sm:text-xl">{booking.room_type_name || "Room details pending"}</p>
+            <p className="text-sm font-semibold text-white/80 sm:text-base">{roomNumber}</p>
+          </div>
+
+          <div className="mt-4 flex items-start gap-2 text-sm text-[var(--vh-surface)]/80 sm:mt-5">
+            <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
+            <div>
+              <p>{propertyLabel}</p>
+              <p>{propertyHero.address}</p>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 justify-items-center gap-2 sm:mt-5">
+            <StickerTag bg="#39ff14" className="px-3 py-1.5 text-[10px] font-bold not-italic uppercase tracking-[0.12em]" label="KYC before chaos" rotate="rotate-[1deg]" text="#0f172a" />
+            <StickerTag bg="#00d1ff" className="px-3 py-1.5 text-[10px] font-bold not-italic uppercase tracking-[0.12em]" label="Scan, stay, repeat" rotate="rotate-[-1deg]" text="#0f172a" />
+            <div className="col-span-2">
+              <StickerTag bg="#fef08a" className="px-3 py-1.5 text-[10px] font-bold not-italic uppercase tracking-[0.12em]" label="Bring the whole gang" rotate="rotate-[-2deg]" text="#0f172a" />
+            </div>
           </div>
         </div>
-
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-          <StickerTag bg="#fef08a" className="px-3 py-1.5 text-[10px] font-bold not-italic uppercase tracking-[0.12em]" label="Bring the whole gang" rotate="rotate-[-2deg]" text="#0f172a" />
-          <StickerTag bg="#39ff14" className="px-3 py-1.5 text-[10px] font-bold not-italic uppercase tracking-[0.12em]" label="KYC before chaos" rotate="rotate-[1deg]" text="#0f172a" />
-          <StickerTag bg="#00d1ff" className="px-3 py-1.5 text-[10px] font-bold not-italic uppercase tracking-[0.12em]" label="Scan, stay, repeat" rotate="rotate-[-1deg]" text="#0f172a" />
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-2 sm:grid-cols-2">
-        <Button asChild className="rounded-full bg-[var(--vh-pink)] text-white hover:bg-[var(--vh-pink)]/90">
-          <Link href={`/bookings/${encodeURIComponent(booking.ezee_reservation_id)}`}>
-            Open booking
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
-        <Button asChild className="rounded-full border border-white/15 bg-transparent text-white hover:bg-white/8">
-          <Link href={`/bookings/${encodeURIComponent(booking.ezee_reservation_id)}/confirmed`}>
-            Stay confirmed
-          </Link>
-        </Button>
-      </div>
+      </Link>
     </article>
   );
 }
@@ -351,7 +291,7 @@ export default function BookingsPage() {
       <BookingPageShell
         badge="My Bookings"
         title="Loading your stays"
-        description="Fetching the guest-linked booking list and the latest KYC progress."
+        description="Fetching your reservations, room details, and check-in status."
       >
         <BookingListSkeleton />
       </BookingPageShell>
@@ -363,14 +303,14 @@ export default function BookingsPage() {
       <BookingPageShell
         badge="My Bookings"
         title="Sign in to view your bookings"
-        description="Bookings are tied to the guest account that completed or linked the reservation."
+        description="Bookings are linked to the guest account that completed or linked the reservation."
       >
-        <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-8 text-center shadow-[var(--vh-shadow-lg)]">
+        <div className="rounded-[18px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 text-center shadow-[0_20px_45px_rgba(0,0,0,0.35)] sm:p-8">
           <p className="text-lg font-semibold text-white">Guest sign-in required</p>
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/70">
-            Use the guest account associated with your reservation. Once you are signed in, your stays and pre-arrival progress will appear here.
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/72">
+            Use the same guest account used in your booking. Your stays and web check-in progress will appear right away.
           </p>
-          <Button className="mt-6 rounded-full px-6" onClick={() => openAuthModal("signin")} type="button">
+          <Button className="mt-6 rounded-full bg-[var(--vh-pink)] px-6 text-white hover:bg-[var(--vh-pink-soft)]" onClick={() => openAuthModal("signin")} type="button">
             Sign in to continue
           </Button>
         </div>
@@ -382,33 +322,33 @@ export default function BookingsPage() {
     <BookingPageShell
       badge="My Bookings"
       title="Your booking tickets"
-      description="Each stay is shown as a receipt-style summary card with instant access to booking details and web check-in."
+      description=""
     >
       <div className="space-y-6">
-        <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 shadow-[var(--vh-shadow-lg)]">
+        <div className="rounded-[20px] border border-white/12 bg-[var(--vh-panel-strong)] p-4 shadow-[0_20px_45px_rgba(0,0,0,0.35)] sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--vh-pink)]">Booking linking</p>
-              <h2 className="mt-3 font-suez text-3xl uppercase tracking-[-0.04em] text-white">Add a booking from OTA or another guest</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-7 text-white/68">
-                Paste the reservation ID you got from your OTA, host, or travel buddy. We will pull your stay and guest slots instantly.
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--vh-pink)]">Booking Linking</p>
+              <h2 className="mt-2 font-suez text-2xl uppercase tracking-[-0.02em] text-white sm:text-3xl">Add a booking from OTA or another guest</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-white/72">
+                Paste the reservation ID from your OTA, host, or travel buddy and we will pull the stay instantly.
               </p>
             </div>
-            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.14em] text-white/68">
-              <Search className="h-4 w-4 text-[var(--vh-cyan)]" />
-              Live sync
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white/70">
+              <Search className="h-3.5 w-3.5 text-[var(--vh-cyan)]" />
+              Live Sync
             </div>
           </div>
 
-          <form className="mt-6 space-y-3" onSubmit={handleLinkBooking}>
-            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+          <form className="mt-5 space-y-3" onSubmit={handleLinkBooking}>
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
               <input
-                className="h-12 rounded-full border border-white/12 bg-white/5 px-4 text-sm text-white placeholder:text-white/35 outline-none focus:border-[var(--vh-cyan)]"
+                className="h-12 rounded-full border border-white/12 bg-white/5 px-4 text-sm text-white placeholder:text-white/40 outline-none focus:border-[var(--vh-cyan)]"
                 onChange={(event) => setBookingIdInput(event.target.value)}
                 placeholder="Enter booking ID or reservation code"
                 value={bookingIdInput}
               />
-              <Button className="h-12 rounded-full px-6" disabled={isLinkingBooking} type="submit">
+              <Button className="h-12 rounded-full bg-[var(--vh-pink)] px-6 text-white hover:bg-[var(--vh-pink-soft)]" disabled={isLinkingBooking} type="submit">
                 {isLinkingBooking ? (
                   <>
                     <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
@@ -420,34 +360,31 @@ export default function BookingsPage() {
               </Button>
             </div>
             {linkError ? <p className="text-sm text-[var(--vh-hot)]">{linkError}</p> : null}
-            {linkSuccess ? <p className="text-sm text-[var(--vh-lime)]">{linkSuccess}</p> : null}
+            {linkSuccess ? <p className="text-sm text-[#05DF72]">{linkSuccess}</p> : null}
+            {errorMessage ? <p className="text-sm text-[#ffcc66]">{errorMessage}</p> : null}
           </form>
         </div>
 
-        {errorMessage ? (
-          <div className="rounded-[22px] border border-[rgba(255,204,102,0.22)] bg-[rgba(255,204,102,0.08)] px-5 py-4 text-sm text-white/82">
-            {errorMessage}
-          </div>
-        ) : null}
-
-        <div className="flex flex-wrap items-center gap-3">
-          <button onClick={() => setBookingFilter("active")} type="button">
-            <StickerTag
-              bg={bookingFilter === "active" ? "#39ff14" : "#fef08a"}
-              className="px-4 py-2 text-sm font-bold not-italic uppercase tracking-[0.08em]"
-              label={`Active bookings (${activeBookings.length})`}
-              rotate="rotate-[-2deg]"
-              text="#0f172a"
-            />
+        <div className="inline-flex rounded-[12px] bg-[var(--vh-panel-strong)] p-1">
+          <button
+            className={[
+              "rounded-[10px] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] transition-colors",
+              bookingFilter === "active" ? "bg-[var(--vh-pink)] text-white" : "text-white/70 hover:bg-white/5",
+            ].join(" ")}
+            onClick={() => setBookingFilter("active")}
+            type="button"
+          >
+            Active ({activeBookings.length})
           </button>
-          <button onClick={() => setBookingFilter("previous")} type="button">
-            <StickerTag
-              bg={bookingFilter === "previous" ? "#c62828" : "#fef08a"}
-              className="px-4 py-2 text-sm font-bold not-italic uppercase tracking-[0.08em]"
-              label={`Previous bookings (${previousBookings.length})`}
-              rotate="rotate-[2deg]"
-              text="#0f172a"
-            />
+          <button
+            className={[
+              "rounded-[10px] px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] transition-colors",
+              bookingFilter === "previous" ? "bg-[var(--vh-pink)] text-white" : "text-white/70 hover:bg-white/5",
+            ].join(" ")}
+            onClick={() => setBookingFilter("previous")}
+            type="button"
+          >
+            Previous ({previousBookings.length})
           </button>
         </div>
 
@@ -463,7 +400,7 @@ export default function BookingsPage() {
             title={bookingFilter === "active" ? "Nothing active yet" : "No previous bookings yet"}
           />
         ) : (
-          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {filteredBookings.map((booking) => (
               <BookingSummaryTicket key={booking.ezee_reservation_id} booking={booking} />
             ))}

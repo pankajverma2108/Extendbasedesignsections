@@ -34,7 +34,7 @@ export default function RootLayout({
           <Navigation />
           <main className="flex-1">{children}</main>
           <Footer />
-          <Toaster position="top-right" />
+          <Toaster position="bottom-right" />
         </GuestAuthProvider>
       </body>
     </html>

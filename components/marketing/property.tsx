@@ -331,6 +331,20 @@ function DateRangePicker({
   align?: "left" | "right";
 }) {
   const [open, setOpen] = useState(false);
+  const [isDesktopCalendar, setIsDesktopCalendar] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    const sync = (nextMatch: boolean) => setIsDesktopCalendar(nextMatch);
+
+    sync(mediaQuery.matches);
+    const handleChange = (event: MediaQueryListEvent) => sync(event.matches);
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, []);
 
   return (
     <Popover onOpenChange={setOpen} open={open}>
@@ -357,13 +371,16 @@ function DateRangePicker({
       </PopoverTrigger>
       <PopoverContent
         align={align === "left" ? "start" : "end"}
-        className="z-[200] w-auto max-w-[min(100vw-1rem,860px)] border-white/12 bg-[#10111a] p-2"
+        className={cn(
+          "z-[200] w-fit border-white/12 bg-[#10111a] p-2",
+          isDesktopCalendar ? "max-w-[min(100vw-1rem,860px)]" : "max-w-[min(100vw-1rem,420px)]",
+        )}
       >
         <Calendar
           className="vh-calendar-dark vh-calendar-balanced rounded-[20px]"
           defaultMonth={dateRange?.from}
           mode="range"
-          numberOfMonths={1}
+          numberOfMonths={isDesktopCalendar ? 2 : 1}
           onSelect={(nextValue, selectedDay) => {
             onSelect(nextValue, selectedDay);
 
