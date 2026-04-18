@@ -290,10 +290,13 @@ export default function BookingsPage() {
     return (
       <BookingPageShell
         badge="My Bookings"
-        title="Loading your stays"
-        description="Fetching your reservations, room details, and check-in status."
+        title="Your booking tickets"
+        description=""
       >
-        <BookingListSkeleton />
+        <div aria-busy="true" aria-live="polite" role="status">
+          <span className="sr-only">Loading your reservations and check-in status.</span>
+          <BookingListSkeleton />
+        </div>
       </BookingPageShell>
     );
   }

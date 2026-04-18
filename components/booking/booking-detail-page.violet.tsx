@@ -15,6 +15,7 @@ import {
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { propertyHero, propertyGuidelines } from "@/content/rooms";
 import { getConfirmedBookingSnapshot } from "@/lib/booking-session";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
@@ -166,11 +167,19 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
     return (
       <BookingPageShell
         badge="Booking Detail"
-        title="Loading your booking"
-        description="Pulling the linked booking, guest slots, and confirmation state from the backend."
+        title="Booking detail"
       >
-        <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-8 text-center text-white/72">
-          Loading booking detail...
+        <div aria-busy="true" aria-live="polite" className="space-y-5" role="status">
+          <span className="sr-only">Loading booking detail content.</span>
+          <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 md:p-8">
+            <Skeleton className="h-6 w-40 bg-white/12" />
+            <Skeleton className="mt-4 h-4 w-full max-w-[420px] bg-white/10" />
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <Skeleton className="h-24 rounded-[12px] bg-white/10" />
+              <Skeleton className="h-24 rounded-[12px] bg-white/10" />
+            </div>
+            <Skeleton className="mt-5 h-40 w-full rounded-[12px] bg-white/10" />
+          </div>
         </div>
       </BookingPageShell>
     );

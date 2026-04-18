@@ -263,17 +263,29 @@ body {
 }
 
 @keyframes vh-scan-line {
-  from {
-    transform: translateY(0);
+  0% {
+    top: 0;
+    opacity: 0;
   }
 
-  to {
-    transform: translateY(150px);
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    top: calc(100% - 2px);
+    opacity: 0.45;
   }
 }
 
 .vh-scan-line {
   animation: vh-scan-line 1.4s linear infinite;
+  top: 0;
+  will-change: top, opacity;
 }
 
 .vh-calendar-dark.rdp-root {

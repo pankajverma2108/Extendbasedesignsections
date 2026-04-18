@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { locationMap, propertyGallery, propertyGuidelines } from "@/content/rooms";
 import { linkGuestBooking, type BookingSlotSummary, type LinkGuestBookingResponse } from "@/lib/booking-api";
 import { withBrandName, toBrandCheckinLink } from "@/lib/branding";
@@ -150,11 +151,47 @@ export function BookingConfirmedPage({ ezeeReservationId }: { ezeeReservationId:
     return (
       <BookingPageShell
         badge="Stay Confirmed"
-        title="Loading confirmation"
-        description="Fetching your latest booking confirmation and check-in status."
+        title="Stay confirmation"
       >
-        <div className="rounded-[16px] border border-white/12 bg-[#1A1A1A] p-8 text-center text-[#99A1AF]">
-          Loading confirmation...
+        <div aria-busy="true" aria-live="polite" className="space-y-6" role="status">
+          <span className="sr-only">Loading booking confirmation details.</span>
+
+          <div className="rounded-[16px] border border-white/10 bg-[#1A1A1A] px-6 py-7 text-center">
+            <Skeleton className="mx-auto h-8 w-64 bg-white/10" />
+            <Skeleton className="mx-auto mt-4 h-9 w-40 rounded-full bg-white/10" />
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_290px]">
+            <div className="space-y-6">
+              <div className="rounded-[16px] border border-white/10 bg-[#1A1A1A] p-5 md:p-6">
+                <Skeleton className="h-6 w-44 bg-white/10" />
+                <Skeleton className="mt-4 h-4 w-full max-w-[420px] bg-white/10" />
+                <div className="mt-5 space-y-3">
+                  <Skeleton className="h-11 w-full rounded-[10px] bg-white/10" />
+                  <Skeleton className="h-11 w-full rounded-[10px] bg-white/10" />
+                  <Skeleton className="h-11 w-full rounded-[10px] bg-white/10" />
+                </div>
+              </div>
+
+              <div className="rounded-[16px] border border-white/10 bg-[#1A1A1A] p-5 md:p-6">
+                <Skeleton className="h-5 w-40 bg-white/10" />
+                <Skeleton className="mt-4 h-24 w-full rounded-[10px] bg-white/10" />
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="rounded-[16px] border border-white/10 bg-[#1A1A1A] p-5">
+                <Skeleton className="h-4 w-24 bg-white/10" />
+                <Skeleton className="mt-3 h-9 w-full rounded-[10px] bg-white/10" />
+                <Skeleton className="mt-3 h-9 w-full rounded-[10px] bg-white/10" />
+              </div>
+
+              <div className="rounded-[16px] border border-white/10 bg-[#1A1A1A] p-5">
+                <Skeleton className="h-4 w-24 bg-white/10" />
+                <Skeleton className="mt-3 h-16 w-full rounded-[10px] bg-white/10" />
+              </div>
+            </div>
+          </div>
         </div>
       </BookingPageShell>
     );
@@ -190,8 +227,8 @@ export function BookingConfirmedPage({ ezeeReservationId }: { ezeeReservationId:
         <BookingEmptyState
           title="No confirmation found"
           description={errorMessage || "Please reopen your booking details and try again."}
-          ctaHref={`/bookings/${encodeURIComponent(ezeeReservationId)}`}
-          ctaLabel="Open booking details"
+          ctaHref="/bookings"
+          ctaLabel="Open my bookings"
         />
       </BookingPageShell>
     );

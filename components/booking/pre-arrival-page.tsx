@@ -14,14 +14,16 @@ import {
   Upload,
   User,
 } from "lucide-react";
+import Cropper, { type Area } from "react-easy-crop";
 import { toast } from "sonner";
 
-import { QrScanner } from "@/components/booking/QrScanner";
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
+import { StickerTag } from "@/components/shared/sticker-tag";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   getBookingKycDetail,
   getBookingKycSlots,
@@ -38,11 +40,8 @@ import { withBrandName } from "@/lib/branding";
 import { getClientCache, setClientCache } from "@/lib/client-cache";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import {
-  generateUidReferenceId,
-  parseAadhaarSecureQrPayload,
   stripImageMetadata,
   validateIdDocumentFile,
-  verifyUidaiDigitalSignature,
 } from "@/lib/securityUtils";
 import { toSafeErrorMessage } from "@/lib/ui-error";
 import { cn } from "@/lib/utils";
@@ -51,6 +50,7 @@ import { BookingEmptyState, BookingPageShell } from "./booking-shell";
 
 type Step = 1 | 2 | 3;
 type GenderValue = "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY";
+type SupportedIdType = "AADHAAR" | "PASSPORT" | "DRIVING_LICENCE" | "VOTER_ID";
 
 type KycEditorState = {
   nationality_type: string;
@@ -65,11 +65,9 @@ type KycEditorState = {
   contact_number: string;
   coming_from: string;
   going_to: string;
-  purpose: string;
   arrival_time: string;
   document_file_key?: string;
   document_file_url?: string;
-  aadhaar_uid_reference?: string;
   consent_terms: boolean;
   consent_age: boolean;
 };
@@ -107,8 +105,7 @@ type KycFieldErrors = Partial<Record<
   | "arrival_time"
   | "coming_from"
   | "going_to"
-  | "contact_number"
-  | "purpose",
+  | "contact_number",
   string
 >>;
 
@@ -116,35 +113,140 @@ const NAME_REGEX = /^[A-Za-z][A-Za-z' -]{1,49}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const CONTACT_REGEX = /^\+\d{10,15}$/;
 const PLACE_REGEX = /^[A-Za-z][A-Za-z0-9,'.\-\s]{1,79}$/;
+const AADHAAR_PATTERN = /^[2-9]{1}\d{3}\s\d{4}\s\d{4}$/;
+const VOTER_ID_PATTERN = /^[A-Z]{3}\d{7}$/;
+const PASSPORT_PATTERN = /^[A-Z]{1}\d{7}$/;
+const DRIVING_LICENCE_PATTERN = /^[A-Z]{2}\d{2}\d{4}\d{7}$/;
 
-function idNumberRegex(idType: string): RegExp {
+const VERHOEFF_D: number[][] = [
+  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  [1, 2, 3, 4, 0, 6, 7, 8, 9, 5],
+  [2, 3, 4, 0, 1, 7, 8, 9, 5, 6],
+  [3, 4, 0, 1, 2, 8, 9, 5, 6, 7],
+  [4, 0, 1, 2, 3, 9, 5, 6, 7, 8],
+  [5, 9, 8, 7, 6, 0, 4, 3, 2, 1],
+  [6, 5, 9, 8, 7, 1, 0, 4, 3, 2],
+  [7, 6, 5, 9, 8, 2, 1, 0, 4, 3],
+  [8, 7, 6, 5, 9, 3, 2, 1, 0, 4],
+  [9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+];
+
+const VERHOEFF_P: number[][] = [
+  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  [1, 5, 7, 6, 2, 8, 3, 0, 9, 4],
+  [5, 8, 0, 3, 7, 9, 6, 1, 4, 2],
+  [8, 9, 1, 6, 0, 4, 3, 5, 2, 7],
+  [9, 4, 5, 3, 1, 2, 6, 8, 7, 0],
+  [4, 2, 8, 6, 5, 7, 3, 9, 0, 1],
+  [2, 7, 9, 3, 8, 0, 6, 4, 1, 5],
+  [7, 0, 4, 6, 9, 1, 3, 2, 5, 8],
+];
+
+const VERHOEFF_INV: number[] = [0, 4, 3, 2, 1, 5, 6, 7, 8, 9];
+
+function formatAadhaarInput(value: string): string {
+  const digits = value.replace(/\D+/g, "").slice(0, 12);
+  const groups = digits.match(/.{1,4}/g);
+  return groups ? groups.join(" ") : "";
+}
+
+function normalizeIdNumberInput(rawValue: string, selectedIdType: string): string {
+  const upper = rawValue.toUpperCase();
+  const alphanumericCompact = upper.replace(/\s+/g, "").replace(/[^A-Z0-9]/g, "");
+  const containsLetters = /[A-Z]/.test(alphanumericCompact);
+
+  if (!containsLetters) {
+    const digitsOnly = alphanumericCompact.replace(/\D+/g, "");
+    const shouldFormatAsAadhaar =
+      selectedIdType === "AADHAAR"
+      || /^[2-9]\d*$/.test(digitsOnly);
+
+    if (shouldFormatAsAadhaar) {
+      return formatAadhaarInput(digitsOnly);
+    }
+
+    return digitsOnly.slice(0, 15);
+  }
+
+  return alphanumericCompact.slice(0, 15);
+}
+
+function detectIdTypeFromNumber(value: string): SupportedIdType | null {
+  const normalized = value.trim().toUpperCase();
+  if (!normalized) {
+    return null;
+  }
+
+  if (AADHAAR_PATTERN.test(normalized)) {
+    return "AADHAAR";
+  }
+
+  if (VOTER_ID_PATTERN.test(normalized)) {
+    return "VOTER_ID";
+  }
+
+  if (PASSPORT_PATTERN.test(normalized)) {
+    return "PASSPORT";
+  }
+
+  if (DRIVING_LICENCE_PATTERN.test(normalized)) {
+    return "DRIVING_LICENCE";
+  }
+
+  return null;
+}
+
+function supportedIdTypeLabel(idType: SupportedIdType): string {
   switch (idType) {
     case "AADHAAR":
-      return /^X{4}-X{4}-\d{4}$/i;
+      return "Aadhaar";
     case "PASSPORT":
-      return /^[A-PR-WY][1-9]\d{6}$/i;
+      return "Passport";
     case "DRIVING_LICENCE":
-      return /^[A-Z]{2}\d{2}\d{11,13}$/i;
+      return "Driving Licence";
     case "VOTER_ID":
-      return /^[A-Z]{3}\d{7}$/i;
+      return "Voter ID";
     default:
-      return /^.{4,30}$/;
+      return "Unknown";
   }
 }
 
-function idNumberHint(idType: string): string {
-  switch (idType) {
-    case "AADHAAR":
-      return "Scan the Aadhaar Secure QR to populate a masked number.";
-    case "PASSPORT":
-      return "Passport format looks invalid.";
-    case "DRIVING_LICENCE":
-      return "Driving licence format looks invalid.";
-    case "VOTER_ID":
-      return "Voter ID format looks invalid.";
-    default:
-      return "ID number format looks invalid.";
+function isValidVerhoeff(value: string): boolean {
+  let checksum = 0;
+  const digits = value
+    .split("")
+    .reverse()
+    .map((char) => Number(char));
+
+  for (let index = 0; index < digits.length; index += 1) {
+    checksum = VERHOEFF_D[checksum][VERHOEFF_P[index % 8][digits[index]]];
   }
+
+  return VERHOEFF_INV[checksum] === 0;
+}
+
+function validateIdNumber(value: string): { detectedType: SupportedIdType | null; error?: string } {
+  const normalized = value.trim().toUpperCase();
+  if (!normalized) {
+    return { detectedType: null, error: "ID number is required." };
+  }
+
+  const detectedType = detectIdTypeFromNumber(normalized);
+  if (!detectedType) {
+    return {
+      detectedType: null,
+      error: "Enter a valid Aadhaar, Voter ID, Passport, or Driving Licence number.",
+    };
+  }
+
+  if (detectedType === "AADHAAR") {
+    const aadhaarDigits = normalized.replace(/\s+/g, "");
+    if (!/^\d{12}$/.test(aadhaarDigits) || !isValidVerhoeff(aadhaarDigits)) {
+      return { detectedType, error: "Invalid Aadhaar Number" };
+    }
+  }
+
+  return { detectedType };
 }
 
 function stepTabButtonClasses(isActive: boolean, isComplete: boolean): string {
@@ -193,13 +295,15 @@ function formatDobDate(value?: string): string {
 }
 
 const ID_TYPES = [
-  { value: "AADHAAR", label: "Aadhar" },
+  { value: "AADHAAR", label: "Aadhaar" },
   { value: "PASSPORT", label: "Passport" },
-  { value: "DRIVING_LICENCE", label: "Driving License" },
+  { value: "DRIVING_LICENCE", label: "Driving Licence" },
   { value: "VOTER_ID", label: "Voter ID" },
 ];
 
-const PURPOSES = ["LEISURE", "BUSINESS", "MEDICAL", "TRANSIT", "OTHER"];
+const SUPPORTED_OCR_ID_TYPES = new Set<SupportedIdType>(["AADHAAR", "PASSPORT", "DRIVING_LICENCE", "VOTER_ID"]);
+
+const SUBMIT_PURPOSE = "LEISURE";
 
 const ARRIVAL_WINDOWS = [
   "10:00 AM - 12:00 PM",
@@ -243,7 +347,6 @@ function emptyEditorState(params?: {
     contact_number: normalizeContactNumber(params?.phone),
     coming_from: "",
     going_to: "",
-    purpose: "LEISURE",
     arrival_time: ARRIVAL_WINDOWS[1],
     consent_terms: false,
     consent_age: false,
@@ -282,7 +385,10 @@ function createEditorState(
 
   return {
     nationality_type: kyc.nationality_type || normalizeNationality(params?.nationality),
-    id_type: kyc.id_type || "AADHAAR",
+    id_type: (() => {
+      const normalized = normalizeDetectedIdType(kyc.id_type);
+      return normalized && isSupportedIdType(normalized) ? normalized : "AADHAAR";
+    })(),
     first_name: firstName || "",
     last_name: rest.join(" "),
     email: (params?.email || "").trim(),
@@ -293,11 +399,9 @@ function createEditorState(
     contact_number: kyc.contact_number || normalizeContactNumber(params?.phone),
     coming_from: kyc.coming_from || "",
     going_to: kyc.going_to || "",
-    purpose: kyc.purpose || "LEISURE",
     arrival_time: ARRIVAL_WINDOWS[1],
     document_file_key: undefined,
     document_file_url: kyc.front_image_url || kyc.back_image_url || undefined,
-    aadhaar_uid_reference: undefined,
     consent_terms: Boolean(kyc.consent_given),
     consent_age: Boolean(kyc.consent_given),
   };
@@ -383,6 +487,88 @@ function publicFileUrlFromUploadUrl(uploadUrl: string): string {
   return uploadUrl.split("?")[0] || uploadUrl;
 }
 
+function normalizeDetectedIdType(input?: string | null): string | null {
+  const normalized = (input || "").trim().toUpperCase().replace(/[\s-]+/g, "_");
+  if (!normalized) {
+    return null;
+  }
+
+  if (normalized === "AADHAR") {
+    return "AADHAAR";
+  }
+
+  if (normalized === "DRIVING_LICENSE" || normalized === "DRIVER_LICENSE") {
+    return "DRIVING_LICENCE";
+  }
+
+  return normalized;
+}
+
+function isSupportedIdType(input?: string | null): input is SupportedIdType {
+  if (!input) {
+    return false;
+  }
+
+  return SUPPORTED_OCR_ID_TYPES.has(input as SupportedIdType);
+}
+
+function loadImage(sourceUrl: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Unable to load selected image for cropping."));
+    image.src = sourceUrl;
+  });
+}
+
+async function createCroppedImageFile(file: File, sourceUrl: string, cropPixels: Area | null): Promise<File> {
+  if (!cropPixels) {
+    return file;
+  }
+
+  const image = await loadImage(sourceUrl);
+  const canvas = document.createElement("canvas");
+  const width = Math.max(1, Math.round(cropPixels.width));
+  const height = Math.max(1, Math.round(cropPixels.height));
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return file;
+  }
+
+  context.drawImage(
+    image,
+    cropPixels.x,
+    cropPixels.y,
+    cropPixels.width,
+    cropPixels.height,
+    0,
+    0,
+    width,
+    height,
+  );
+
+  const mimeType = file.type || "image/jpeg";
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((result) => resolve(result), mimeType, 0.95);
+  });
+
+  if (!blob) {
+    return file;
+  }
+
+  const extension = mimeType === "image/png" ? "png" : "jpg";
+  const baseName = file.name.replace(/\.[^/.]+$/, "");
+
+  return new File([blob], `${baseName}-cropped.${extension}`, {
+    type: blob.type || mimeType,
+    lastModified: Date.now(),
+  });
+}
+
 function normalizeOcrDate(input?: string | null): string {
   if (!input) {
     return "";
@@ -448,24 +634,22 @@ function validateStepOne(state: KycEditorState): KycFieldErrors {
 
 function validateStepTwo(state: KycEditorState): KycFieldErrors {
   const errors: KycFieldErrors = {};
-  const idNumber = state.id_number.trim().toUpperCase();
+  const hasDocument = Boolean(state.document_file_url && state.document_file_key);
+  const hasIdNumberInput = Boolean(state.id_number.trim());
 
   if (!state.id_type.trim()) {
     errors.id_type = "Select one government ID type.";
   }
 
-  if (state.id_type === "AADHAAR") {
-    if (!state.aadhaar_uid_reference) {
-      errors.document_file_key = "Scan and verify the Aadhaar Secure QR before continuing.";
-    }
-  } else if (!state.document_file_url || !state.document_file_key) {
-    errors.document_file_key = "Upload one ID document (max 5MB, PDF/JPEG/PNG).";
+  const idNumberValidation = hasIdNumberInput ? validateIdNumber(state.id_number) : { detectedType: null as SupportedIdType | null };
+  const hasValidIdNumber = hasIdNumberInput && !idNumberValidation.error;
+
+  if (hasIdNumberInput && idNumberValidation.error) {
+    errors.id_number = idNumberValidation.error;
   }
 
-  if (!idNumber) {
-    errors.id_number = "ID number is required.";
-  } else if (!idNumberRegex(state.id_type).test(idNumber)) {
-    errors.id_number = idNumberHint(state.id_type);
+  if (!hasDocument && !hasValidIdNumber) {
+    errors.document_file_key = "Upload one ID document or enter a valid ID number.";
   }
 
   if (!state.consent_terms) {
@@ -499,11 +683,19 @@ function validateStepThree(state: KycEditorState): KycFieldErrors {
     errors.going_to = "Next destination can only include letters and basic punctuation.";
   }
 
-  if (!PURPOSES.includes(state.purpose)) {
-    errors.purpose = "Select a valid travel purpose.";
+  return errors;
+}
+
+function validateStep(step: Step, state: KycEditorState): KycFieldErrors {
+  if (step === 1) {
+    return validateStepOne(state);
   }
 
-  return errors;
+  if (step === 2) {
+    return validateStepTwo(state);
+  }
+
+  return validateStepThree(state);
 }
 
 function validateForSubmit(state: KycEditorState): KycFieldErrors {
@@ -537,12 +729,16 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
   const [isRunningOcr, setIsRunningOcr] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dobPickerOpen, setDobPickerOpen] = useState(false);
-  const [isAadhaarScannerOpen, setIsAadhaarScannerOpen] = useState(false);
-  const [scanStatus, setScanStatus] = useState("Scan the Aadhaar Secure QR for verification.");
-  const [scanAnnouncement, setScanAnnouncement] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<KycFieldErrors>({});
   const [uploadPreviewDraft, setUploadPreviewDraft] = useState<UploadPreviewDraft | null>(null);
+  const [localDocumentPreviewUrl, setLocalDocumentPreviewUrl] = useState<string | null>(null);
+  const [uploadedDocumentKind, setUploadedDocumentKind] = useState<"image" | "pdf" | null>(null);
+  const [uploadInlineMessage, setUploadInlineMessage] = useState<string | null>(null);
+  const [previewLoadError, setPreviewLoadError] = useState(false);
+  const [cropPosition, setCropPosition] = useState({ x: 0, y: 0 });
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropPixels, setCropPixels] = useState<Area | null>(null);
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
 
   const documentUploadInputRef = useRef<HTMLInputElement | null>(null);
@@ -567,21 +763,61 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     [activeSlotId, slots],
   );
 
-  const completedSlotCount = useMemo(
-    () => slots.filter((slot) => slot.kyc_status === "PRE_VERIFIED" || slot.kyc_status === "VERIFIED").length,
-    [slots],
-  );
-
   const canEditActiveSlot =
     Boolean(activeSlot?.can_edit ?? true) &&
     activeSlot?.kyc_status !== "PRE_VERIFIED" &&
     activeSlot?.kyc_status !== "VERIFIED";
 
-  const documentPreview = editorState.document_file_url;
+  const documentPreview = localDocumentPreviewUrl || editorState.document_file_url;
+  const detectedIdType = useMemo(
+    () => detectIdTypeFromNumber(editorState.id_number),
+    [editorState.id_number],
+  );
+  const stepTwoLiveErrors = useMemo(
+    () => (activeStep === 2 ? validateStepTwo(editorState) : {}),
+    [activeStep, editorState],
+  );
+  const shouldShowLiveIdNumberError = activeStep === 2 && Boolean(editorState.id_number.trim());
+  const shouldShowLiveDocumentError = activeStep === 2 && (
+    Boolean(editorState.document_file_key)
+    || shouldShowLiveIdNumberError
+    || (editorState.consent_terms && editorState.consent_age)
+  );
+  const idNumberErrorMessage = fieldErrors.id_number
+    || (shouldShowLiveIdNumberError ? stepTwoLiveErrors.id_number : undefined);
+  const documentUploadErrorMessage = fieldErrors.document_file_key
+    || (shouldShowLiveDocumentError ? stepTwoLiveErrors.document_file_key : undefined);
+  const canAdvanceToNextStep = useMemo(() => {
+    if (!canEditActiveSlot || activeStep >= 3) {
+      return false;
+    }
+
+    if (activeStep === 1) {
+      return Object.keys(validateStep(1, editorState)).length === 0;
+    }
+
+    if (activeStep === 2) {
+      return Object.keys(validateStep(2, editorState)).length === 0;
+    }
+
+    return false;
+  }, [activeStep, canEditActiveSlot, editorState]);
 
   const showUploadPreviewModal = Boolean(uploadPreviewDraft);
 
   const setField = <K extends keyof KycEditorState>(key: K, value: KycEditorState[K]) => {
+    if (key === "id_type") {
+      setUploadInlineMessage(null);
+      setPreviewLoadError(false);
+      setUploadedDocumentKind(null);
+      setLocalDocumentPreviewUrl((current) => {
+        if (current) {
+          URL.revokeObjectURL(current);
+        }
+        return null;
+      });
+    }
+
     setEditorState((current) => {
       if (key === "id_type") {
         const nextIdType = String(value);
@@ -591,7 +827,6 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
           id_number: "",
           document_file_key: undefined,
           document_file_url: undefined,
-          aadhaar_uid_reference: undefined,
           [key]: value,
         };
       }
@@ -604,6 +839,25 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
       ...(key === "id_type" ? { id_number: undefined, document_file_key: undefined } : {}),
     }));
   };
+
+  const handleIdNumberInputChange = useCallback(
+    (rawValue: string) => {
+      const normalizedValue = normalizeIdNumberInput(rawValue, editorState.id_type);
+      const nextDetectedType = detectIdTypeFromNumber(normalizedValue);
+
+      setEditorState((current) => ({
+        ...current,
+        id_number: normalizedValue,
+        id_type: nextDetectedType || current.id_type,
+      }));
+      setFieldErrors((current) => ({
+        ...current,
+        id_number: undefined,
+        id_type: undefined,
+      }));
+    },
+    [editorState.id_type],
+  );
 
   useEffect(() => {
     slotsRef.current = slots;
@@ -622,10 +876,20 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
   }, [uploadPreviewDraft?.objectUrl]);
 
   useEffect(() => {
-    if (editorState.id_type !== "AADHAAR" && isAadhaarScannerOpen) {
-      setIsAadhaarScannerOpen(false);
+    return () => {
+      if (localDocumentPreviewUrl) {
+        URL.revokeObjectURL(localDocumentPreviewUrl);
+      }
+    };
+  }, [localDocumentPreviewUrl]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
     }
-  }, [editorState.id_type, isAadhaarScannerOpen]);
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [activeStep]);
 
   useEffect(() => {
     if (!errorMessage) {
@@ -642,6 +906,16 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
       const detailKey = slotDetailCacheKey(ezeeReservationId, slotId);
       const cachedDetail = getClientCache<BookingKycDetailResponse>(detailKey, WEB_CHECKIN_CACHE_TTL_MS);
       const selectedSlot = (nextSlots ?? slotsRef.current).find((slot) => slot.slot_id === slotId) ?? null;
+
+      setUploadInlineMessage(null);
+      setPreviewLoadError(false);
+      setUploadedDocumentKind(null);
+      setLocalDocumentPreviewUrl((current) => {
+        if (current) {
+          URL.revokeObjectURL(current);
+        }
+        return null;
+      });
 
       if (cachedDetail) {
         setEditorState(
@@ -803,6 +1077,9 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
       return;
     }
 
+    setUploadInlineMessage(null);
+    setPreviewLoadError(false);
+
     const validation = await validateIdDocumentFile(file);
     if (!validation.valid) {
       setFieldErrors((current) => ({
@@ -821,6 +1098,10 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
       return;
     }
 
+    setCropPosition({ x: 0, y: 0 });
+    setCropZoom(1);
+    setCropPixels(null);
+
     const objectUrl = URL.createObjectURL(file);
     if (uploadPreviewDraft?.objectUrl) {
       URL.revokeObjectURL(uploadPreviewDraft.objectUrl);
@@ -838,6 +1119,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
 
     setIsUploadingDocument(true);
     setErrorMessage(null);
+    setUploadInlineMessage(null);
 
     try {
       const sanitizedFile = await stripImageMetadata(file);
@@ -854,6 +1136,33 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
         document_file_key: upload.fileKey,
         document_file_url: publicUrl,
       }));
+      setFieldErrors((current) => ({
+        ...current,
+        document_file_key: undefined,
+      }));
+
+      if (sanitizedFile.type.startsWith("image/")) {
+        const previewUrl = URL.createObjectURL(sanitizedFile);
+        setLocalDocumentPreviewUrl((current) => {
+          if (current) {
+            URL.revokeObjectURL(current);
+          }
+          return previewUrl;
+        });
+        setUploadedDocumentKind("image");
+        setPreviewLoadError(false);
+      } else {
+        setLocalDocumentPreviewUrl((current) => {
+          if (current) {
+            URL.revokeObjectURL(current);
+          }
+          return null;
+        });
+        setUploadedDocumentKind("pdf");
+        setPreviewLoadError(false);
+      }
+
+      setUploadInlineMessage("ID uploaded successfully. Proceed to Scan ID.");
 
       toast.success("ID uploaded", {
         description: "Document uploaded successfully.",
@@ -871,9 +1180,16 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     }
 
     const { file, objectUrl } = uploadPreviewDraft;
-    setUploadPreviewDraft(null);
-    URL.revokeObjectURL(objectUrl);
-    await handleUpload(file);
+
+    try {
+      const croppedFile = await createCroppedImageFile(file, objectUrl, cropPixels);
+      await handleUpload(croppedFile);
+    } catch (error) {
+      setErrorMessage(toSafeErrorMessage(error, "We could not process this crop. Please try again."));
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+      setUploadPreviewDraft(null);
+    }
   }
 
   function dismissUploadPreview() {
@@ -885,10 +1201,11 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
 
   async function handleRunOcr() {
     const token = getStoredGuestToken();
-    if (!token || !activeSlotId || !editorState.document_file_key || editorState.id_type === "AADHAAR") {
+    if (!token || !activeSlotId || !editorState.document_file_key) {
       return;
     }
 
+    setUploadInlineMessage(null);
     setIsRunningOcr(true);
     setErrorMessage(null);
 
@@ -897,20 +1214,41 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
         front_image_key: editorState.document_file_key,
       });
 
+      const detectedIdType = normalizeDetectedIdType(ocr.id_type_detected);
+      if (detectedIdType && !isSupportedIdType(detectedIdType)) {
+        setFieldErrors((current) => ({
+          ...current,
+          document_file_key:
+            "ID type not supported. Re-upload a clearer Aadhaar, Passport, Driving Licence, or Voter ID image.",
+          id_type: "OCR could not verify a supported document type.",
+        }));
+        toast.error("Unsupported ID type", {
+          description: "Re-upload a better quality Aadhaar, Passport, Driving Licence, or Voter ID image.",
+        });
+        return;
+      }
+
       setEditorState((current) => {
         const normalizedName = (ocr.ocr_name || "").trim();
         const [firstName, ...lastNameParts] = normalizedName ? normalizedName.split(/\s+/) : [current.first_name, current.last_name];
+        const nextIdType = isSupportedIdType(detectedIdType) ? detectedIdType : current.id_type;
+        const nextIdNumber = normalizeIdNumberInput(ocr.ocr_id_number || current.id_number, nextIdType);
 
         return {
           ...current,
-          id_type: ocr.id_type_detected || current.id_type,
+          id_type: nextIdType,
           first_name: firstName || current.first_name,
           last_name: lastNameParts.join(" ") || current.last_name,
           date_of_birth: normalizeOcrDate(ocr.ocr_dob) || current.date_of_birth,
-          id_number: ocr.ocr_id_number || current.id_number,
+          id_number: nextIdNumber,
           permanent_address: ocr.ocr_address || current.permanent_address,
         };
       });
+      setFieldErrors((current) => ({
+        ...current,
+        document_file_key: undefined,
+        id_type: undefined,
+      }));
 
       toast.success("ID scanned", {
         description: "Review the extracted fields before submitting.",
@@ -922,90 +1260,12 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     }
   }
 
-  const handleAadhaarScanSuccess = useCallback(
-    async (decodedText: string) => {
-      setScanAnnouncement("");
-      setErrorMessage(null);
-
-      const secureData = parseAadhaarSecureQrPayload(decodedText);
-      if (!secureData) {
-        setScanStatus("Invalid QR payload.");
-        setScanAnnouncement("Invalid Aadhaar Secure QR payload.");
-        setFieldErrors((current) => ({
-          ...current,
-          id_number: "Invalid Secure QR. Scan a valid Aadhaar Secure QR code.",
-        }));
-        return;
-      }
-
-      const uidaiPublicKey = process.env.NEXT_PUBLIC_UIDAI_QR_PUBLIC_KEY_PEM;
-      if (!uidaiPublicKey) {
-        setScanStatus("UIDAI public key not configured.");
-        setScanAnnouncement("UIDAI digital signature key is missing.");
-        setFieldErrors((current) => ({
-          ...current,
-          id_number: "UIDAI signature key is missing. Configure NEXT_PUBLIC_UIDAI_QR_PUBLIC_KEY_PEM.",
-        }));
-        return;
-      }
-
-      const isSignatureValid = await verifyUidaiDigitalSignature(
-        secureData,
-        uidaiPublicKey,
-      );
-
-      if (!isSignatureValid) {
-        setScanStatus("Invalid QR signature.");
-        setScanAnnouncement("Invalid QR signature. Scan could not be verified.");
-        setFieldErrors((current) => ({
-          ...current,
-          id_number: "Invalid QR signature. Please scan a valid Aadhaar Secure QR.",
-        }));
-        return;
-      }
-
-      const uidReference =
-        secureData.uidToken
-        || await generateUidReferenceId(
-          `${secureData.maskedAadhaar}|${secureData.name}|${secureData.dateOfBirth}`,
-        );
-
-      setEditorState((current) => {
-        const [firstName, ...lastNameParts] = secureData.name.trim().split(/\s+/).filter(Boolean);
-
-        return {
-          ...current,
-          first_name: firstName || current.first_name,
-          last_name: lastNameParts.join(" ") || current.last_name,
-          date_of_birth: normalizeBirthDate(secureData.dateOfBirth) || current.date_of_birth,
-          gender: normalizeGender(secureData.gender),
-          permanent_address: secureData.address || current.permanent_address,
-          id_number: secureData.maskedAadhaar,
-          aadhaar_uid_reference: uidReference,
-          document_file_key: undefined,
-          document_file_url: undefined,
-        };
-      });
-
-      setScanStatus("Scanning complete.");
-      setScanAnnouncement("Aadhaar Secure QR verified successfully.");
-      setFieldErrors((current) => ({
-        ...current,
-        id_number: undefined,
-        document_file_key: undefined,
-      }));
-      setIsAadhaarScannerOpen(false);
-
-      toast.success("Secure QR verified", {
-        description: "Masked Aadhaar and UID reference captured.",
-      });
-    },
-    [],
-  );
-
   function nextStep() {
-    const stepErrors =
-      activeStep === 1 ? validateStepOne(editorState) : activeStep === 2 ? validateStepTwo(editorState) : {};
+    const stepErrors = activeStep === 1
+      ? validateStep(1, editorState)
+      : activeStep === 2
+        ? validateStep(2, editorState)
+        : {};
 
     if (Object.keys(stepErrors).length > 0) {
       setFieldErrors((current) => ({ ...current, ...stepErrors }));
@@ -1018,7 +1278,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
 
   function previousStep() {
     if (activeStep === 1) {
-      router.push(`/bookings/${encodeURIComponent(ezeeReservationId)}`);
+      router.push("/bookings");
       return;
     }
 
@@ -1071,16 +1331,13 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
       id_type: editorState.id_type,
       full_name: `${editorState.first_name} ${editorState.last_name}`.replace(/\s+/g, " ").trim(),
       date_of_birth: editorState.date_of_birth,
-      // Aadhaar flow sends only UID token/reference (never a 12-digit number).
-      id_number: editorState.id_type === "AADHAAR"
-        ? (editorState.aadhaar_uid_reference || editorState.id_number.trim())
-        : editorState.id_number.trim(),
+      id_number: editorState.id_number.trim(),
       permanent_address: editorState.permanent_address.trim(),
       contact_number: editorState.contact_number.trim(),
       coming_from: editorState.coming_from.trim(),
       going_to: editorState.going_to.trim(),
-      purpose: editorState.purpose,
-      front_image_url: editorState.id_type === "AADHAAR" ? undefined : editorState.document_file_url,
+      purpose: SUBMIT_PURPOSE,
+      front_image_url: editorState.document_file_url,
       back_image_url: undefined,
       consent_given: editorState.consent_terms && editorState.consent_age,
     };
@@ -1107,11 +1364,52 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     return (
       <BookingPageShell
         badge="Web Check-In"
-        title="Preparing your check-in"
-        description="Loading your guest slots and any saved check-in details."
+        title="Complete web check-in"
       >
-        <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-8 text-center text-white/72">
-          Loading web check-in...
+        <div aria-busy="true" aria-live="polite" className="space-y-6" role="status">
+          <span className="sr-only">Loading web check-in details.</span>
+
+          <div className="mx-auto flex w-full max-w-[980px] items-center justify-between rounded-[18px] border border-white/10 bg-[var(--vh-panel-strong)] px-5 py-4">
+            <Skeleton className="h-5 w-32 bg-white/12" />
+            <Skeleton className="h-5 w-24 bg-white/12" />
+          </div>
+
+          <div className="mx-auto grid w-full max-w-[980px] gap-3 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="rounded-[16px] border border-white/10 bg-[var(--vh-panel-strong)] p-4">
+                <Skeleton className="h-4 w-20 bg-white/12" />
+                <Skeleton className="mt-3 h-3 w-28 bg-white/10" />
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+            <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 md:p-8">
+              <Skeleton className="h-7 w-44 bg-white/12" />
+              <Skeleton className="mt-4 h-4 w-full max-w-[420px] bg-white/10" />
+              <div className="mt-6 space-y-4">
+                <Skeleton className="h-14 w-full rounded-[12px] bg-white/10" />
+                <Skeleton className="h-14 w-full rounded-[12px] bg-white/10" />
+                <Skeleton className="h-14 w-full rounded-[12px] bg-white/10" />
+              </div>
+              <div className="mt-8 flex justify-end gap-3">
+                <Skeleton className="h-11 w-28 rounded-full bg-white/10" />
+                <Skeleton className="h-11 w-36 rounded-full bg-white/12" />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5">
+                <Skeleton className="h-4 w-24 bg-white/12" />
+                <Skeleton className="mt-4 h-10 w-full rounded-[10px] bg-white/10" />
+                <Skeleton className="mt-3 h-10 w-full rounded-[10px] bg-white/10" />
+              </div>
+              <div className="rounded-[24px] border border-white/12 bg-[var(--vh-panel-strong)] p-5">
+                <Skeleton className="h-4 w-28 bg-white/12" />
+                <Skeleton className="mt-4 h-20 w-full rounded-[12px] bg-white/10" />
+              </div>
+            </div>
+          </div>
         </div>
       </BookingPageShell>
     );
@@ -1164,8 +1462,8 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
         <BookingEmptyState
           title="Guest slots are unavailable"
           description={errorMessage || "Please reopen the booking details and try web check-in again."}
-          ctaHref={`/bookings/${encodeURIComponent(ezeeReservationId)}`}
-          ctaLabel="Back to booking"
+          ctaHref="/bookings"
+          ctaLabel="Back to bookings"
         />
       </BookingPageShell>
     );
@@ -1181,7 +1479,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
               className="absolute left-0 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full border border-white/10 bg-transparent p-0 text-white shadow-none hover:bg-white/10"
               variant="ghost"
             >
-              <Link aria-label="Back to booking detail" href={`/bookings/${encodeURIComponent(ezeeReservationId)}`}>
+              <Link aria-label="Back to bookings" href="/bookings">
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
@@ -1190,6 +1488,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
 
           <p className="mt-2 text-center text-sm text-[#99A1AF]">{propertyName}</p>
           <p className="mt-1 text-center text-xs uppercase tracking-[0.12em] text-[#6A7282]">{bookingTitle}</p>
+          <p className="mt-1 text-center text-xs uppercase tracking-[0.12em] text-[#6A7282]">Reservation ID: {ezeeReservationId}</p>
 
           {errorMessage ? (
             <div className="mt-4 rounded-[12px] border border-[rgba(255,106,95,0.35)] bg-[rgba(255,106,95,0.1)] px-4 py-3 text-sm text-[#ffd9d4]" role="alert">
@@ -1197,17 +1496,17 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
             </div>
           ) : null}
 
-          <div className="mx-auto mb-8 mt-8 flex max-w-[760px] items-center justify-center">
-            <div className="grid w-full items-start gap-3" style={{ gridTemplateColumns: `repeat(${STEPS.length}, minmax(0, 1fr))` }}>
+          <div className="mx-auto mb-8 mt-8 w-full max-w-[980px] px-2 sm:px-4">
+            <div className="mx-auto grid w-[80%] min-w-[280px] items-start" style={{ gridTemplateColumns: `repeat(${STEPS.length}, minmax(0, 1fr))` }}>
               {STEPS.map((step, index) => {
                 const isCurrent = step.id === activeStep;
                 const isDone = step.id < activeStep;
                 const Icon = step.icon;
 
                 return (
-                  <div key={step.id} className="relative flex flex-col items-center gap-3">
+                  <div key={step.id} className="relative flex flex-col items-center gap-3 px-2">
                     {index < STEPS.length - 1 ? (
-                      <div className={`absolute left-[calc(50%+28px)] top-6 hidden h-[2px] w-[calc(100%-56px)] md:block ${activeStep > step.id ? "bg-[var(--vh-pink)]" : "bg-white/10"}`} />
+                      <div className={`pointer-events-none absolute left-1/2 top-6 ml-6 h-[2px] w-[calc(100%-3rem)] ${activeStep > step.id ? "bg-[var(--vh-pink)]" : "bg-transparent"}`} />
                     ) : null}
                     <button
                       className={`inline-flex h-12 w-12 items-center justify-center rounded-[14px] ${stepTabButtonClasses(isCurrent, isDone)}`}
@@ -1234,7 +1533,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
             </div>
           </div>
 
-          <div className="mt-6">
+          <div className={cn("mt-6", activeStep === 3 && "mx-auto w-full md:w-[calc(53.333%+3rem)]")}>
             <div className="rounded-[16px] border border-white/5 bg-[#1A1A1A] p-5 md:p-8">
               {activeStep === 1 ? (
                 <section>
@@ -1370,123 +1669,139 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
               {activeStep === 2 ? (
                 <section>
                   <h2 className="text-[20px] font-bold leading-7 text-white">Just one ID needed</h2>
-                  <p className="mt-2 text-sm text-[#99A1AF]">Choose one document to upload.</p>
-                  {fieldErrors.id_type ? <p className="mt-2 text-xs text-[#ff6a5f]">{fieldErrors.id_type}</p> : null}
+                  <div className="mt-5 grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)]">
+                    <div className="space-y-5">
+                      <p className="text-sm text-[#99A1AF]">Choose one document to upload.</p>
+                      {fieldErrors.id_type ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.id_type}</p> : null}
 
-                  <div className="mt-4 grid gap-3">
-                    {ID_TYPES.map((idType) => (
-                      <button
-                        key={idType.value}
-                        className={cn(
-                          "flex items-center justify-between rounded-[14px] border px-4 py-4 text-left transition-colors",
-                          editorState.id_type === idType.value
-                            ? "border-[var(--vh-pink)] bg-[rgba(198,40,40,0.12)] text-[var(--vh-pink)]"
-                            : "border-white/10 bg-[#212121] text-white hover:border-white/20",
-                        )}
-                        onClick={() => setField("id_type", idType.value)}
-                        type="button"
-                      >
-                        <p className="text-base font-semibold tracking-[0.02em]">{idType.label}</p>
-                        {editorState.id_type === idType.value ? <Upload className="h-4 w-4" /> : null}
-                      </button>
-                    ))}
-                  </div>
-
-                  {editorState.id_type === "AADHAAR" ? (
-                    <div className="mt-5 space-y-4">
-                      <div className="rounded-[12px] border border-[rgba(241,88,36,0.3)] bg-[rgba(241,88,36,0.08)] p-4 text-sm text-[#ffd9d4]">
-                        UIDAI compliance mode is active. Aadhaar uploads are disabled. Scan only the Aadhaar Secure QR
-                        from the physical card or mAadhaar app.
+                      <div className="grid gap-3">
+                        {ID_TYPES.map((idType) => (
+                          <button
+                            key={idType.value}
+                            className={cn(
+                              "flex items-center justify-between rounded-[14px] border px-4 py-4 text-left transition-colors",
+                              editorState.id_type === idType.value
+                                ? "border-[var(--vh-pink)] bg-[rgba(198,40,40,0.12)] text-[var(--vh-pink)]"
+                                : "border-white/10 bg-[#212121] text-white hover:border-white/20",
+                            )}
+                            onClick={() => setField("id_type", idType.value)}
+                            type="button"
+                          >
+                            <p className="text-base font-semibold tracking-[0.02em]">{idType.label}</p>
+                            {editorState.id_type === idType.value ? <Upload className="h-4 w-4" /> : null}
+                          </button>
+                        ))}
                       </div>
 
-                      <Button
-                        className="rounded-[10px] bg-[var(--vh-pink)] text-white hover:bg-[var(--vh-pink-soft)]"
-                        disabled={!canEditActiveSlot}
-                        onClick={() => setIsAadhaarScannerOpen((current) => !current)}
-                        type="button"
-                      >
-                        <Upload className="h-4 w-4" />
-                        {isAadhaarScannerOpen ? "Stop Secure QR Scan" : "Start Secure QR Scan"}
-                      </Button>
-
-                      <p aria-live="polite" className="text-sm text-[#99A1AF]">{scanStatus}</p>
-                      <p aria-live="polite" className="sr-only">{scanAnnouncement}</p>
-
-                      {isAadhaarScannerOpen ? (
-                        <QrScanner
-                          active={isAadhaarScannerOpen}
-                          onError={(message) => {
-                            setScanStatus(message);
-                            setScanAnnouncement(message);
-                          }}
-                          onScanSuccess={(decodedText) => {
-                            void handleAadhaarScanSuccess(decodedText);
-                          }}
-                          onStatusChange={(statusText) => {
-                            setScanStatus(statusText);
-                          }}
-                        />
-                      ) : null}
-
-                      <div className="grid gap-4 md:grid-cols-2">
+                      <div>
                         <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Masked Aadhaar</span>
+                          <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">ID Number</span>
                           <input
-                            className="h-12 w-full rounded-[10px] border border-white/10 bg-[#212121] px-4 text-sm text-white outline-none"
-                            placeholder="XXXX-XXXX-1234"
-                            readOnly
+                            className={`h-12 w-full rounded-[10px] border bg-[#212121] px-4 text-sm text-white outline-none placeholder:text-[#6A7282] ${idNumberErrorMessage ? "border-[#ff6a5f]" : "border-white/10 focus:border-[var(--vh-pink)]"}`}
+                            onChange={(event) => handleIdNumberInputChange(event.target.value)}
+                            placeholder="You can Enter ID Number Manually, No Prob!"
                             value={editorState.id_number}
                           />
-                        </label>
-                        <label className="space-y-2">
-                          <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">UID Reference</span>
-                          <input
-                            className="h-12 w-full rounded-[10px] border border-white/10 bg-[#212121] px-4 text-sm text-white outline-none"
-                            placeholder="Generated after verification"
-                            readOnly
-                            value={editorState.aadhaar_uid_reference || ""}
-                          />
+                          {editorState.id_number.trim() ? (
+                            <p className={`text-[11px] font-bold uppercase tracking-[0.12em] ${detectedIdType ? "text-[#86efac]" : "text-[#facc15]"}`}>
+                              {detectedIdType
+                                ? `Detected ID Type: ${supportedIdTypeLabel(detectedIdType)}`
+                                : "Detected ID Type: Not recognized yet"}
+                            </p>
+                          ) : null}
+                          {idNumberErrorMessage ? <p className="text-xs text-[#ff6a5f]">{idNumberErrorMessage}</p> : null}
                         </label>
                       </div>
+
+                      <div className="space-y-3 rounded-[12px] border border-white/10 bg-[#212121] p-4">
+                        <label className="flex items-start gap-3 text-sm text-[#D1D5DC]">
+                          <input
+                            checked={editorState.consent_terms}
+                            className="mt-1 accent-[var(--vh-pink)]"
+                            onChange={(event) => setField("consent_terms", event.target.checked)}
+                            type="checkbox"
+                          />
+                          <span>
+                            I hereby consent to provide my identity details for guest registration as required by local law.
+                            I understand my data is encrypted and processed according to <Link className="underline decoration-white/40 underline-offset-4" href="/policies/privacy">Privacy Policy</Link>.
+                          </span>
+                        </label>
+                        {fieldErrors.consent_terms ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.consent_terms}</p> : null}
+
+                        <label className="flex items-start gap-3 text-sm text-[#D1D5DC]">
+                          <input
+                            checked={editorState.consent_age}
+                            className="mt-1 accent-[var(--vh-pink)]"
+                            onChange={(event) => setField("consent_age", event.target.checked)}
+                            type="checkbox"
+                          />
+                          I confirm that I am above the age of 18.
+                        </label>
+                        {fieldErrors.consent_age ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.consent_age}</p> : null}
+                      </div>
                     </div>
-                  ) : (
-                    <div className="mt-5 space-y-4">
-                      <div className="rounded-[12px] border border-white/10 bg-[#212121] p-4">
-                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Upload ID Document</p>
-                        <div className="relative mt-3 flex h-44 items-center justify-center overflow-hidden rounded-[10px] border border-white/10 bg-black/30">
-                          {documentPreview ? (
+
+                    <div className="space-y-3 md:self-start">
+                      <StickerTag
+                        bg="#facc15"
+                        className="px-3 py-1.5 text-sm font-bold not-italic uppercase tracking-[0.08em]"
+                        label="Gotta make sure it's really you, boss!"
+                        rotate="rotate-[-1deg]"
+                        text="#000000"
+                      />
+
+                      <div className="relative mx-auto w-full max-w-[342px] -rotate-1 bg-white px-4 pb-12 pt-4 shadow-[0px_10px_25px_-5px_rgba(0,0,0,0.30)] ring-1 ring-[#E2E8F0]">
+                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#64748B]">Upload ID Document</p>
+                        <button
+                          className="relative mt-3 flex h-[305px] w-full items-center justify-center overflow-hidden bg-[#F1F5F9]"
+                          disabled={!canEditActiveSlot || isUploadingDocument}
+                          onClick={() => documentUploadInputRef.current?.click()}
+                          type="button"
+                        >
+                          {documentPreview && uploadedDocumentKind !== "pdf" && !previewLoadError ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img alt="ID preview" className="h-full w-full object-cover" src={documentPreview} />
+                            <img
+                              alt="ID preview"
+                              className="h-full w-full object-cover"
+                              onError={() => setPreviewLoadError(true)}
+                              onLoad={() => setPreviewLoadError(false)}
+                              src={documentPreview}
+                            />
                           ) : (
-                            <p className="text-xs uppercase tracking-[0.12em] text-[#6A7282]">No file selected</p>
+                            <div className="relative z-10 flex flex-col items-center">
+                              <svg aria-hidden="true" className="h-[40px] w-[44px]" fill="none" viewBox="0 0 44 41" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.48875 40.6222C3.38892 40.6414 2.44056 40.2662 1.64367 39.4967C0.846785 38.7271 0.438744 37.7924 0.419546 36.6926L0.000688568 12.6963C-0.0185091 11.5964 0.356664 10.6481 1.12621 9.85119C1.89575 9.0543 2.83044 8.64626 3.93027 8.62706L10.2293 8.51711L13.8589 4.45315L25.8571 4.24372L25.9269 8.24311L15.6785 8.422L12.0988 12.4851L4.00008 12.6265L4.41894 36.6228L36.4141 36.0643L36.0999 18.0671L40.0993 17.9973L40.4135 35.9945C40.4327 37.0944 40.0575 38.0427 39.2879 38.8396C38.5184 39.6365 37.5837 40.0445 36.4839 40.0637L4.48875 40.6222ZM35.9952 12.068L35.9254 8.06859L31.926 8.1384L31.8562 4.139L35.8556 4.0692L35.7858 0.0698032L39.7852 -6.4075e-06L39.855 3.99939L43.8544 3.92958L43.9242 7.92897L39.9248 7.99878L39.9946 11.9982L35.9952 12.068ZM20.3641 33.344C22.8638 33.3004 24.9732 32.3884 26.6924 30.6082C28.4116 28.8279 29.2493 26.6879 29.2057 24.1883C29.1621 21.6887 28.2501 19.5793 26.4698 17.8601C24.6896 16.1409 22.5496 15.3031 20.05 15.3468C17.5504 15.3904 15.441 16.3023 13.7218 18.0826C12.0026 19.8629 11.1648 22.0028 11.2084 24.5025C11.2521 27.0021 12.164 29.1115 13.9443 30.8307C15.7246 32.5499 17.8645 33.3877 20.3641 33.344ZM20.2943 29.3446C18.8946 29.3691 17.703 28.9065 16.7196 27.9568C15.7362 27.0072 15.2323 25.8324 15.2078 24.4327C15.1834 23.0329 15.646 21.8413 16.5957 20.8579C17.5453 19.8745 18.72 19.3706 20.1198 19.3462C21.5196 19.3217 22.7112 19.7843 23.6946 20.734C24.678 21.6836 25.1819 22.8583 25.2063 24.2581C25.2308 25.6579 24.7681 26.8495 23.8185 27.8329C22.8688 28.8163 21.6941 29.3202 20.2943 29.3446Z" fill="#94A3B8" />
+                              </svg>
+                              <p className="pt-2 text-xs font-bold leading-4 text-[#64748B]">CLICK TO SNAP</p>
+                            </div>
                           )}
+
+                          {uploadedDocumentKind === "pdf" ? (
+                            <p className="absolute bottom-3 px-3 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#64748B]">
+                              PDF uploaded. Preview unavailable.
+                            </p>
+                          ) : null}
+
+                          {previewLoadError ? (
+                            <p className="absolute bottom-3 px-3 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#64748B]">
+                              Preview unavailable. Re-upload a clearer image.
+                            </p>
+                          ) : null}
+
                           {isRunningOcr ? (
                             <div className="pointer-events-none absolute inset-0 bg-black/35">
                               <div className="vh-scan-line absolute left-0 right-0 h-[2px] bg-[var(--vh-pink)] shadow-[0_0_12px_rgba(198,40,40,0.7)]" />
                             </div>
                           ) : null}
-                        </div>
-                        <div className="mt-3">
-                          <Button
-                            className="rounded-[10px] border border-white/20 bg-transparent text-white hover:bg-white/8"
-                            disabled={!canEditActiveSlot || isUploadingDocument}
-                            onClick={() => documentUploadInputRef.current?.click()}
-                            type="button"
-                            variant="outline"
-                          >
-                            {isUploadingDocument ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                            Upload
-                          </Button>
+                        </button>
+                        <div className="px-2 pt-4">
+                          <div className="h-[9px] rounded-[12px] bg-[#F1F5F9]" />
                         </div>
                       </div>
 
-                      {fieldErrors.document_file_key ? (
-                        <p className="text-xs text-[#ff6a5f]" role="alert">{fieldErrors.document_file_key}</p>
-                      ) : null}
-
-                      <div className="flex flex-wrap items-center gap-3">
+                      <div className="mt-3 flex justify-center">
                         <Button
-                          className="rounded-[10px] bg-[var(--vh-pink)] text-white hover:bg-[var(--vh-pink-soft)]"
+                          className="w-[80%] rounded-[10px] bg-[var(--vh-pink)] text-white hover:bg-[var(--vh-pink-soft)]"
                           disabled={!canEditActiveSlot || !editorState.document_file_key || isRunningOcr}
                           onClick={() => void handleRunOcr()}
                           type="button"
@@ -1494,64 +1809,16 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                           {isRunningOcr ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <FileSearch className="h-4 w-4" />}
                           {isRunningOcr ? "Scanning ID" : "Scan ID"}
                         </Button>
-                        <p className="text-sm text-[#99A1AF]">Run scan to auto-fill name, DOB, ID number, and address.</p>
                       </div>
+
+                      {uploadInlineMessage ? (
+                        <p className="text-xs text-[#86efac]" role="status">{uploadInlineMessage}</p>
+                      ) : null}
+
+                      {documentUploadErrorMessage ? (
+                        <p className="text-xs text-[#ff6a5f]" role="alert">{documentUploadErrorMessage}</p>
+                      ) : null}
                     </div>
-                  )}
-
-                  <div className="mt-5 grid gap-4 md:grid-cols-2">
-                    <label className="space-y-2">
-                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">ID Number</span>
-                      <input
-                        className={`h-12 w-full rounded-[10px] border bg-[#212121] px-4 text-sm text-white outline-none placeholder:text-[#6A7282] ${fieldErrors.id_number ? "border-[#ff6a5f]" : "border-white/10 focus:border-[var(--vh-pink)]"} ${editorState.id_type === "AADHAAR" ? "opacity-90" : ""}`}
-                        onChange={(event) => setField("id_number", event.target.value)}
-                        placeholder={editorState.id_type === "AADHAAR" ? "Masked Aadhaar from secure QR" : "As printed on ID"}
-                        readOnly={editorState.id_type === "AADHAAR"}
-                        value={editorState.id_number}
-                      />
-                      {fieldErrors.id_number ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.id_number}</p> : null}
-                    </label>
-
-                    <label className="space-y-2">
-                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Purpose</span>
-                      <Select onValueChange={(value) => setField("purpose", value)} value={editorState.purpose}>
-                        <SelectTrigger className={fieldErrors.purpose ? "border-[#ff6a5f]" : ""}>
-                          <SelectValue placeholder="Select purpose" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PURPOSES.map((purpose) => (
-                            <SelectItem key={purpose} value={purpose}>{purpose}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldErrors.purpose ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.purpose}</p> : null}
-                    </label>
-                  </div>
-
-                  <div className="mt-5 space-y-3 rounded-[12px] border border-white/10 bg-[#212121] p-4">
-                    <label className="flex items-start gap-3 text-sm text-[#D1D5DC]">
-                      <input
-                        checked={editorState.consent_terms}
-                        className="mt-1 accent-[var(--vh-pink)]"
-                        onChange={(event) => setField("consent_terms", event.target.checked)}
-                        type="checkbox"
-                      />
-                      <span>
-                        I hereby consent to provide my identity details for guest registration as required by local law.
-                        I understand my data is encrypted and processed according to <Link className="underline decoration-white/40 underline-offset-4" href="/policies">[Privacy Policy]</Link>.
-                      </span>
-                    </label>
-                    {fieldErrors.consent_terms ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.consent_terms}</p> : null}
-                    <label className="flex items-start gap-3 text-sm text-[#D1D5DC]">
-                      <input
-                        checked={editorState.consent_age}
-                        className="mt-1 accent-[var(--vh-pink)]"
-                        onChange={(event) => setField("consent_age", event.target.checked)}
-                        type="checkbox"
-                      />
-                      I confirm that I am above the age of 18.
-                    </label>
-                    {fieldErrors.consent_age ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.consent_age}</p> : null}
                   </div>
                 </section>
               ) : null}
@@ -1600,10 +1867,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                       />
                       {fieldErrors.going_to ? <p className="text-xs text-[#ff6a5f]">{fieldErrors.going_to}</p> : null}
                     </label>
-                  </div>
 
-                  <div className="mt-6 rounded-[12px] border border-[rgba(5,223,114,0.3)] bg-[rgba(5,223,114,0.08)] p-4 text-sm text-[#D1D5DC]">
-                    Once submitted, you will be redirected to your confirmation screen with your guest-share link.
                   </div>
                 </section>
               ) : null}
@@ -1619,7 +1883,12 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                 </Button>
 
                 {activeStep < 3 ? (
-                  <Button className="rounded-[10px] bg-[var(--vh-pink)] text-white hover:bg-[var(--vh-pink-soft)]" onClick={nextStep} type="button">
+                  <Button
+                    className="rounded-[10px] bg-[var(--vh-pink)] text-white hover:bg-[var(--vh-pink-soft)] disabled:cursor-not-allowed disabled:opacity-45"
+                    disabled={!canAdvanceToNextStep}
+                    onClick={nextStep}
+                    type="button"
+                  >
                     Next
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -1643,18 +1912,6 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
               ) : null}
             </div>
 
-            <div className="mt-6 rounded-[16px] border border-white/5 bg-[#1A1A1A] p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Booking Summary</p>
-              <div className="mt-3 rounded-[10px] border border-white/10 bg-[#212121] p-3 text-xs text-[#99A1AF]">
-                <p>Reservation: {ezeeReservationId}</p>
-                <p className="mt-1">Property: {propertyName}</p>
-                <p className="mt-1">Guests completed: {completedSlotCount}/{slots.length}</p>
-              </div>
-
-              <Button asChild className="mt-4 w-full rounded-[10px] border border-white/15 bg-transparent text-white hover:bg-white/10" variant="outline">
-                <Link href="/bookings">Back to bookings</Link>
-              </Button>
-            </div>
           </div>
         </div>
       </div>
@@ -1685,12 +1942,35 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
             </div>
 
             <div className="p-4">
-              <div className="overflow-hidden rounded-[10px] border border-[#4A5565] bg-[#1E2939]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  alt="Selected ID preview"
-                  className="h-[248px] w-full object-contain"
-                  src={uploadPreviewDraft?.objectUrl || ""}
+              <div className="relative h-[288px] overflow-hidden rounded-[10px] border border-[#4A5565] bg-[#1E2939]">
+                <Cropper
+                  aspect={4 / 3}
+                  crop={cropPosition}
+                  image={uploadPreviewDraft?.objectUrl || ""}
+                  maxZoom={3}
+                  minZoom={1}
+                  objectFit="contain"
+                  onCropChange={setCropPosition}
+                  onCropComplete={(_, croppedAreaPixels) => setCropPixels(croppedAreaPixels)}
+                  onZoomChange={setCropZoom}
+                  showGrid
+                  zoom={cropZoom}
+                />
+              </div>
+
+              <div className="mt-4">
+                <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.08em] text-[#99A1AF]">
+                  <span>Zoom</span>
+                  <span>{cropZoom.toFixed(1)}x</span>
+                </div>
+                <input
+                  className="w-full accent-[var(--vh-pink)]"
+                  max={3}
+                  min={1}
+                  onChange={(event) => setCropZoom(Number(event.target.value))}
+                  step={0.1}
+                  type="range"
+                  value={cropZoom}
                 />
               </div>
 

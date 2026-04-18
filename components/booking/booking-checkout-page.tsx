@@ -28,6 +28,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   createBookingPaymentOrder,
   createGuestBookingOrder,
@@ -1550,8 +1551,20 @@ export function BookingCheckoutPage() {
                     </p>
 
                     {catalogLoading ? (
-                      <div className="mt-5 rounded-[14px] border border-white/10 bg-black/20 px-4 py-5 text-sm text-white/70">
-                        Loading add-ons from the property store...
+                      <div aria-busy="true" aria-live="polite" className="mt-5 space-y-3" role="status">
+                        <span className="sr-only">Loading add-ons from the property store.</span>
+                        {Array.from({ length: 3 }).map((_, index) => (
+                          <div key={`catalog-loading-${index}`} className="flex items-center justify-between rounded-[14px] border border-white/10 bg-black/20 px-4 py-4">
+                            <div className="flex min-w-0 items-center gap-4">
+                              <Skeleton className="h-12 w-12 rounded-[14px] bg-white/10" />
+                              <div className="min-w-0 space-y-2">
+                                <Skeleton className="h-4 w-44 bg-white/10" />
+                                <Skeleton className="h-3 w-28 bg-white/10" />
+                              </div>
+                            </div>
+                            <Skeleton className="h-9 w-20 rounded-[10px] bg-white/10" />
+                          </div>
+                        ))}
                       </div>
                     ) : null}
 

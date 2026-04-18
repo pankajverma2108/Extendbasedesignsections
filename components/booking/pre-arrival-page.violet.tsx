@@ -20,6 +20,7 @@ import {
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   addBookingKycSlot,
   deleteBookingKycSlot,
@@ -499,11 +500,19 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     return (
       <BookingPageShell
         badge="Pre-arrival Setup"
-        title="Preparing your guest slots"
-        description="Loading the booking slots, existing KYC state, and pre-arrival actions for this reservation."
+        title="Pre-arrival setup"
       >
-        <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-8 text-center text-white/72">
-          Loading pre-arrival setup...
+        <div aria-busy="true" aria-live="polite" className="space-y-5" role="status">
+          <span className="sr-only">Loading pre-arrival setup details.</span>
+          <div className="rounded-[28px] border border-white/12 bg-[var(--vh-panel-strong)] p-6 md:p-8">
+            <Skeleton className="h-6 w-48 bg-white/12" />
+            <Skeleton className="mt-4 h-4 w-full max-w-[420px] bg-white/10" />
+            <div className="mt-6 space-y-3">
+              <Skeleton className="h-12 w-full rounded-[10px] bg-white/10" />
+              <Skeleton className="h-12 w-full rounded-[10px] bg-white/10" />
+              <Skeleton className="h-12 w-full rounded-[10px] bg-white/10" />
+            </div>
+          </div>
         </div>
       </BookingPageShell>
     );
