@@ -1,4 +1,6 @@
 const ZOSTEL_PATTERN = /\bzostel\b/gi;
+const LOCALHOST_PATTERN = /^https?:\/\/(localhost|127(?:\.\d+){3})(:\d+)?$/i;
+const DEFAULT_SITE_ORIGIN = "https://extendbasedesignsections.vercel.app";
 
 export const BRAND_NAME = "The Daily Social";
 export const BRAND_SHORT_NAME = "TDS";
@@ -35,4 +37,52 @@ export function withBrandShortName(value?: string | null, fallback: string = BRA
 export function toBrandCheckinLink(ezeeReservationId: string): string {
   const safeId = encodeURIComponent(ezeeReservationId);
   return `/bookings/${safeId}/web-check-in`;
+}
+
+function toOrigin(value: string | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+
+  try {
+    return new URL(withScheme).origin;
+  } catch {
+    return null;
+  }
+}
+
+export function getPreferredSiteOrigin(): string {
+  const envOrigins = [
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.NEXT_PUBLIC_VERCEL_URL,
+    process.env.VERCEL_URL,
+  ];
+
+  for (const candidate of envOrigins) {
+    const origin = toOrigin(candidate);
+    if (origin && !LOCALHOST_PATTERN.test(origin)) {
+      return origin;
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    const browserOrigin = toOrigin(window.location.origin);
+    if (browserOrigin && !LOCALHOST_PATTERN.test(browserOrigin)) {
+      return browserOrigin;
+    }
+  }
+
+  return DEFAULT_SITE_ORIGIN;
+}
+
+export function toAbsoluteBrandCheckinLink(ezeeReservationId: string): string {
+  return `${getPreferredSiteOrigin()}${toBrandCheckinLink(ezeeReservationId)}`;
 }

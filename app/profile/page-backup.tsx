@@ -6,6 +6,7 @@ import { ArrowLeft, Pencil, Save, ShieldCheck, X } from "lucide-react";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { StickerTag } from "@/components/shared/sticker-tag";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_REGEX = /^\+?[1-9]\d{7,14}$/;
@@ -30,8 +31,13 @@ export default function ProfilePage() {
   if (isRestoringSession) {
     return (
       <section className="vh-section">
-        <div className="vh-container py-16 text-center">
-          <p className="text-base text-white/75">Loading your vibe passport...</p>
+        <div className="vh-container py-16">
+          <div aria-busy="true" aria-live="polite" className="mx-auto max-w-[520px] space-y-4 rounded-[12px] border border-white/15 bg-white/5 p-8" role="status">
+            <span className="sr-only">Loading your vibe passport.</span>
+            <Skeleton className="mx-auto h-8 w-44 rounded-full bg-white/10" />
+            <Skeleton className="h-14 w-full rounded-xl bg-white/8" />
+            <Skeleton className="h-14 w-full rounded-xl bg-white/8" />
+          </div>
         </div>
       </section>
     );

@@ -131,7 +131,7 @@ export function GuestAuthModal({
 
     const normalizedPhone = normalizePhone(phone);
     if (!isValidPhone(normalizedPhone, { optional: true })) {
-      setLocalError("Phone number must be 10 to 15 digits.");
+      setLocalError("Use a 10-digit mobile number. If it starts with 91, we trim it automatically.");
       return;
     }
 

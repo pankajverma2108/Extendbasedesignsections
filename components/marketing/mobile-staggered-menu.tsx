@@ -339,7 +339,7 @@ export function MobileStaggeredMenu({ isAuthenticated, onOpenSignIn }: MobileSta
 
                   <motion.aside
                     animate={{ opacity: 1, y: 0 }}
-                    className="fixed inset-0 z-[100] overflow-hidden bg-[radial-gradient(130%_100%_at_10%_0%,rgba(198,40,40,0.2),transparent_52%),radial-gradient(120%_100%_at_85%_18%,rgba(0,209,255,0.12),transparent_58%),linear-gradient(170deg,#1A0B12_0%,#230F14_62%,#140912_100%)]"
+                    className="fixed inset-0 z-[100] overflow-hidden bg-[#07070a]"
                     exit={{ opacity: 0, y: "-10%" }}
                     initial={{ opacity: 0, y: "-8%" }}
                     transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}

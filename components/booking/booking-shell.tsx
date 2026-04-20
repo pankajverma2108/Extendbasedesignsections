@@ -52,21 +52,25 @@ export function BookingPageShell({
   badge,
   title,
   description,
+  sectionClassName,
   children,
 }: {
-  badge: string;
+  badge?: string;
   title: string;
   description?: string;
+  sectionClassName?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="min-h-screen bg-[#111111] pb-20 pt-24 md:pb-24 md:pt-28">
+    <section className={cn("min-h-screen bg-[#07070a] pb-20 pt-24 md:pb-24 md:pt-28", sectionClassName)}>
       <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
         <div className="flex flex-col gap-8">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="inline-flex rounded-full border border-[rgba(198,40,40,0.35)] bg-[rgba(198,40,40,0.12)] px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-pink)]">
-              {badge}
-            </p>
+            {badge ? (
+              <p className="inline-flex rounded-full border border-[rgba(198,40,40,0.35)] bg-[rgba(198,40,40,0.12)] px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-pink)]">
+                {badge}
+              </p>
+            ) : null}
             <h1 className="vh-title mt-4 text-center text-[26px] leading-[1.12] text-white md:text-[30px]">{title}</h1>
             {description ? <p className="mt-3 max-w-2xl text-base leading-7 text-[#99A1AF]">{description}</p> : null}
           </div>

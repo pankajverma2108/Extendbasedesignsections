@@ -1233,7 +1233,7 @@ export function BookingCheckoutPage() {
   ];
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-[#111111] pb-28 text-white lg:pb-12">
+    <div className="min-h-screen overflow-x-clip bg-[#07070a] pb-28 text-white lg:pb-12">
       <section className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-20 md:px-6 md:pb-12 md:pt-24">
         <div className="relative overflow-hidden rounded-[26px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(58,95,132,0.16),transparent_28%),radial-gradient(circle_at_top_right,rgba(198,40,40,0.12),transparent_24%),linear-gradient(135deg,rgba(26,26,26,0.96),rgba(17,17,17,0.96))] px-4 py-5 shadow-[10px_10px_0px_rgba(0,0,0,0.24)] sm:rounded-[30px] sm:px-5 sm:py-6 md:px-8 md:py-8">
           <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end lg:gap-6">

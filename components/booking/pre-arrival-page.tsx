@@ -582,6 +582,23 @@ function isPaymentPendingStatus(status?: string | null): boolean {
   return normalized === "PENDING_PAYMENT" || normalized === "PAYMENT_PENDING" || normalized === "UNPAID";
 }
 
+function isKycCompletedStatus(status?: string | null): boolean {
+  const normalized = (status || "").trim().toUpperCase();
+  return normalized === "PRE_VERIFIED" || normalized === "VERIFIED";
+}
+
+function isSlotEditable(slot: BookingSlotSummary): boolean {
+  if (typeof slot.can_edit === "boolean") {
+    return slot.can_edit;
+  }
+
+  return !isKycCompletedStatus(slot.kyc_status);
+}
+
+function areAllSlotsCompleted(slots: BookingSlotSummary[]): boolean {
+  return slots.length > 0 && slots.every((slot) => isKycCompletedStatus(slot.kyc_status));
+}
+
 function validateStepOne(state: KycEditorState): KycFieldErrors {
   const errors: KycFieldErrors = {};
 
@@ -744,6 +761,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
   const documentUploadInputRef = useRef<HTMLInputElement | null>(null);
   const slotsRef = useRef<BookingSlotSummary[]>([]);
   const activeSlotIdRef = useRef<string | null>(null);
+  const hasRequestedSignInModalRef = useRef(false);
 
   const guestPrefill = useMemo(
     () => ({
@@ -901,6 +919,22 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     });
   }, [errorMessage]);
 
+  useEffect(() => {
+    if (isRestoringSession) {
+      return;
+    }
+
+    if (isAuthenticated) {
+      hasRequestedSignInModalRef.current = false;
+      return;
+    }
+
+    if (!hasRequestedSignInModalRef.current) {
+      hasRequestedSignInModalRef.current = true;
+      openAuthModal("signin");
+    }
+  }, [isAuthenticated, isRestoringSession, openAuthModal]);
+
   const loadSlotDetail = useCallback(
     async (token: string, slotId: string, nextSlots?: BookingSlotSummary[]) => {
       const detailKey = slotDetailCacheKey(ezeeReservationId, slotId);
@@ -972,6 +1006,8 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
         setBookingLifecycleStatus(cachedSlots.bookingStatus ?? null);
         const currentActiveSlotId = activeSlotIdRef.current;
         const cachedActive = preferredSlotId
+          || cachedSlots.slots.find((slot) => slot.slot_id === currentActiveSlotId && isSlotEditable(slot))?.slot_id
+          || cachedSlots.slots.find((slot) => isSlotEditable(slot))?.slot_id
           || cachedSlots.slots.find((slot) => slot.slot_id === currentActiveSlotId)?.slot_id
           || cachedSlots.slots[0]?.slot_id
           || null;
@@ -979,6 +1015,11 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
         setIsLoading(false);
 
         if (isPaymentPendingStatus(cachedSlots.bookingStatus)) {
+          return;
+        }
+
+        if (areAllSlotsCompleted(cachedSlots.slots)) {
+          router.replace(`/bookings/${encodeURIComponent(ezeeReservationId)}/confirmed`);
           return;
         }
       }
@@ -1020,8 +1061,15 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
           bookingStatus: nextBookingStatus,
         });
 
+        if (areAllSlotsCompleted(slotResponse.slots)) {
+          router.replace(`/bookings/${encodeURIComponent(ezeeReservationId)}/confirmed`);
+          return;
+        }
+
         const currentActiveSlotId = activeSlotIdRef.current;
         const nextActiveSlotId = preferredSlotId
+          || slotResponse.slots.find((slot) => slot.slot_id === currentActiveSlotId && isSlotEditable(slot))?.slot_id
+          || slotResponse.slots.find((slot) => isSlotEditable(slot))?.slot_id
           || slotResponse.slots.find((slot) => slot.slot_id === currentActiveSlotId)?.slot_id
           || slotResponse.slots.find((slot) => slot.guest_id)?.slot_id
           || slotResponse.slots[0]?.slot_id
@@ -1055,6 +1103,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
       guestPrefill,
       isRestoringSession,
       loadSlotDetail,
+      router,
     ],
   );
 
@@ -1470,7 +1519,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
   }
 
   return (
-    <section className="min-h-screen bg-[#111111] pb-12 pt-24 animate-vh-fade-in md:pt-28">
+    <section className="min-h-screen bg-[#07070a] pb-12 pt-24 animate-vh-fade-in md:pt-28">
       <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
         <div className="mx-auto max-w-[980px]">
           <div className="relative min-h-10">
@@ -1905,11 +1954,6 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                 )}
               </div>
 
-              {!canEditActiveSlot ? (
-                <div className="mt-4 rounded-[12px] border border-[rgba(5,223,114,0.3)] bg-[rgba(5,223,114,0.08)] p-4 text-sm text-[#D1D5DC]">
-                  This check-in entry is locked because it is already submitted or verified.
-                </div>
-              ) : null}
             </div>
 
           </div>

@@ -30,6 +30,7 @@ import {
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { StickerTag } from "@/components/shared/sticker-tag";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   createColiveDraftBooking,
   createColivePaymentOrder,
@@ -1036,6 +1037,65 @@ export function ColiveFlow({ initialLocation = "bangalore" }: { initialLocation?
     setConfirmedReservationId(null);
     setShowMobileSummary(false);
     setActiveGalleryIndex(0);
+  }
+
+  if (stage === "checkout" && isRestoringSession) {
+    return (
+      <div className="relative overflow-x-hidden bg-[#09070d] text-[#f7f2eb]">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,123,107,0.22),transparent_34%),radial-gradient(circle_at_top_right,rgba(52,213,255,0.16),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(155,255,106,0.12),transparent_26%),linear-gradient(180deg,#110c15_0%,#09070d_45%,#060509_100%)]" />
+        </div>
+
+        <main className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-6 pt-28 sm:px-6 sm:pb-8 sm:pt-28 lg:px-8">
+          <section aria-busy="true" aria-live="polite" className="space-y-5" role="status">
+            <span className="sr-only">Loading checkout details.</span>
+
+            <div className="mx-auto flex max-w-[760px] items-center justify-center">
+              <div className="grid w-full items-start gap-3" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div className="flex flex-col items-center gap-3" key={index}>
+                    <Skeleton className="h-12 w-12 rounded-[14px] bg-white/12" />
+                    <Skeleton className="h-3 w-24 bg-white/10" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+              <div className="space-y-5 rounded-[28px] border border-white/10 bg-[linear-gradient(165deg,rgba(23,16,30,0.95),rgba(13,10,18,0.95))] p-6 sm:p-8">
+                <Skeleton className="h-4 w-24 bg-white/12" />
+                <Skeleton className="h-9 w-72 bg-white/12" />
+                <div className="space-y-4">
+                  <Skeleton className="h-14 w-full rounded-[18px] bg-white/10" />
+                  <Skeleton className="h-14 w-full rounded-[18px] bg-white/10" />
+                  <Skeleton className="h-14 w-full rounded-[18px] bg-white/10" />
+                  <Skeleton className="h-14 w-full rounded-[18px] bg-white/10" />
+                </div>
+                <Skeleton className="h-12 w-52 rounded-full bg-white/12" />
+              </div>
+
+              <div className="hidden lg:block">
+                <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(24,15,26,0.95),rgba(14,9,19,0.95))]">
+                  <div className="border-b border-white/10 px-6 py-6">
+                    <Skeleton className="h-4 w-32 bg-white/12" />
+                    <Skeleton className="mt-3 h-8 w-44 bg-white/12" />
+                    <div className="mt-5 space-y-3">
+                      <Skeleton className="h-4 w-full bg-white/10" />
+                      <Skeleton className="h-4 w-full bg-white/10" />
+                      <Skeleton className="h-4 w-full bg-white/10" />
+                    </div>
+                  </div>
+                  <div className="px-6 py-6">
+                    <Skeleton className="h-3 w-24 bg-white/10" />
+                    <Skeleton className="mt-3 h-9 w-36 bg-white/12" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    );
   }
 
   const summaryCard = (

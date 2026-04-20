@@ -77,12 +77,12 @@
   --font-encode: "Varela Round", "Segoe UI", sans-serif;
   --font-suez: "Suez One", "Trebuchet MS", sans-serif;
   --font-bebas: "Bebas Neue", "Trebuchet MS", sans-serif;
-  --vh-bg: #111111;
-  --vh-bg-soft: #111111;
+  --vh-bg: #07070a;
+  --vh-bg-soft: #07070a;
   --vh-surface: #1f1b1f;
   --vh-surface-2: #12161d;
-  --vh-section-a: #111111;
-  --vh-section-b: #111111;
+  --vh-section-a: #07070a;
+  --vh-section-b: #07070a;
   --vh-border: #3a4d63;
   --vh-hot: #ff4c30;
   --vh-pink: #c62828;
@@ -97,7 +97,7 @@
   --vh-chip: rgba(255, 255, 255, 0.06);
   --vh-shadow: 0px 20px 25px -5px rgba(0, 0, 0, 0.18);
   --vh-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.28);
-  --background: #111111;
+  --background: #07070a;
   --foreground: oklch(0.985 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -140,10 +140,10 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   width: 100%;
-  background: #111111;
+  background: #07070a;
   color: white;
   font-family: var(--font-sora);
-  scrollbar-color: var(--vh-pink) #111111;
+  scrollbar-color: var(--vh-pink) #07070a;
   scrollbar-width: thin;
 }
 
@@ -152,7 +152,7 @@ body {
 }
 
 *::-webkit-scrollbar-track {
-  background: #111019;
+  background: #07070a;
 }
 
 *::-webkit-scrollbar-thumb {
@@ -519,6 +519,33 @@ select {
     transform 160ms ease,
     box-shadow 160ms ease,
     opacity 160ms ease;
+}
+
+select {
+  min-height: 2.6rem;
+  border-radius: 10px;
+  border: 1px solid rgba(198, 40, 40, 0.44);
+  background-color: #07070a;
+  color: #ffffff;
+  padding-left: 0.75rem;
+  padding-right: 2rem;
+}
+
+select:focus-visible {
+  outline: none;
+  border-color: #c62828;
+  box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.22);
+}
+
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+select option,
+select optgroup {
+  background-color: #07070a;
+  color: #ffffff;
 }
 
 @layer components {

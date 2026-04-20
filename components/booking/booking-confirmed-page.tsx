@@ -7,19 +7,17 @@ import {
   Copy,
   ExternalLink,
   MapPin,
-  MessageCircle,
-  Phone,
-  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
+import { StickerTag } from "@/components/shared/sticker-tag";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { locationMap, propertyGallery, propertyGuidelines } from "@/content/rooms";
+import { locationMap, propertyGuidelines } from "@/content/rooms";
 import { linkGuestBooking, type BookingSlotSummary, type LinkGuestBookingResponse } from "@/lib/booking-api";
-import { withBrandName, toBrandCheckinLink } from "@/lib/branding";
+import { withBrandName, toAbsoluteBrandCheckinLink, toBrandCheckinLink } from "@/lib/branding";
 import { getConfirmedBookingSnapshot } from "@/lib/booking-session";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { toSafeErrorMessage } from "@/lib/ui-error";
@@ -28,20 +26,9 @@ import { BookingEmptyState, BookingPageShell, formatCurrency, formatDateLabel, g
 
 const EMPTY_SLOTS: BookingSlotSummary[] = [];
 
-function slotStatusTone(status: string): string {
-  if (status === "PRE_VERIFIED" || status === "VERIFIED") {
-    return "border-[rgba(5,223,114,0.35)] bg-[rgba(5,223,114,0.12)] text-[#05DF72]";
-  }
-
-  if (status === "PENDING") {
-    return "border-[rgba(241,88,36,0.3)] bg-[rgba(241,88,36,0.1)] text-[#F15824]";
-  }
-
-  if (status === "REJECTED") {
-    return "border-[rgba(255,106,95,0.3)] bg-[rgba(255,106,95,0.1)] text-[#ff6a5f]";
-  }
-
-  return "border-white/15 bg-white/5 text-white/70";
+function isKycCompletedStatus(status?: string): boolean {
+  const normalized = (status || "").toUpperCase();
+  return normalized === "PRE_VERIFIED" || normalized === "VERIFIED";
 }
 
 function toStatusLabel(status?: string): string {
@@ -115,18 +102,7 @@ export function BookingConfirmedPage({ ezeeReservationId }: { ezeeReservationId:
   const roomSummary = booking?.room_type_name ?? snapshotFallback?.roomSummary ?? snapshotFallback?.roomTypeName ?? "Room details pending";
 
   const checkinLink = toBrandCheckinLink(ezeeReservationId);
-  const absoluteCheckinLink = typeof window !== "undefined" ? `${window.location.origin}${checkinLink}` : checkinLink;
-
-  const whatsappMessage = useMemo(
-    () =>
-      `Our ${propertyName} stay is confirmed. Please finish your web check-in before arrival so we can skip the front-desk delay.\n\n${absoluteCheckinLink}`,
-    [absoluteCheckinLink, propertyName],
-  );
-
-  const whatsappHref = useMemo(
-    () => `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`,
-    [whatsappMessage],
-  );
+  const absoluteCheckinLink = toAbsoluteBrandCheckinLink(ezeeReservationId);
 
   const guests = useMemo(() => {
     if (slots.length > 0) {
@@ -147,51 +123,27 @@ export function BookingConfirmedPage({ ezeeReservationId }: { ezeeReservationId:
     ];
   }, [slots, snapshotFallback?.primaryGuest]);
 
+  const hasCompletedCheckin = useMemo(() => guests.some((slot) => isKycCompletedStatus(slot.kyc_status)), [guests]);
+
+  const primaryGuestName = useMemo(() => {
+    const namedGuest = guests.find((slot) => Boolean(slot.guest_name?.trim()))?.guest_name?.trim();
+    return namedGuest || "Guest";
+  }, [guests]);
+
+  const guestsDisplayLabel = totalGuests > 1 ? `${primaryGuestName} & rest` : primaryGuestName;
+
   if (isRestoringSession || isLoading) {
     return (
       <BookingPageShell
-        badge="Stay Confirmed"
         title="Stay confirmation"
+        sectionClassName="bg-[#07070a]"
       >
-        <div aria-busy="true" aria-live="polite" className="space-y-6" role="status">
+        <div aria-busy="true" aria-live="polite" className="space-y-4" role="status">
           <span className="sr-only">Loading booking confirmation details.</span>
-
-          <div className="rounded-[16px] border border-white/10 bg-[#1A1A1A] px-6 py-7 text-center">
-            <Skeleton className="mx-auto h-8 w-64 bg-white/10" />
-            <Skeleton className="mx-auto mt-4 h-9 w-40 rounded-full bg-white/10" />
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_290px]">
-            <div className="space-y-6">
-              <div className="rounded-[16px] border border-white/10 bg-[#1A1A1A] p-5 md:p-6">
-                <Skeleton className="h-6 w-44 bg-white/10" />
-                <Skeleton className="mt-4 h-4 w-full max-w-[420px] bg-white/10" />
-                <div className="mt-5 space-y-3">
-                  <Skeleton className="h-11 w-full rounded-[10px] bg-white/10" />
-                  <Skeleton className="h-11 w-full rounded-[10px] bg-white/10" />
-                  <Skeleton className="h-11 w-full rounded-[10px] bg-white/10" />
-                </div>
-              </div>
-
-              <div className="rounded-[16px] border border-white/10 bg-[#1A1A1A] p-5 md:p-6">
-                <Skeleton className="h-5 w-40 bg-white/10" />
-                <Skeleton className="mt-4 h-24 w-full rounded-[10px] bg-white/10" />
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="rounded-[16px] border border-white/10 bg-[#1A1A1A] p-5">
-                <Skeleton className="h-4 w-24 bg-white/10" />
-                <Skeleton className="mt-3 h-9 w-full rounded-[10px] bg-white/10" />
-                <Skeleton className="mt-3 h-9 w-full rounded-[10px] bg-white/10" />
-              </div>
-
-              <div className="rounded-[16px] border border-white/10 bg-[#1A1A1A] p-5">
-                <Skeleton className="h-4 w-24 bg-white/10" />
-                <Skeleton className="mt-3 h-16 w-full rounded-[10px] bg-white/10" />
-              </div>
-            </div>
-          </div>
+          <Skeleton className="mx-auto h-8 w-72 bg-white/10" />
+          <Skeleton className="mx-auto h-4 w-full max-w-xl bg-white/10" />
+          <Skeleton className="h-24 w-full bg-white/10" />
+          <Skeleton className="h-40 w-full bg-white/10" />
         </div>
       </BookingPageShell>
     );
@@ -200,9 +152,9 @@ export function BookingConfirmedPage({ ezeeReservationId }: { ezeeReservationId:
   if (!isAuthenticated) {
     return (
       <BookingPageShell
-        badge="Stay Confirmed"
         title="Sign in to view confirmation"
         description="This screen is available for the guest account linked to this booking."
+        sectionClassName="bg-[#07070a]"
       >
         <div className="rounded-[16px] border border-white/12 bg-[#1A1A1A] p-8 text-center shadow-[0_20px_45px_rgba(0,0,0,0.35)]">
           <p className="text-lg font-semibold text-white">Guest sign-in required</p>
@@ -220,9 +172,9 @@ export function BookingConfirmedPage({ ezeeReservationId }: { ezeeReservationId:
   if (!bookingDetail && !snapshotFallback) {
     return (
       <BookingPageShell
-        badge="Stay Confirmed"
         title="Confirmation unavailable"
         description="We could not open a recent confirmation snapshot for this booking."
+        sectionClassName="bg-[#07070a]"
       >
         <BookingEmptyState
           title="No confirmation found"
@@ -235,217 +187,175 @@ export function BookingConfirmedPage({ ezeeReservationId }: { ezeeReservationId:
   }
 
   return (
-    <section className="min-h-screen bg-[#111111] pb-12 pt-24 animate-vh-fade-in md:pt-28">
-      <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
+    <section className="min-h-screen bg-[#07070a] pb-16 pt-24 animate-vh-fade-in md:pt-28">
+      <div className="mx-auto w-full max-w-[600px] px-4 py-8">
         <div className="space-y-6">
           <header className="text-center">
-            <h1 className="vh-title text-center text-[26px] leading-[1.12] text-white md:text-[30px]">
-              Zo Zo Zo! Your stay at <br />
-              <span className="text-[#F15824]">{propertyName}</span> is confirmed
-            </h1>
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[rgba(0,201,80,0.3)] bg-[rgba(0,201,80,0.1)] px-4 py-2 text-[#05DF72]">
-              <CheckCircle2 className="h-4 w-4" />
-              <span className="text-sm font-bold uppercase tracking-[0.08em]">Stay Confirmed</span>
+            <div className="flex justify-center">
+              <StickerTag
+                bg="#f9cb37"
+                className="px-3 py-1.5 text-[11px] font-bold not-italic uppercase tracking-[0.12em]"
+                label="Reservation Locked"
+                rotate="rotate-[-2deg]"
+                text="#111111"
+              />
             </div>
+            <h1 className="vh-title text-center text-[26px] leading-[1.12] text-white md:text-[30px]">
+              Bags packed. Vibes ready. <br />
+              <span className="text-[var(--vh-pink)]">{propertyName}</span> is ready for you.
+            </h1>
+
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-white/72">
+              Stay confirmed. Wrap web check-in, skip the desk line, walk straight in.
+            </p>
           </header>
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_290px]">
-            <div className="space-y-6">
-              <section className="rounded-[16px] border border-white/5 bg-[#1A1A1A] p-5 md:p-6">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-[#F15824]" />
-                  <h2 className="text-[20px] font-bold text-white">Add Co-guests</h2>
-                </div>
+          <section className="space-y-4 rounded-[16px] border border-white/12 bg-[#0d0d11] p-5 md:p-6">
+            <h2 className="text-[22px] font-bold text-white">Co-guest check-in</h2>
+            <p className="text-sm leading-7 text-white/72">Share this once in the group. Your crew gets direct web check-in access.</p>
 
-                <p className="mt-2 text-sm text-[#99A1AF]">
-                  Share this link with your co-guests so they can complete their check-in before arrival.
-                </p>
+            <a
+              className="block break-all text-sm font-semibold text-[var(--vh-cyan)] underline decoration-[var(--vh-cyan)]/35 underline-offset-4 hover:text-white"
+              href={absoluteCheckinLink}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {absoluteCheckinLink}
+            </a>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-                  <div className="rounded-[10px] border border-white/10 bg-[#212121] px-4 py-3 font-mono text-xs text-[#D1D5DC] break-all">
-                    {absoluteCheckinLink}
-                  </div>
-                  <Button
-                    className="h-full rounded-[10px] bg-[#F15824] px-4 text-white hover:bg-[#f36d40]"
-                    onClick={() => {
-                      void navigator.clipboard.writeText(absoluteCheckinLink);
-                      toast.success("Link copied", {
-                        description: "Share it with your co-guests.",
-                      });
-                    }}
-                    type="button"
-                  >
-                    <Copy className="mr-2 h-4 w-4" />
-                    Share Link
-                  </Button>
-                </div>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                className="rounded-full bg-[var(--vh-pink)] px-5 text-white hover:bg-[var(--vh-pink-soft)]"
+                onClick={() => {
+                  void navigator.clipboard.writeText(absoluteCheckinLink);
+                  toast.success("Link copied", {
+                    description: "Share it with your co-guests.",
+                  });
+                }}
+                type="button"
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                Share Link
+              </Button>
 
-                <div className="mt-3">
-                  <Button asChild className="rounded-[10px] border border-white/15 bg-transparent text-white hover:bg-white/10" variant="outline">
-                    <a href={whatsappHref} rel="noreferrer" target="_blank">
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      Share on WhatsApp
-                    </a>
-                  </Button>
-                </div>
+              <Button asChild className="rounded-full border border-white/15 bg-transparent px-5 text-white hover:bg-white/10" variant="outline">
+                <Link href={checkinLink}>Open Web Check-In</Link>
+              </Button>
 
-                <div className="mt-5 space-y-3">
-                  {guests.map((slot, index) => {
-                    const verified = slot.kyc_status === "PRE_VERIFIED" || slot.kyc_status === "VERIFIED";
-                    const initials =
-                      slot.guest_name
-                        ?.split(/\s+/)
-                        .filter(Boolean)
-                        .slice(0, 2)
-                        .map((part) => part[0])
-                        .join("")
-                        .toUpperCase() || "NA";
-
-                    return (
-                      <div
-                        key={slot.slot_id}
-                        className={[
-                          "rounded-[14px] border bg-[#212121] p-4",
-                          verified ? "border-[rgba(0,201,80,0.35)]" : "border-white/10",
-                        ].join(" ")}
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white">
-                              {verified ? initials : <Users className="h-4 w-4 text-[#6A7282]" />}
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold text-white">{slot.guest_name || "Not Added"}</p>
-                              <div className={`mt-1 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] ${slotStatusTone(slot.kyc_status)}`}>
-                                {verified ? "Check-in Done" : toStatusLabel(slot.kyc_status)}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="rounded-[4px] bg-white/5 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#6A7282]">
-                            Guest {slot.slot_number || index + 1}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-
-              <section className="rounded-[16px] border border-white/5 bg-[#1A1A1A] p-5 md:p-6">
-                <h2 className="text-[20px] font-bold text-white">Booking Info</h2>
-
-                <Accordion className="mt-4" collapsible type="single">
-                  <AccordionItem className="rounded-[12px] border border-white/10 bg-[#212121] px-4 mb-3" value="room-info">
-                    <AccordionTrigger className="hover:text-[#F15824]">Room Info</AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-2 text-sm text-[#D1D5DC]">
-                        <p className="font-semibold text-white">{roomSummary}</p>
-                        <p>Check-in: {formatDateLabel(checkinDate)} ({propertyGuidelines.checkIn})</p>
-                        <p>Check-out: {formatDateLabel(checkoutDate)} ({propertyGuidelines.checkOut})</p>
-                        <p>Guests: {totalGuests}</p>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  <AccordionItem className="rounded-[12px] border border-white/10 bg-[#212121] px-4 mb-3" value="payment-info">
-                    <AccordionTrigger className="hover:text-[#F15824]">Payment Info</AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-2 text-sm text-[#D1D5DC]">
-                        <p>Amount paid: <span className="font-semibold text-white">{formatCurrency(snapshotFallback?.amountPaid ?? 0)}</span></p>
-                        <p>Status: <span className="font-semibold text-white">{toStatusLabel(booking?.status ?? snapshotFallback?.status)}</span></p>
-                        {snapshotFallback?.paymentId ? (
-                          <p>Payment reference: <span className="font-semibold text-white break-all">{snapshotFallback.paymentId}</span></p>
-                        ) : null}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  <AccordionItem className="rounded-[12px] border border-white/10 bg-[#212121] px-4 mb-3" value="how-to-reach">
-                    <AccordionTrigger className="hover:text-[#F15824]">How to Reach</AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-2 text-sm text-[#D1D5DC]">
-                        <p>{locationMap.address}</p>
-                        <a className="inline-flex items-center gap-2 text-[#F15824] hover:text-[#f36d40]" href={locationMap.embedUrl} rel="noreferrer" target="_blank">
-                          Open on maps
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  <AccordionItem className="rounded-[12px] border border-white/10 bg-[#212121] px-4 mb-3" value="cancellation-policy">
-                    <AccordionTrigger className="hover:text-[#F15824]">Cancellation Policy</AccordionTrigger>
-                    <AccordionContent>
-                      Free cancellation windows depend on your booking type. Refer to your booking details for exact policy terms.
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  <AccordionItem className="rounded-[12px] border border-white/10 bg-[#212121] px-4" value="property-policy">
-                    <AccordionTrigger className="hover:text-[#F15824]">Property Policy</AccordionTrigger>
-                    <AccordionContent>
-                      <ul className="space-y-2 text-sm text-[#D1D5DC]">
-                        {propertyGuidelines.summary.map((line) => (
-                          <li key={line}>{line}</li>
-                        ))}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </section>
+              <Button asChild className="rounded-full border border-white/15 bg-transparent px-5 text-white hover:bg-white/10" variant="outline">
+                <Link href="/bookings">My Bookings</Link>
+              </Button>
             </div>
 
-            <aside className="space-y-5">
-              <section className="overflow-hidden rounded-[16px] border border-white/5 bg-[#1A1A1A]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  alt={propertyName}
-                  className="h-[180px] w-full object-cover"
-                  src={propertyGallery[0]?.src || "/images/property/hero-1.jpg"}
-                />
-                <div className="p-4">
-                  <h3 className="text-lg font-bold text-white">{propertyName}</h3>
-                  <p className="mt-1 text-sm text-[#99A1AF]">{locationMap.address}</p>
+            {hasCompletedCheckin ? (
+              <div className="flex items-center gap-3 p-4">
+                <CheckCircle2 className="h-6 w-6 text-[#05DF72]" />
+                <span className="font-body text-white">Your web check-in is complete!</span>
+              </div>
+            ) : null}
 
-                  <div className="mt-4 grid gap-2">
-                    <Button asChild className="rounded-[10px] border border-white/15 bg-transparent text-white hover:bg-white/10" variant="outline">
-                      <a href={locationMap.embedUrl} rel="noreferrer" target="_blank">
-                        <MapPin className="mr-2 h-4 w-4" />
-                        Open Maps
-                      </a>
-                    </Button>
-                    <Button className="rounded-[10px] border border-white/15 bg-transparent text-white hover:bg-white/10" type="button" variant="outline">
-                      <Phone className="mr-2 h-4 w-4" />
-                      Contact Front Desk
-                    </Button>
-                  </div>
-                </div>
-              </section>
+            <div className="flex flex-col w-full gap-2">
+              <h2 className="font-sectiontitle text-lg font-bold text-white">Guests</h2>
+              <p className="font-body text-white/82">{guestsDisplayLabel}</p>
+            </div>
+          </section>
 
-              <section className="rounded-[16px] border border-white/5 bg-[#1A1A1A] p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#99A1AF]">Stay Summary</p>
-                <div className="mt-3 space-y-2 text-sm text-[#D1D5DC]">
-                  <div className="flex items-center justify-between">
-                    <span>Nights</span>
-                    <span className="font-semibold text-white">{getNightCount(checkinDate, checkoutDate)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Status</span>
-                    <span className="font-semibold text-white">{toStatusLabel(booking?.status ?? snapshotFallback?.status)}</span>
-                  </div>
-                </div>
+          <section className="space-y-4 rounded-[16px] border border-white/12 bg-[#0d0d11] p-5 md:p-6">
+            <h2 className="text-[22px] font-bold text-white">Stay Snapshot</h2>
 
-                <div className="mt-4 grid gap-2">
-                  <Button asChild className="rounded-[10px] bg-[#F15824] text-white hover:bg-[#f36d40]">
-                    <Link href="/bookings">My Bookings</Link>
-                  </Button>
-                  <Button asChild className="rounded-[10px] border border-white/15 bg-transparent text-white hover:bg-white/10" variant="outline">
-                    <Link href={checkinLink}>Open Web Check-In</Link>
-                  </Button>
+            <div className="grid gap-x-6 gap-y-4 text-sm text-white/78 sm:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/60">Check-in</p>
+                <p className="mt-1 text-white">{formatDateLabel(checkinDate)} ({propertyGuidelines.checkIn})</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/60">Check-out</p>
+                <p className="mt-1 text-white">{formatDateLabel(checkoutDate)} ({propertyGuidelines.checkOut})</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/60">Nights</p>
+                <p className="mt-1 text-white">{getNightCount(checkinDate, checkoutDate)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/60">Room</p>
+                <p className="mt-1 text-white">{roomSummary}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/60">Guests</p>
+                <p className="mt-1 text-white">{totalGuests}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/60">Status</p>
+                <p className="mt-1 text-white">{toStatusLabel(booking?.status ?? snapshotFallback?.status)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/60">Amount paid</p>
+                <p className="mt-1 text-white">{formatCurrency(snapshotFallback?.amountPaid ?? 0)}</p>
+              </div>
+              {snapshotFallback?.paymentId ? (
+                <div className="sm:col-span-2 lg:col-span-2">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/60">Payment reference</p>
+                  <p className="mt-1 break-all text-white">{snapshotFallback.paymentId}</p>
                 </div>
-              </section>
-            </aside>
-          </div>
+              ) : null}
+            </div>
+
+            <div className="flex items-start gap-2 text-sm text-white/75">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--vh-cyan)]" />
+              <a className="underline decoration-white/30 underline-offset-4 hover:text-white" href={locationMap.embedUrl} rel="noreferrer" target="_blank">
+                {locationMap.address}
+              </a>
+            </div>
+          </section>
+
+          <section className="rounded-[16px] border border-white/12 bg-[#0d0d11] p-5 md:p-6">
+            <h2 className="text-[22px] font-bold text-white">Need-to-know</h2>
+
+            <Accordion className="mt-2" collapsible type="single">
+              <AccordionItem className="border-b border-white/10" value="room-info">
+                <AccordionTrigger className="py-4 text-left text-white hover:text-[var(--vh-pink)]">Room Info</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 pb-2 text-sm text-white/78">
+                    <p className="font-semibold text-white">{roomSummary}</p>
+                    <p>Check-in: {formatDateLabel(checkinDate)} ({propertyGuidelines.checkIn})</p>
+                    <p>Check-out: {formatDateLabel(checkoutDate)} ({propertyGuidelines.checkOut})</p>
+                    <p>Guests: {totalGuests}</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem className="border-b border-white/10" value="how-to-reach">
+                <AccordionTrigger className="py-4 text-left text-white hover:text-[var(--vh-pink)]">How to Reach</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2 pb-2 text-sm text-white/78">
+                    <p>{locationMap.address}</p>
+                    <a className="inline-flex items-center gap-2 text-[var(--vh-cyan)] hover:text-white" href={locationMap.embedUrl} rel="noreferrer" target="_blank">
+                      Open on maps
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem className="border-b border-white/10" value="cancellation-policy">
+                <AccordionTrigger className="py-4 text-left text-white hover:text-[var(--vh-pink)]">Cancellation Policy</AccordionTrigger>
+                <AccordionContent>
+                  <p className="pb-2 text-sm text-white/78">Free cancellation windows depend on your booking type. Refer to your booking details for exact policy terms.</p>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem className="border-b border-white/10" value="property-policy">
+                <AccordionTrigger className="py-4 text-left text-white hover:text-[var(--vh-pink)]">Property Policy</AccordionTrigger>
+                <AccordionContent>
+                  <ul className="space-y-2 pb-2 text-sm text-white/78">
+                    {propertyGuidelines.summary.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </section>
 
           {errorMessage ? (
             <div className="rounded-[12px] border border-[rgba(255,106,95,0.35)] bg-[rgba(255,106,95,0.1)] px-4 py-3 text-sm text-[#ffd9d4]">

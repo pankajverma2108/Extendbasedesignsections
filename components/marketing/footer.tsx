@@ -4,7 +4,7 @@ import { footerLinks, siteMeta } from "@/content/site";
 
 export function Footer() {
   return (
-    <footer className="border-t-2 border-[var(--vh-border)] bg-[#111111] px-4 py-10 md:px-6">
+    <footer className="bg-[#07070a] px-4 py-10 md:px-6">
       <div className="vh-container">
         <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="md:col-span-2">
@@ -67,7 +67,11 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t-2 border-[var(--vh-border)] pt-6 text-center text-xs text-white/45">
+        <div className="w-full shrink-0 h-px my-8">
+          <div className="flex-grow h-px bg-gradient-to-r from-transparent via-light-stroke-primary dark:via-dark-stroke-primary to-transparent" />
+        </div>
+
+        <div className="text-center text-xs text-white/45">
           &copy; 2026 {siteMeta.name}. All rights reserved.
         </div>
       </div>

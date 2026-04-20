@@ -7,6 +7,8 @@ type ReflectiveCardProps = {
   name: string;
   roleLabel?: string;
   idLabel?: string;
+  backgroundMode?: "gradient" | "flat";
+  backgroundColor?: string;
   blurStrength?: number;
   color?: string;
   metalness?: number;
@@ -26,6 +28,8 @@ export default function ReflectiveCard({
   name,
   roleLabel = "Daily Passport",
   idLabel = "ID",
+  backgroundMode = "flat",
+  backgroundColor = "#07070a",
   blurStrength = 12,
   color = "#ffffff",
   metalness = 1,
@@ -84,8 +88,8 @@ export default function ReflectiveCard({
 
   return (
     <div
-      className={`relative isolate h-[500px] w-[320px] overflow-hidden rounded-[20px] bg-[#161616] font-sans shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.1)_inset] ${className}`}
-      style={{ ...style }}
+      className={`relative isolate h-[500px] w-[320px] overflow-hidden rounded-[20px] bg-transparent font-sans shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.1)_inset] ${className}`}
+      style={{ backgroundColor, ...style }}
     >
       <svg className="pointer-events-none absolute h-0 w-0 opacity-0" aria-hidden="true">
         <defs>
@@ -135,13 +139,17 @@ export default function ReflectiveCard({
         </defs>
       </svg>
 
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          background:
-            "radial-gradient(110% 100% at 22% 8%, rgba(255,125,95,0.34) 0%, rgba(255,125,95,0.06) 35%, rgba(0,0,0,0.62) 100%)",
-        }}
-      />
+      {backgroundMode === "gradient" ? (
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            background:
+              "radial-gradient(110% 100% at 22% 8%, rgba(255,125,95,0.34) 0%, rgba(255,125,95,0.06) 35%, rgba(0,0,0,0.62) 100%)",
+          }}
+        />
+      ) : (
+        <div className="absolute inset-0 z-0" style={{ backgroundColor }} />
+      )}
 
       <video
         ref={videoRef}
@@ -158,16 +166,22 @@ export default function ReflectiveCard({
 
       <div className="pointer-events-none absolute inset-0 z-10 opacity-[0.75] mix-blend-overlay" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")" }} />
 
-      <div
-        className="pointer-events-none absolute inset-0 z-20 mix-blend-overlay"
-        style={{
-          opacity: metalness,
-          background:
-            "linear-gradient(135deg,rgba(255,255,255,0.4)_0%,rgba(255,255,255,0.1)_40%,rgba(255,255,255,0)_50%,rgba(255,255,255,0.1)_60%,rgba(255,255,255,0.3)_100%)",
-        }}
-      />
+      {backgroundMode === "gradient" ? (
+        <div
+          className="pointer-events-none absolute inset-0 z-20 mix-blend-overlay"
+          style={{
+            opacity: metalness,
+            background:
+              "linear-gradient(135deg,rgba(255,255,255,0.4)_0%,rgba(255,255,255,0.1)_40%,rgba(255,255,255,0)_50%,rgba(255,255,255,0.1)_60%,rgba(255,255,255,0.3)_100%)",
+          }}
+        />
+      ) : null}
 
-      <div className="pointer-events-none absolute inset-0 z-20 rounded-[20px] p-[1px] [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] [mask-composite:exclude]" style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.8)_0%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.6)_100%)" }} />
+      {backgroundMode === "gradient" ? (
+        <div className="pointer-events-none absolute inset-0 z-20 rounded-[20px] p-[1px] [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] [mask-composite:exclude]" style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.8)_0%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.6)_100%)" }} />
+      ) : (
+        <div className="pointer-events-none absolute inset-0 z-20 rounded-[20px] border border-white/20" />
+      )}
 
       <div
         className="relative z-30 flex h-full flex-col justify-between p-8"
@@ -180,7 +194,7 @@ export default function ReflectiveCard({
         <div className="flex items-center justify-between border-b border-white/20 pb-4">
           <div className="flex items-center gap-1.5 rounded border border-white/20 bg-white/10 px-2 py-1 text-[10px] font-bold tracking-[0.1em]">
             <Lock size={14} className="opacity-80" />
-            <span>SECURE ACCESS</span>
+            <span>YOUR &apos;SOCIAL&apos; CARD, MAYBE?</span>
           </div>
           <Activity className="opacity-80" size={20} />
         </div>

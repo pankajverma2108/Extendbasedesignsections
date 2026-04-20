@@ -1510,9 +1510,10 @@ export function Property({
                   </div>
                 ) : null}
                 {isRefreshingAvailability ? (
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--vh-cyan)]">
-                    Refreshing live availability...
-                  </p>
+                  <div aria-busy="true" aria-live="polite" className="space-y-2" role="status">
+                    <span className="sr-only">Refreshing live availability.</span>
+                    <Skeleton className="h-3 w-56 bg-[rgba(0,209,255,0.25)]" />
+                  </div>
                 ) : null}
                 <div className="space-y-5">
                 {showRoomSkeleton ? (
