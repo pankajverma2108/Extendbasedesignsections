@@ -154,7 +154,7 @@ export function getStoredBookingState(): StoredBookingState | null {
     return null;
   }
 
-  const raw = window.localStorage.getItem(BOOKING_DRAFT_KEY);
+  const raw = window.sessionStorage.getItem(BOOKING_DRAFT_KEY);
   if (!raw) {
     return null;
   }
@@ -187,7 +187,7 @@ export function saveBookingDraft(draft: BookingDraft): void {
     review: current?.review?.signature === draft.signature ? current.review : null,
   };
 
-  window.localStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
+  window.sessionStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
 }
 
 export function savePendingBookingOrder(snapshot: PendingBookingSnapshot): void {
@@ -206,7 +206,7 @@ export function savePendingBookingOrder(snapshot: PendingBookingSnapshot): void 
     review: current.review ?? null,
   };
 
-  window.localStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
+  window.sessionStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
 }
 
 export function clearPendingBookingOrder(): void {
@@ -225,7 +225,7 @@ export function clearPendingBookingOrder(): void {
     review: current.review ?? null,
   };
 
-  window.localStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
+  window.sessionStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
 }
 
 export function saveBookingReviewGuest(signature: string, guest: BookingReviewGuest): void {
@@ -247,7 +247,7 @@ export function saveBookingReviewGuest(signature: string, guest: BookingReviewGu
     },
   };
 
-  window.localStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
+  window.sessionStorage.setItem(BOOKING_DRAFT_KEY, JSON.stringify(nextState));
 }
 
 export function clearBookingDraft(): void {
@@ -255,7 +255,7 @@ export function clearBookingDraft(): void {
     return;
   }
 
-  window.localStorage.removeItem(BOOKING_DRAFT_KEY);
+  window.sessionStorage.removeItem(BOOKING_DRAFT_KEY);
 }
 
 export function saveConfirmedBookingSnapshot(snapshot: ConfirmedBookingSnapshot): void {

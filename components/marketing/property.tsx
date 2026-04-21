@@ -174,6 +174,13 @@ function getLocalDate(days: number) {
   return date;
 }
 
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setHours(12, 0, 0, 0);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
 function toLocalDateString(date?: Date) {
   if (!date) {
     return "";
@@ -210,6 +217,62 @@ function formatDisplayDate(value?: string): string {
     month: "short",
     year: "numeric",
   }).format(date);
+}
+
+function syncAvailabilityQueryParams(params: {
+  enabled: boolean;
+  propertyId?: string;
+  checkin?: string;
+  checkout?: string;
+}) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const url = new URL(window.location.href);
+  let hasChanges = false;
+
+  const setParam = (key: string, value?: string) => {
+    if (!value) {
+      return;
+    }
+
+    if (url.searchParams.get(key) !== value) {
+      url.searchParams.set(key, value);
+      hasChanges = true;
+    }
+  };
+
+  const removeParam = (key: string) => {
+    if (url.searchParams.has(key)) {
+      url.searchParams.delete(key);
+      hasChanges = true;
+    }
+  };
+
+  if (params.enabled && params.checkin && params.checkout && params.checkout > params.checkin) {
+    setParam("checkin", params.checkin);
+    setParam("checkout", params.checkout);
+    setParam("property_id", params.propertyId?.trim());
+  } else {
+    removeParam("checkin");
+    removeParam("checkout");
+  }
+
+  if (!hasChanges) {
+    return;
+  }
+
+  const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+  window.history.replaceState(window.history.state, "", nextUrl);
+}
+
+function hasUnavailableRoomPrice(room: RoomCategory): boolean {
+  return room.isPriceUnavailable === true;
+}
+
+function formatRoomPrice(room: RoomCategory): string {
+  return hasUnavailableRoomPrice(room) ? "Price unavailable" : `Rs. ${room.basePrice}`;
 }
 
 function resolveNextRange(current: DateRange | undefined, nextValue: DateRange | undefined, selectedDay?: Date) {
@@ -586,7 +649,9 @@ function MobileStickySummary({
     addons: selectedEssentials,
   });
   const hasSelection = selectedRooms.length > 0 || selectedEssentials.length > 0;
-  const displayAmount = hasSelection ? grandTotal : roomCategoryList[0]?.basePrice ?? 0;
+  const previewRoomWithPrice = roomCategoryList.find((room) => !hasUnavailableRoomPrice(room));
+  const displayAmount = hasSelection ? grandTotal : previewRoomWithPrice?.basePrice ?? 0;
+  const showUnavailablePricePreview = !hasSelection && !previewRoomWithPrice;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-40 lg:hidden">
@@ -669,7 +734,9 @@ function MobileStickySummary({
 
         <div className="flex items-center justify-between gap-4 p-4">
           <div>
-            <p className="text-2xl font-semibold text-white">₹{displayAmount.toFixed(2)}</p>
+            <p className="text-2xl font-semibold text-white">
+              {showUnavailablePricePreview ? "Price unavailable" : `₹${displayAmount.toFixed(2)}`}
+            </p>
             <button
               className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-[#46B2FF]"
               disabled={!hasSelection}
@@ -819,7 +886,8 @@ function RoomDetailsPopup({
   const detailItems = Array.from(new Set([...room.features, ...room.amenitiesLegend]));
   const isSoldOut = room.inventoryState === "sold_out";
   const isAvailabilityPending = !room.hasLiveAvailability || room.inventoryState === "unknown";
-  const canBook = room.hasLiveAvailability && !isSoldOut;
+  const isPriceUnavailable = hasUnavailableRoomPrice(room);
+  const canBook = room.hasLiveAvailability && !isSoldOut && !isPriceUnavailable;
 
   return (
     <div
@@ -877,8 +945,8 @@ function RoomDetailsPopup({
             <div className="mt-4 flex items-center justify-between">
               <div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-white">Rs. {room.basePrice}</span>
-                  <span className="text-xs text-white/55">/ night</span>
+                  <span className="text-3xl font-bold text-white">{formatRoomPrice(room)}</span>
+                  {!isPriceUnavailable ? <span className="text-xs text-white/55">/ night</span> : null}
                 </div>
                 {room.inventoryState === "limited" && room.availableCount > 0 && (
                   <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-[rgba(255,204,102,0.12)] px-2 py-0.5 text-[10px] font-bold text-[var(--vh-amber)]">
@@ -888,7 +956,11 @@ function RoomDetailsPopup({
               </div>
               {!canBook ? (
                 <div className="flex flex-col items-end gap-1">
-                  {isAvailabilityPending ? (
+                  {isPriceUnavailable ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(250,204,21,0.34)] bg-[rgba(250,204,21,0.12)] px-3 py-1.5 text-sm font-black uppercase tracking-[0.1em] text-[var(--vh-amber)]">
+                      Price unavailable
+                    </span>
+                  ) : isAvailabilityPending ? (
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(0,209,255,0.34)] bg-[rgba(0,209,255,0.12)] px-3 py-1.5 text-sm font-black uppercase tracking-[0.1em] text-[var(--vh-cyan)]">
                       Select dates
                     </span>
@@ -956,6 +1028,7 @@ type PropertyProps = {
   propertyId?: string;
   initialCheckIn?: string;
   initialCheckOut?: string;
+  initialAvailabilityEnabled?: boolean;
   initialRoomCategories?: RoomCategory[];
 };
 
@@ -963,6 +1036,7 @@ export function Property({
   propertyId,
   initialCheckIn,
   initialCheckOut,
+  initialAvailabilityEnabled = false,
   initialRoomCategories = roomCategories,
 }: PropertyProps) {
   const router = useRouter();
@@ -981,19 +1055,27 @@ export function Property({
   const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
   const [isRefreshingAvailability, setIsRefreshingAvailability] = useState(false);
   const [availabilityRefreshVersion, setAvailabilityRefreshVersion] = useState(0);
+  const [availabilityRequestedByUser, setAvailabilityRequestedByUser] = useState(initialAvailabilityEnabled);
   const [selectedEssentials] = useState<Record<string, number>>({});
   const [isAgeConfirmed, setIsAgeConfirmed] = useState(false);
   const [resumeReviewAfterAuth, setResumeReviewAfterAuth] = useState(false);
   const roomResponseCacheRef = useRef<Map<string, CachedRoomPayload>>(new Map());
   const initialFrom = fromDateString(initialCheckIn);
   const initialTo = fromDateString(initialCheckOut);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(
-    initialFrom && initialTo ? { from: initialFrom, to: initialTo } : undefined,
-  );
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const from = initialFrom ?? getLocalDate(0);
+    const toCandidate = initialTo ?? getLocalDate(1);
+    const to = toCandidate <= from ? addDays(from, 1) : toCandidate;
+
+    return {
+      from,
+      to,
+    };
+  });
 
   const checkIn = toLocalDateString(dateRange?.from);
   const checkOut = toLocalDateString(dateRange?.to);
-  const hasCompleteDateRange = Boolean(checkIn && checkOut);
+  const hasValidDateRange = Boolean(checkIn && checkOut && checkOut > checkIn);
   const hasLiveAvailability = roomCategoryList.some((room) => room.hasLiveAvailability);
   const showRoomSkeleton = isLoadingCatalog && roomCategoryList.length === 0;
   const activeRoom = roomCategoryList.find((room) => getRoomSelectionKey(room) === activeRoomKey) ?? null;
@@ -1039,7 +1121,7 @@ export function Property({
       const allowed = new Map(
         nextCategories.map((room) => [
           getRoomSelectionKey(room),
-          room.hasLiveAvailability && room.inventoryState !== "sold_out"
+          room.hasLiveAvailability && room.inventoryState !== "sold_out" && !hasUnavailableRoomPrice(room)
             ? Math.max(0, room.availableCount)
             : 0,
         ]),
@@ -1117,7 +1199,7 @@ export function Property({
 
   const updateCount = (roomKey: string, nextValue: number) => {
     const room = roomCategoryList.find((item) => getRoomSelectionKey(item) === roomKey);
-    const isBookable = room?.hasLiveAvailability && room.inventoryState !== "sold_out";
+    const isBookable = room?.hasLiveAvailability && room.inventoryState !== "sold_out" && !hasUnavailableRoomPrice(room);
     const maxCount = isBookable ? Math.max(0, room?.availableCount ?? 0) : 0;
 
     setSelectedCounts((current) => ({
@@ -1133,11 +1215,36 @@ export function Property({
         return current;
       }
 
+      if (resolvedRange.to && resolvedRange.to > resolvedRange.from) {
+        setAvailabilityRequestedByUser(true);
+      }
+
+      if (resolvedRange.to && resolvedRange.to <= resolvedRange.from) {
+        setAvailabilityRequestedByUser(true);
+        return {
+          from: resolvedRange.from,
+          to: addDays(resolvedRange.from, 1),
+        };
+      }
+
       return resolvedRange;
     });
   };
 
   useEffect(() => {
+    // Automatically elevate to a live availability check if the page loaded with valid default dates
+    // but the parameters missed triggering it. (e.g., direct navigation to /property)
+    // This perfectly mimics Zostel's auto-fill UX pattern.
+    if (!availabilityRequestedByUser && hasValidDateRange) {
+      setAvailabilityRequestedByUser(true);
+    }
+  }, [availabilityRequestedByUser, hasValidDateRange]);
+
+  useEffect(() => {
+    if (availabilityRequestedByUser && hasValidDateRange) {
+      return;
+    }
+
     let mounted = true;
     const controller = new AbortController();
 
@@ -1196,10 +1303,16 @@ export function Property({
       mounted = false;
       controller.abort();
     };
-  }, [applyRoomCategories, fetchRoomsPayload, resolvedPropertyId]);
+  }, [
+    applyRoomCategories,
+    availabilityRequestedByUser,
+    fetchRoomsPayload,
+    hasValidDateRange,
+    resolvedPropertyId,
+  ]);
 
   useEffect(() => {
-    if (!hasCompleteDateRange) {
+    if (!availabilityRequestedByUser || !hasValidDateRange) {
       return;
     }
 
@@ -1265,10 +1378,33 @@ export function Property({
       mounted = false;
       controller.abort();
     };
-  }, [availabilityRefreshVersion, applyRoomCategories, checkIn, checkOut, fetchRoomsPayload, hasCompleteDateRange, resolvedPropertyId]);
+  }, [
+    availabilityRefreshVersion,
+    availabilityRequestedByUser,
+    applyRoomCategories,
+    checkIn,
+    checkOut,
+    fetchRoomsPayload,
+    hasValidDateRange,
+    resolvedPropertyId,
+  ]);
 
   useEffect(() => {
-    if (!hasCompleteDateRange) {
+    syncAvailabilityQueryParams({
+      enabled: availabilityRequestedByUser,
+      propertyId: resolvedPropertyId,
+      checkin: checkIn,
+      checkout: checkOut,
+    });
+  }, [availabilityRequestedByUser, checkIn, checkOut, resolvedPropertyId]);
+
+  useEffect(() => {
+    if (!availabilityRequestedByUser) {
+      setAvailabilitySyncError(null);
+      return;
+    }
+
+    if (!hasValidDateRange) {
       setAvailabilitySyncError("Select check-in and check-out to load live availability.");
       return;
     }
@@ -1280,9 +1416,10 @@ export function Property({
     if (!hasLiveAvailability) {
       setAvailabilitySyncError((current) => current ?? "Live availability is pending. Please wait or retry.");
     }
-  }, [hasCompleteDateRange, hasLiveAvailability, isRefreshingAvailability]);
+  }, [availabilityRequestedByUser, hasLiveAvailability, hasValidDateRange, isRefreshingAvailability]);
 
   const retryAvailability = () => {
+    setAvailabilityRequestedByUser(true);
     setAvailabilityRefreshVersion((current) => current + 1);
   };
 
@@ -1311,7 +1448,7 @@ export function Property({
       return;
     }
 
-    if (!hasCompleteDateRange || !checkIn || !checkOut || selectedRoomDrafts.length === 0) {
+    if (!hasValidDateRange || !checkIn || !checkOut || selectedRoomDrafts.length === 0) {
       toast.error("Select at least one room", {
         description: "Pick your dates and rooms to continue to checkout.",
       });
@@ -1334,7 +1471,7 @@ export function Property({
 
     const hasInvalidSelection = selectedRoomDrafts.some((draftRoom) => {
       const room = roomCategoryList.find((item) => item.roomTypeId === draftRoom.roomTypeId || item.slug === draftRoom.slug);
-      return !room || !room.hasLiveAvailability || room.inventoryState === "sold_out";
+      return !room || !room.hasLiveAvailability || room.inventoryState === "sold_out" || hasUnavailableRoomPrice(room);
     });
 
     if (hasInvalidSelection) {
@@ -1543,7 +1680,8 @@ export function Property({
                     const isSoldOut = room.inventoryState === "sold_out";
                     const isLimited = room.inventoryState === "limited";
                     const isAvailabilityPending = !room.hasLiveAvailability || room.inventoryState === "unknown";
-                    const canBook = room.hasLiveAvailability && !isSoldOut;
+                    const isPriceUnavailable = hasUnavailableRoomPrice(room);
+                    const canBook = room.hasLiveAvailability && !isSoldOut && !isPriceUnavailable;
 
                     return (
                       <article
@@ -1616,6 +1754,8 @@ export function Property({
                             <div className="flex items-center justify-between gap-4">
                               {isSoldOut ? (
                                 <p className="text-sm font-semibold text-[var(--vh-hot)]">Sold out for selected dates</p>
+                              ) : isPriceUnavailable ? (
+                                <p className="text-sm font-semibold text-[var(--vh-amber)]">Price unavailable. Retry shortly.</p>
                               ) : isAvailabilityPending ? (
                                 <p className="text-sm font-semibold text-[var(--vh-cyan)]">Select dates to view live availability</p>
                               ) : isLimited ? (
@@ -1633,13 +1773,13 @@ export function Property({
                               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45">
                                 {room.hasLiveAvailability ? "Live price / night" : "From / night"}
                               </p>
-                              <p className="mt-2 text-3xl font-bold text-[#c62828]">Rs. {room.basePrice}</p>
+                              <p className="mt-2 text-3xl font-bold text-[#c62828]">{formatRoomPrice(room)}</p>
                             </div>
 
                             <div className="mt-5 flex items-center justify-end gap-2">
                               {!canBook ? (
                                 <Button className="w-full rounded-full" disabled type="button">
-                                  {isSoldOut ? "Sold out" : "Check dates"}
+                                  {isSoldOut ? "Sold out" : isPriceUnavailable ? "Unavailable" : "Check dates"}
                                 </Button>
                               ) : count === 0 ? (
                                 <Button className="w-full rounded-full" onClick={() => updateCount(roomKey, 1)} type="button">

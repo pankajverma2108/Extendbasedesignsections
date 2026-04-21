@@ -58,6 +58,7 @@ export type CxRoomCategory = {
   hasLiveAvailability: boolean;
   guestText: string;
   basePrice: number;
+  isPriceUnavailable?: boolean;
   totalPrice: number;
   availableCount: number;
   totalCount: number;
@@ -204,6 +205,7 @@ export type NormalizedRoomType = {
   totalBeds: number;
   availableBeds: number;
   basePricePerNight: number;
+  isPriceUnavailable: boolean;
   totalPrice: number;
   amenities: string[];
 };
@@ -229,6 +231,26 @@ function ensureNumber(value: unknown, fallback = 0) {
   }
 
   return fallback;
+}
+
+function parseOptionalNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const parsed = Number(trimmed);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return null;
 }
 
 function ensureArray(value: unknown): unknown[] {
@@ -499,13 +521,23 @@ function normalizeRoomType(
     recordTelemetry({ type: "missing_field", source: "room", field: "available_beds" });
   }
 
-  const basePricePerNight = Math.max(0, ensureNumber(input.base_price_per_night, 0));
-  if (!hasValue(input.base_price_per_night)) {
+  const parsedBasePricePerNight = parseOptionalNumber(input.base_price_per_night);
+  const isPriceUnavailable = parsedBasePricePerNight === null || parsedBasePricePerNight <= 0;
+  const basePricePerNight = Math.max(0, parsedBasePricePerNight ?? 0);
+  if (parsedBasePricePerNight === null) {
     recordTelemetry({ type: "missing_field", source: "room", field: "base_price_per_night" });
+  } else if (parsedBasePricePerNight <= 0) {
+    recordTelemetry({
+      type: "fallback_used",
+      source: "room",
+      field: "non_positive_base_price_per_night",
+      value: parsedBasePricePerNight,
+    });
   }
 
-  const totalPrice = Math.max(basePricePerNight, ensureNumber(input.total_price, basePricePerNight));
-  if (!hasValue(input.total_price) && hasLiveAvailability) {
+  const parsedTotalPrice = parseOptionalNumber(input.total_price);
+  const totalPrice = Math.max(basePricePerNight, parsedTotalPrice ?? basePricePerNight);
+  if (parsedTotalPrice === null && hasLiveAvailability) {
     recordTelemetry({ type: "missing_field", source: "room", field: "total_price" });
   }
 
@@ -534,6 +566,7 @@ function normalizeRoomType(
     totalBeds,
     availableBeds,
     basePricePerNight,
+    isPriceUnavailable,
     totalPrice,
     amenities,
   };
@@ -552,6 +585,7 @@ function fallbackRoomTypes(): NormalizedRoomType[] {
       totalBeds: 0,
       availableBeds: 0,
       basePricePerNight: 599,
+      isPriceUnavailable: false,
       totalPrice: 599,
       amenities: ["AC", "WiFi", "Locker"],
     },
@@ -566,6 +600,7 @@ function fallbackRoomTypes(): NormalizedRoomType[] {
       totalBeds: 0,
       availableBeds: 0,
       basePricePerNight: 1299,
+      isPriceUnavailable: false,
       totalPrice: 1299,
       amenities: ["AC", "WiFi", "Attached Bathroom"],
     },
@@ -761,6 +796,15 @@ export async function getRoomAvailabilitySnapshot(options?: {
       };
     }
 
+    const resolvedBasePricePerNight =
+      liveRoom.isPriceUnavailable && !catalogRoom.isPriceUnavailable
+        ? catalogRoom.basePricePerNight
+        : liveRoom.basePricePerNight;
+    const resolvedTotalPrice =
+      liveRoom.isPriceUnavailable && !catalogRoom.isPriceUnavailable
+        ? Math.max(catalogRoom.totalPrice, resolvedBasePricePerNight)
+        : liveRoom.totalPrice;
+
     return {
       ...catalogRoom,
       ...liveRoom,
@@ -770,6 +814,9 @@ export async function getRoomAvailabilitySnapshot(options?: {
       type: catalogRoom.type || liveRoom.type,
       bedsPerRoom: Math.max(catalogRoom.bedsPerRoom, liveRoom.bedsPerRoom),
       totalBeds: Math.max(catalogRoom.totalBeds, liveRoom.totalBeds),
+      basePricePerNight: resolvedBasePricePerNight,
+      isPriceUnavailable: liveRoom.isPriceUnavailable && catalogRoom.isPriceUnavailable,
+      totalPrice: Math.max(resolvedTotalPrice, resolvedBasePricePerNight),
       amenities: liveRoom.amenities.length > 0 ? liveRoom.amenities : catalogRoom.amenities,
     };
   });
@@ -800,7 +847,7 @@ export function roomTypesToHomeCards(roomTypes: NormalizedRoomType[]): RoomCardP
 
     return {
       title: room.name,
-      price: `Rs. ${room.basePricePerNight}`,
+      price: room.isPriceUnavailable ? "Price unavailable" : `Rs. ${room.basePricePerNight}`,
       occupancy,
       image: images[0] ?? FALLBACK_ROOM_IMAGE,
       images,
@@ -859,6 +906,7 @@ export function roomTypesToPropertyCategories(roomTypes: NormalizedRoomType[]): 
       hasLiveAvailability: room.hasLiveAvailability,
       guestText: presentation.guestText,
       basePrice: room.basePricePerNight,
+      isPriceUnavailable: room.isPriceUnavailable,
       totalPrice: room.totalPrice,
       availableCount: room.availableBeds,
       totalCount: room.totalBeds,
