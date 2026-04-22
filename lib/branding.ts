@@ -59,6 +59,13 @@ function toOrigin(value: string | undefined): string | null {
 }
 
 export function getPreferredSiteOrigin(): string {
+  if (typeof window !== "undefined") {
+    const browserOrigin = toOrigin(window.location.origin);
+    if (browserOrigin && !LOCALHOST_PATTERN.test(browserOrigin)) {
+      return browserOrigin;
+    }
+  }
+
   const envOrigins = [
     process.env.NEXT_PUBLIC_SITE_URL,
     process.env.NEXT_PUBLIC_APP_URL,
@@ -70,13 +77,6 @@ export function getPreferredSiteOrigin(): string {
     const origin = toOrigin(candidate);
     if (origin && !LOCALHOST_PATTERN.test(origin)) {
       return origin;
-    }
-  }
-
-  if (typeof window !== "undefined") {
-    const browserOrigin = toOrigin(window.location.origin);
-    if (browserOrigin && !LOCALHOST_PATTERN.test(browserOrigin)) {
-      return browserOrigin;
     }
   }
 
