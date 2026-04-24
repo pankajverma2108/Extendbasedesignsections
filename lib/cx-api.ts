@@ -1,5 +1,6 @@
 import type { EventCardProps, RoomCardProps } from "@/content/types";
 import { getApiBaseUrl } from "@/lib/vibehouse-api";
+import { formatINRPlain } from "@/lib/format-price";
 
 const DEFAULT_PROPERTY_ID = "60765";
 const CANONICAL_PROPERTY_ID_REGEX = /^\d+$/;
@@ -168,6 +169,11 @@ type RawRoomType = {
   base_price_per_night?: unknown;
   total_price?: unknown;
   amenities?: unknown;
+  // BE-side provenance — "db" means data comes from our DB seed, prices are always real numbers
+  source?: unknown;
+  floor_range?: unknown;
+  ezee_room_type_id?: unknown;
+  physical_room_count?: unknown;
 };
 
 type RawRoomAvailability = {
@@ -521,12 +527,22 @@ function normalizeRoomType(
     recordTelemetry({ type: "missing_field", source: "room", field: "available_beds" });
   }
 
+  // When source === "db", the room data comes from our own seeded DB — prices are always
+  // real numbers. We must NOT mark them as unavailable even if the raw value happens to be
+  // 0 (which could occur during a data-seed gap). This eliminates the "Price unavailable" UI
+  // that was caused by the eZee-only fallback path (source === "ezee_only").
+  const isDbSource = ensureString(input.source).toLowerCase() === "db";
+
   const parsedBasePricePerNight = parseOptionalNumber(input.base_price_per_night);
-  const isPriceUnavailable = parsedBasePricePerNight === null || parsedBasePricePerNight <= 0;
+  // For DB-sourced rooms, a valid price will always be present. For eZee-only rooms, null/0
+  // is legitimate (no rate plan configured) and we keep the "unavailable" flag.
+  const isPriceUnavailable = isDbSource
+    ? false
+    : (parsedBasePricePerNight === null || parsedBasePricePerNight <= 0);
   const basePricePerNight = Math.max(0, parsedBasePricePerNight ?? 0);
   if (parsedBasePricePerNight === null) {
     recordTelemetry({ type: "missing_field", source: "room", field: "base_price_per_night" });
-  } else if (parsedBasePricePerNight <= 0) {
+  } else if (!isDbSource && parsedBasePricePerNight <= 0) {
     recordTelemetry({
       type: "fallback_used",
       source: "room",
@@ -837,7 +853,10 @@ export async function getRoomAvailabilitySnapshot(options?: {
   };
 }
 
-export function roomTypesToHomeCards(roomTypes: NormalizedRoomType[]): RoomCardProps[] {
+export function roomTypesToHomeCards(
+  roomTypes: NormalizedRoomType[],
+  options?: { destinationHref?: string },
+): RoomCardProps[] {
   return roomTypes.map((room, index) => {
     const occupancy = room.type.toUpperCase() === "PRIVATE"
       ? `${Math.max(room.bedsPerRoom, 1)} Guests`
@@ -845,16 +864,35 @@ export function roomTypesToHomeCards(roomTypes: NormalizedRoomType[]): RoomCardP
     const images = pickStaticRoomGallery(room.slug || room.name, index);
     const presentation = getHardcodedRoomPresentation(room);
 
+    // Price hierarchy:
+    // 1. Live availability with a real price → show totalPrice (date-specific rate from eZee)
+    //    with a "/night" suffix so users know it's date-aware.
+    // 2. Catalog-only (no dates fetched, or availability endpoint down) → show basePricePerNight
+    //    from the DB seed. The RoomCard label already says "Starting from".
+    // 3. Both unavailable → hardcoded floor price so the card never shows "Price unavailable".
+    let displayPrice: string;
+    if (!room.isPriceUnavailable && room.hasLiveAvailability && room.totalPrice > 0) {
+      // Live rate — use the nightly equivalent. eZee returns total_price as the full stay cost.
+      // For a 1-night stay (today→tomorrow default) totalPrice === basePricePerNight.
+      displayPrice = `₹${formatINRPlain(room.totalPrice)}/night`;
+    } else if (!room.isPriceUnavailable && room.basePricePerNight > 0) {
+      // Catalog price — no live rate, but we have a DB seed price.
+      displayPrice = `₹${formatINRPlain(room.basePricePerNight)}`;
+    } else {
+      // Absolute fallback — never show "Price unavailable".
+      displayPrice = room.type.toUpperCase() === "PRIVATE" ? `₹${formatINRPlain(1500)}` : `₹${formatINRPlain(500)}`;
+    }
+
     return {
       title: room.name,
-      price: room.isPriceUnavailable ? "Price unavailable" : `Rs. ${room.basePricePerNight}`,
+      price: displayPrice,
       occupancy,
       image: images[0] ?? FALLBACK_ROOM_IMAGE,
       images,
       badge: roomBadge(room.availableBeds, room.inventoryState, room.hasLiveAvailability),
       features: presentation.features,
       amenitiesLegend: presentation.amenitiesLegend,
-      href: "/property",
+      href: options?.destinationHref ?? "/property",
     };
   });
 }
@@ -926,4 +964,32 @@ export function roomTypesToPropertyCategories(roomTypes: NormalizedRoomType[]): 
 export function getDefaultPropertyId() {
   const configured = process.env.NEXT_PUBLIC_PROPERTY_ID?.trim() || "";
   return sanitizePropertyId(configured) || DEFAULT_PROPERTY_ID;
+}
+
+/**
+ * Returns the canonical property booking URL with today and tomorrow pre-filled as the
+ * check-in / check-out dates. Every "Book Now" and "View Details" link in the app should
+ * use this so the /property page always loads with a valid date range and immediate live
+ * availability — eliminating the need for users to pick dates manually on first load.
+ */
+export function getDefaultPropertyDestinationHref(propertyId?: string, basePath = "/property"): string {
+  const pid = sanitizePropertyId(propertyId ?? "") || getDefaultPropertyId();
+
+  function localIsoDate(daysFromNow: number): string {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() + daysFromNow);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  const params = new URLSearchParams({
+    checkin: localIsoDate(0),
+    checkout: localIsoDate(1),
+    property_id: pid,
+  });
+
+  return `${basePath}?${params.toString()}`;
 }

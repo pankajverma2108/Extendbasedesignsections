@@ -98,7 +98,7 @@ export default async function EventsPage() {
           </Stagger>
           <FadeIn className="mt-10 text-center">
             <a
-              className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-md px-6 text-base font-bold uppercase text-white transition-all outline-none focus-visible:ring-[3px] focus-visible:ring-white/30 bg-[var(--vh-pink)] shadow-[4px_4px_0px_0px_rgba(255,255,255,0.18)] hover:-translate-y-0.5"
+              className="vh-cta-button"
               href="https://instagram.com/thedailysocial01"
             >
               Follow on Instagram

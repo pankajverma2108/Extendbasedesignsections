@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
+import { GuestVerificationBanner } from "@/components/auth/guest-verification-banner";
 import ReflectiveCard from "@/components/profile/reflective-card";
 import { StickerTag } from "@/components/shared/sticker-tag";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
@@ -365,6 +366,7 @@ export default function ProfilePage() {
 
   return (
     <section ref={rootRef} className="vh-section relative overflow-x-hidden pt-24 pb-6 md:pt-28 md:pb-8" style={{ backgroundColor: "#07070a" }}>
+      <GuestVerificationBanner />
       <div className="vh-container">
         <div className="relative mx-auto w-full max-w-[1060px] bg-[#07070a]">
           <header className="px-2 py-3 text-center md:px-3 md:py-4 vh-reveal" style={{ backgroundColor: "#07070a" }}>

@@ -15,9 +15,19 @@ import {
   loginGuest,
   setStoredGuestToken,
   signupGuest,
+  sendOtp,
+  verifyOtp,
+  forgotPassword,
+  resetPassword,
 } from "@/lib/guest-auth-api";
 
-type AuthMode = "signin" | "signup";
+export type AuthMode =
+  | "signin"
+  | "signup"
+  | "verify-otp"
+  | "forgot-password"
+  | "forgot-password-otp"
+  | "set-new-password";
 
 type GuestProfileUpdatePayload = {
   name: string;
@@ -281,10 +291,18 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
       setGuest(nextGuest);
       writeCachedGuestProfile(nextGuest);
       setIsRestoringSession(false);
-      toast.success("Account created", {
-        description: `Great to have you here, ${me.name.split(" ")[0] ?? "Guest"}.`,
-      });
-      closeAuthModal();
+      
+      if (response.otp_sent) {
+        toast.success("Account created", {
+          description: "Please check your email for the verification code.",
+        });
+        setMode("verify-otp");
+      } else {
+        toast.success("Account created", {
+          description: `Great to have you here, ${me.name.split(" ")[0] ?? "Guest"}.`,
+        });
+        closeAuthModal();
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to sign up right now.";
       setErrorMessage(message);
@@ -293,6 +311,87 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
       setIsPending(false);
     }
   }, [closeAuthModal]);
+
+  const onVerifyOtp = useCallback(async (payload: { email: string; otp: string }) => {
+    setIsPending(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await verifyOtp(payload);
+      setStoredGuestToken(response.access_token);
+      const me = await getGuestMe(response.access_token).catch(() => response.guest);
+      const nextGuest = mergeWithOverrides(me);
+      setGuest(nextGuest);
+      writeCachedGuestProfile(nextGuest);
+      setIsRestoringSession(false);
+      toast.success("Email verified", {
+        description: "Your email has been successfully verified.",
+      });
+      closeAuthModal();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to verify code.";
+      setErrorMessage(message);
+    } finally {
+      setIsPending(false);
+    }
+  }, [closeAuthModal]);
+
+  const onSendOtp = useCallback(async (payload: { email: string }) => {
+    setIsPending(true);
+    setErrorMessage(null);
+
+    try {
+      await sendOtp(payload);
+      toast.success("Code sent", {
+        description: `We've sent a new code to ${payload.email}.`,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to send code.";
+      setErrorMessage(message);
+    } finally {
+      setIsPending(false);
+    }
+  }, []);
+
+  const onForgotPassword = useCallback(async (payload: { email: string }) => {
+    setIsPending(true);
+    setErrorMessage(null);
+
+    try {
+      await forgotPassword(payload);
+      setMode("forgot-password-otp");
+      toast.success("OTP sent", {
+        description: `We've sent a 6-digit password reset code to ${payload.email}.`,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to send reset email.";
+      setErrorMessage(message);
+    } finally {
+      setIsPending(false);
+    }
+  }, []);
+
+  const onResetPassword = useCallback(async (payload: { email: string; otp: string; newPassword: string }) => {
+    setIsPending(true);
+    setErrorMessage(null);
+
+    try {
+      await resetPassword(payload);
+      clearStoredGuestToken();
+      clearCachedGuestProfile();
+      setGuest(null);
+      setIsRestoringSession(false);
+      toast.success("Password reset", {
+        description: "Your password was updated. Please sign in with your new password.",
+      });
+      setMode("signin");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to reset password.";
+      setErrorMessage(message);
+    } finally {
+      setIsPending(false);
+    }
+  }, []);
 
   const onGoogleAuth = useCallback(() => {
     rememberPostAuthRedirect();
@@ -371,9 +470,14 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
         onGoogleAuth={onGoogleAuth}
         onSignIn={onSignIn}
         onSignUp={onSignUp}
+        onVerifyOtp={onVerifyOtp}
+        onSendOtp={onSendOtp}
+        onForgotPassword={onForgotPassword}
+        onResetPassword={onResetPassword}
         onSwitchMode={onSwitchMode}
         open={isModalOpen}
         pending={isPending}
+        prefillEmail={guest?.email ?? ""}
       />
     </AuthContext.Provider>
   );

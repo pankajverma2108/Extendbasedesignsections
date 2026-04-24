@@ -71,10 +71,19 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Geologica";
+  src: url("/fonts/Geologica/Geologica-VariableFont_CRSV,SHRP,slnt,wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
+  --font-geologica: "Geologica", "Segoe UI", sans-serif;
   --font-biorhyme: "Acme", "Trebuchet MS", sans-serif;
-  --font-sora: "Nunito", "Segoe UI", sans-serif;
-  --font-encode: "Varela Round", "Segoe UI", sans-serif;
+  --font-sora: var(--font-geologica);
+  --font-encode: var(--font-geologica);
   --font-suez: "Suez One", "Trebuchet MS", sans-serif;
   --font-bebas: "Bebas Neue", "Trebuchet MS", sans-serif;
   --vh-bg: #07070a;
@@ -142,9 +151,27 @@ body {
   width: 100%;
   background: #07070a;
   color: white;
-  font-family: var(--font-sora);
+  font-family: var(--font-geologica);
   scrollbar-color: var(--vh-pink) #07070a;
   scrollbar-width: thin;
+}
+
+p,
+li,
+a,
+button,
+input,
+textarea,
+label,
+small,
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-geologica);
 }
 
 *::-webkit-scrollbar {
@@ -617,6 +644,91 @@ select optgroup {
 
   .vh-primary-button {
     @apply inline-flex items-center justify-center rounded-[4px] bg-[var(--vh-pink)] px-6 py-3 text-sm font-bold uppercase text-white shadow-[4px_4px_0px_0px_var(--vh-border)];
+  }
+
+  .vh-cta-button {
+    @apply inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-md bg-[var(--vh-pink)] px-6 text-base font-extrabold uppercase text-white transition-all outline-none hover:-translate-y-0.5 focus-visible:ring-[3px] focus-visible:ring-white/30;
+    font-family: var(--font-geologica);
+    box-shadow: 4px 4px 0 0 rgba(255, 255, 255, 0.18);
+    letter-spacing: 0.02em;
+  }
+
+  .font-caption {
+    font-family: var(--font-geologica);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .font-subtitle {
+    font-family: var(--font-geologica);
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  .font-smallbutton {
+    font-family: var(--font-geologica);
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  .font-sectiontitle {
+    font-family: var(--font-geologica);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .font-body {
+    font-family: var(--font-geologica);
+    font-weight: 400;
+  }
+
+  .font-bodyfocus {
+    font-family: var(--font-geologica);
+    font-weight: 600;
+  }
+
+  .font-geo-thin {
+    font-family: var(--font-geologica);
+    font-weight: 100;
+  }
+
+  .font-geo-light {
+    font-family: var(--font-geologica);
+    font-weight: 300;
+  }
+
+  .font-geo-regular {
+    font-family: var(--font-geologica);
+    font-weight: 400;
+  }
+
+  .font-geo-medium {
+    font-family: var(--font-geologica);
+    font-weight: 500;
+  }
+
+  .font-geo-semibold {
+    font-family: var(--font-geologica);
+    font-weight: 600;
+  }
+
+  .font-geo-bold {
+    font-family: var(--font-geologica);
+    font-weight: 700;
+  }
+
+  .font-geo-extrabold {
+    font-family: var(--font-geologica);
+    font-weight: 800;
+  }
+
+  .font-geo-black {
+    font-family: var(--font-geologica);
+    font-weight: 900;
   }
 
   .vh-input {

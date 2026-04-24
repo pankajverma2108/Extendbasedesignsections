@@ -32,6 +32,7 @@ export type GuestBookingSummary = {
 export type GuestAuthResponse = {
   access_token: string;
   guest: GuestProfile;
+  otp_sent?: boolean;
 };
 
 export type GuestSignupPayload = {
@@ -45,6 +46,34 @@ export type GuestLoginPayload = {
   email: string;
   password: string;
 };
+
+export async function sendOtp(payload: { email: string }): Promise<{ message: string; expires_in_seconds: number }> {
+  return requestJson<{ message: string; expires_in_seconds: number }>("/guest/auth/send-otp", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export async function verifyOtp(payload: { email: string; otp: string }): Promise<GuestAuthResponse> {
+  return requestJson<GuestAuthResponse>("/guest/auth/verify-otp", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export async function forgotPassword(payload: { email: string }): Promise<{ message: string; expires_in_seconds: number }> {
+  return requestJson<{ message: string; expires_in_seconds: number }>("/guest/auth/forgot-password", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export async function resetPassword(payload: { email: string; otp: string; newPassword: string }): Promise<GuestAuthResponse> {
+  return requestJson<GuestAuthResponse>("/guest/auth/reset-password", {
+    method: "POST",
+    body: payload,
+  });
+}
 
 const DEFAULT_GOOGLE_AUTH_PATH = "/guest/auth/google";
 const POST_AUTH_REDIRECT_KEY = "vh_post_auth_redirect";

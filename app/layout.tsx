@@ -8,10 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { siteMeta } from "@/content/site";
 
 import "./globals.css";
-import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://thedailysocial.co.in"),
@@ -28,8 +25,8 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={cn("font-sans", geist.variable)}>
-      <body className="vh-shell flex min-h-screen flex-col font-sora">
+    <html lang="en" data-scroll-behavior="smooth">
+      <body className="vh-shell flex min-h-screen flex-col font-body">
         <GuestAuthProvider>
           <Navigation />
           <main className="flex-1">{children}</main>

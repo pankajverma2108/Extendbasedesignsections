@@ -168,8 +168,8 @@ function calculatePricingBreakdown(params: {
     0,
   );
   const taxesExact = roomTaxExact + addonTaxExact;
-  const taxes = Math.round(taxesExact);
-  const grandTotal = Math.round(params.roomSubtotal + addonSubtotal + taxesExact);
+  const taxes = taxesExact;
+  const grandTotal = params.roomSubtotal + addonSubtotal + taxesExact;
 
   return {
     addonSubtotal,
@@ -220,8 +220,8 @@ function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-    minimumFractionDigits: 0,
   }).format(Number.isFinite(amount) ? amount : 0);
 }
 

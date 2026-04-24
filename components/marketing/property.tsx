@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import { buildBookingSignature, saveBookingDraft, type BookingDraftRoom } from "@/lib/booking-session";
 import type { CxRoomCategory } from "@/lib/cx-api";
 import { cn } from "@/lib/utils";
+import { formatINRPlain } from "@/lib/format-price";
 import {
   homePageContent,
   upsellBentoItems,
@@ -272,7 +273,7 @@ function hasUnavailableRoomPrice(room: RoomCategory): boolean {
 }
 
 function formatRoomPrice(room: RoomCategory): string {
-  return hasUnavailableRoomPrice(room) ? "Price unavailable" : `Rs. ${room.basePrice}`;
+  return hasUnavailableRoomPrice(room) ? "Price unavailable" : `Rs. ${formatINRPlain(room.basePrice)}`;
 }
 
 function resolveNextRange(current: DateRange | undefined, nextValue: DateRange | undefined, selectedDay?: Date) {
@@ -322,7 +323,7 @@ function calculateWidgetTaxes(params: {
     (sum, addon) => sum + (addon.unitPrice * addon.quantity * getAddonTaxRate(addon.title)),
     0,
   );
-  const taxes = Math.round(roomTaxExact + addonTaxExact);
+  const taxes = roomTaxExact + addonTaxExact;
   const grandTotal = params.roomTotal + addonTotal + taxes;
 
   return {
@@ -527,11 +528,11 @@ function DesktopBookingSummary({
                 <div>
                   <p className="font-semibold text-white">{room.title}</p>
                   <p className="text-xs text-white/55">
-                    Rs. {room.basePrice} x {selectedCounts[getRoomSelectionKey(room)]} x {nights} {nights === 1 ? "night" : "nights"}
+                    Rs. {formatINRPlain(room.basePrice)} x {selectedCounts[getRoomSelectionKey(room)]} x {nights} {nights === 1 ? "night" : "nights"}
                   </p>
                 </div>
                 <p className="font-semibold text-white">
-                  Rs. {room.basePrice * (selectedCounts[getRoomSelectionKey(room)] ?? 0) * nights}
+                  Rs. {formatINRPlain(room.basePrice * (selectedCounts[getRoomSelectionKey(room)] ?? 0) * nights)}
                 </p>
               </div>
             ))
@@ -546,10 +547,10 @@ function DesktopBookingSummary({
               <div>
                 <p className="font-semibold text-white">{item.title}</p>
                 <p className="text-xs text-white/55">
-                  Rs. {item.unitPrice} x {item.quantity}
+                  Rs. {formatINRPlain(item.unitPrice)} x {item.quantity}
                 </p>
               </div>
-              <p className="font-semibold text-white">Rs. {item.unitPrice * item.quantity}</p>
+              <p className="font-semibold text-white">Rs. {formatINRPlain(item.unitPrice * item.quantity)}</p>
             </div>
           ))}
         </div>
@@ -557,11 +558,11 @@ function DesktopBookingSummary({
         <div className="mt-5 border-t border-white/10 pt-4 text-sm text-white/82">
           <div className="flex items-center justify-between">
             <p>Total room charges</p>
-            <p className="font-semibold text-white">Rs. {roomTotal}</p>
+            <p className="font-semibold text-white">Rs. {formatINRPlain(roomTotal)}</p>
           </div>
           <div className="mt-2 flex items-center justify-between">
             <p>Add-on charges</p>
-            <p className="font-semibold text-white">Rs. {essentialsTotal}</p>
+            <p className="font-semibold text-white">Rs. {formatINRPlain(essentialsTotal)}</p>
           </div>
           <div className="mt-2 flex items-center justify-between">
             <p className="group relative inline-flex items-center gap-1">
@@ -574,15 +575,15 @@ function DesktopBookingSummary({
                 <Info className="h-3 w-3" />
               </button>
               <span className="pointer-events-none absolute left-0 top-[calc(100%+6px)] z-20 hidden min-w-[180px] rounded-md border border-white/15 bg-[#10111a] px-2.5 py-2 text-[11px] leading-4 text-white/85 shadow-[0_10px_28px_rgba(0,0,0,0.35)] group-hover:block">
-                <span className="block">Room tax - {roomTaxExact.toFixed(2)}</span>
-                <span className="mt-1 block">Add-on tax - {addonTaxExact.toFixed(2)}</span>
+                <span className="block">Room tax - {formatINRPlain(roomTaxExact)}</span>
+                <span className="mt-1 block">Add-on tax - {formatINRPlain(addonTaxExact)}</span>
               </span>
             </p>
-            <p className="font-semibold text-white">Rs. {taxes}</p>
+            <p className="font-semibold text-white">Rs. {formatINRPlain(taxes)}</p>
           </div>
           <div className="mt-3 flex items-center justify-between text-base">
             <p className="font-semibold text-white">Total price</p>
-            <p className="font-bold text-[var(--vh-amber)]">Rs. {grandTotal}</p>
+            <p className="font-bold text-[var(--vh-amber)]">Rs. {formatINRPlain(grandTotal)}</p>
           </div>
         </div>
 
@@ -680,9 +681,9 @@ function MobileStickySummary({
                     <p className="font-semibold text-white">
                       {room.title} x {selectedCounts[getRoomSelectionKey(room)]}
                     </p>
-                    <p className="text-xs text-white/58">Rs. {room.basePrice} / night</p>
+                    <p className="text-xs text-white/58">Rs. {formatINRPlain(room.basePrice)} / night</p>
                   </div>
-                  <p className="font-semibold text-white">Rs. {room.basePrice * (selectedCounts[getRoomSelectionKey(room)] ?? 0) * nights}</p>
+                  <p className="font-semibold text-white">Rs. {formatINRPlain(room.basePrice * (selectedCounts[getRoomSelectionKey(room)] ?? 0) * nights)}</p>
                 </div>
               ))}
 
@@ -692,24 +693,24 @@ function MobileStickySummary({
                     <p className="font-semibold text-white">
                       {item.title} x {item.quantity}
                     </p>
-                    <p className="text-xs text-white/58">Rs. {item.unitPrice} each</p>
+                    <p className="text-xs text-white/58">Rs. {formatINRPlain(item.unitPrice)} each</p>
                   </div>
-                  <p className="font-semibold text-white">Rs. {item.unitPrice * item.quantity}</p>
+                  <p className="font-semibold text-white">Rs. {formatINRPlain(item.unitPrice * item.quantity)}</p>
                 </div>
               ))}
 
               <div className="border-t border-dashed border-white/15 pt-3">
                 <div className="flex items-center justify-between">
                   <p>Add-ons</p>
-                  <p>Rs. {essentialsTotal}</p>
+                  <p>Rs. {formatINRPlain(essentialsTotal)}</p>
                 </div>
                 <div className="mt-1 flex items-center justify-between">
                   <p>Total taxes</p>
-                  <p>Rs. {taxes}</p>
+                  <p>Rs. {formatINRPlain(taxes)}</p>
                 </div>
                 <div className="mt-2 flex items-center justify-between font-semibold text-white">
                   <p>Total price</p>
-                  <p>Rs. {grandTotal}</p>
+                  <p>Rs. {formatINRPlain(grandTotal)}</p>
                 </div>
               </div>
 
@@ -735,7 +736,7 @@ function MobileStickySummary({
         <div className="flex items-center justify-between gap-4 p-4">
           <div>
             <p className="text-2xl font-semibold text-white">
-              {showUnavailablePricePreview ? "Price unavailable" : `₹${displayAmount.toFixed(2)}`}
+              {showUnavailablePricePreview ? "Price unavailable" : `₹${formatINRPlain(displayAmount)}`}
             </p>
             <button
               className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-[#46B2FF]"
@@ -1049,12 +1050,9 @@ export function Property({
     initialRoomCategories.length > 0 ? initialRoomCategories : roomCategories,
   );
   const [resolvedPropertyId, setResolvedPropertyId] = useState(propertyId ?? "");
-  const [propertyContextError, setPropertyContextError] = useState<string | null>(null);
-  const [availabilitySyncError, setAvailabilitySyncError] = useState<string | null>(null);
   const [availabilitySource, setAvailabilitySource] = useState<AvailabilitySource | null>(null);
   const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
   const [isRefreshingAvailability, setIsRefreshingAvailability] = useState(false);
-  const [availabilityRefreshVersion, setAvailabilityRefreshVersion] = useState(0);
   const [availabilityRequestedByUser, setAvailabilityRequestedByUser] = useState(initialAvailabilityEnabled);
   const [selectedEssentials] = useState<Record<string, number>>({});
   const [isAgeConfirmed, setIsAgeConfirmed] = useState(false);
@@ -1076,7 +1074,6 @@ export function Property({
   const checkIn = toLocalDateString(dateRange?.from);
   const checkOut = toLocalDateString(dateRange?.to);
   const hasValidDateRange = Boolean(checkIn && checkOut && checkOut > checkIn);
-  const hasLiveAvailability = roomCategoryList.some((room) => room.hasLiveAvailability);
   const showRoomSkeleton = isLoadingCatalog && roomCategoryList.length === 0;
   const activeRoom = roomCategoryList.find((room) => getRoomSelectionKey(room) === activeRoomKey) ?? null;
   const selectedRoomDrafts = useMemo<BookingDraftRoom[]>(
@@ -1231,14 +1228,13 @@ export function Property({
     });
   };
 
-  useEffect(() => {
-    // Automatically elevate to a live availability check if the page loaded with valid default dates
-    // but the parameters missed triggering it. (e.g., direct navigation to /property)
-    // This perfectly mimics Zostel's auto-fill UX pattern.
-    if (!availabilityRequestedByUser && hasValidDateRange) {
-      setAvailabilityRequestedByUser(true);
-    }
-  }, [availabilityRequestedByUser, hasValidDateRange]);
+  // NOTE: We intentionally do NOT auto-elevate availabilityRequestedByUser on mount.
+  // Per BE handoff (be-response-booking-engine-2026-04-23.md Bug #3):
+  //   - On mount: call only /guest/booking/rooms (catalog, no dates) to show "Starting from ₹X"
+  //   - Only call /availability after the user explicitly confirms a valid date range via the calendar
+  // The SSR page (app/property/page.tsx) already handles the case where URL params include
+  // valid dates — in that case initialAvailabilityEnabled=true is passed and the availability
+  // fetch fires correctly. The auto-elevate was causing a spurious availability call on direct nav.
 
   useEffect(() => {
     if (availabilityRequestedByUser && hasValidDateRange) {
@@ -1268,24 +1264,14 @@ export function Property({
 
         setAvailabilitySource(nextAvailabilitySource);
 
-        setPropertyContextError(
-          nextPropertyId || resolvedPropertyId
-            ? null
-            : "Room catalog loaded without backend property context. Open this page with ?property_id=... or configure NEXT_PUBLIC_PROPERTY_ID.",
-        );
-
         if (nextCategories.length > 0) {
           applyRoomCategories(nextCategories);
         }
-
-        setAvailabilitySyncError(null);
       } catch (error) {
         if (!mounted || controller.signal.aborted) {
           return;
         }
 
-        setPropertyContextError("Unable to load room catalog right now. Please retry.");
-        setAvailabilitySyncError(null);
         setRoomCategoryList((current) => (current.length > 0 ? current : roomCategories));
         toast.error("Room catalog unavailable", {
           description: error instanceof Error ? error.message : "Please retry in a few seconds.",
@@ -1336,10 +1322,6 @@ export function Property({
         const nextCategories = readCategories(payload);
         const nextPropertyId = typeof payload.property_id === "string" ? payload.property_id.trim() : "";
         const nextAvailabilitySource = readAvailabilitySource(payload);
-        const nextAvailabilityError =
-          typeof payload.availability_error === "string" && payload.availability_error.trim()
-            ? payload.availability_error
-            : null;
 
         if (nextPropertyId && nextPropertyId !== resolvedPropertyId) {
           setResolvedPropertyId(nextPropertyId);
@@ -1350,18 +1332,12 @@ export function Property({
         }
 
         setAvailabilitySource(nextAvailabilitySource);
-
-        if (nextAvailabilitySource === "local_db_estimate") {
-          setAvailabilitySyncError("Live provider is down. Shown rates are estimates, so checkout is temporarily blocked. Retry to continue.");
-        } else {
-          setAvailabilitySyncError(nextAvailabilityError);
-        }
+        // Note: local_db_estimate is handled silently — no banner shown.
       } catch (error) {
         if (!mounted || controller.signal.aborted) {
           return;
         }
-
-        setAvailabilitySyncError("Live availability could not be refreshed. Showing latest cached rooms.");
+        // Silently fail: keep the existing room list visible, just log a toast.
         toast.error("Live availability sync failed", {
           description: error instanceof Error ? error.message : "Please retry in a few seconds.",
         });
@@ -1379,7 +1355,6 @@ export function Property({
       controller.abort();
     };
   }, [
-    availabilityRefreshVersion,
     availabilityRequestedByUser,
     applyRoomCategories,
     checkIn,
@@ -1398,30 +1373,8 @@ export function Property({
     });
   }, [availabilityRequestedByUser, checkIn, checkOut, resolvedPropertyId]);
 
-  useEffect(() => {
-    if (!availabilityRequestedByUser) {
-      setAvailabilitySyncError(null);
-      return;
-    }
-
-    if (!hasValidDateRange) {
-      setAvailabilitySyncError("Select check-in and check-out to load live availability.");
-      return;
-    }
-
-    if (isRefreshingAvailability) {
-      return;
-    }
-
-    if (!hasLiveAvailability) {
-      setAvailabilitySyncError((current) => current ?? "Live availability is pending. Please wait or retry.");
-    }
-  }, [availabilityRequestedByUser, hasLiveAvailability, hasValidDateRange, isRefreshingAvailability]);
-
-  const retryAvailability = () => {
-    setAvailabilityRequestedByUser(true);
-    setAvailabilityRefreshVersion((current) => current + 1);
-  };
+  // Sync error state: keep it simple — no user-visible banners for availability errors.
+  // The loading standard says: skeletons only, no text-based loading/error states.
 
   useEffect(() => {
     if (!resumeReviewAfterAuth || !isAuthenticated) {
@@ -1439,9 +1392,6 @@ export function Property({
 
   const continueToCheckout = () => {
     if (!resolvedPropertyId) {
-      setPropertyContextError(
-        "Checkout is blocked because the booking property could not be resolved from the live API response.",
-      );
       toast.error("Checkout blocked", {
         description: "Property context is missing. Refresh and try again.",
       });
@@ -1455,18 +1405,13 @@ export function Property({
       return;
     }
 
-    if (!hasLiveAvailability) {
-      toast.error("Live availability not synced", {
-        description: "Please refresh availability before continuing.",
-      });
-      return;
-    }
 
     if (availabilitySource === "local_db_estimate") {
-      toast.error("Checkout blocked", {
-        description: "Live provider is unavailable. Retry availability before continuing to payment.",
+      // local_db_estimate means eZee is down but we have DB estimates — allow the flow to
+      // continue with a toast warning rather than hard-blocking checkout.
+      toast.warning("Estimated pricing", {
+        description: "Live rates are temporarily unavailable. Shown prices are estimates from our DB.",
       });
-      return;
     }
 
     const hasInvalidSelection = selectedRoomDrafts.some((draftRoom) => {
@@ -1633,29 +1578,14 @@ export function Property({
                       <DateRangePicker align="left" dateRange={dateRange} onSelect={handleRangeChange} />
                     </div>
                   </div>
-                {propertyContextError ? (
-                  <div className="rounded-[18px] border border-[rgba(255,76,48,0.24)] bg-[rgba(255,76,48,0.1)] px-4 py-3 text-sm text-white/88">
-                    {propertyContextError}
-                  </div>
-                ) : null}
-                {availabilitySyncError ? (
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-[rgba(250,204,21,0.26)] bg-[rgba(250,204,21,0.1)] px-4 py-3 text-sm text-white/92">
-                    <span>{availabilitySyncError}</span>
-                    <Button className="h-8 rounded-full px-4 text-xs" onClick={retryAvailability} type="button">
-                      Retry
-                    </Button>
-                  </div>
-                ) : null}
-                {isRefreshingAvailability ? (
-                  <div aria-busy="true" aria-live="polite" className="space-y-2" role="status">
-                    <span className="sr-only">Refreshing live availability.</span>
-                    <Skeleton className="h-3 w-56 bg-[rgba(0,209,255,0.25)]" />
-                  </div>
-                ) : null}
+                {/* Skeleton overlay while refreshing availability — no banners, no loading text */}
+                {/* sr-only accessibility announcement for live region */}
+                <span aria-live="polite" className="sr-only" role="status">
+                  {isRefreshingAvailability ? "Refreshing live availability." : ""}
+                </span>
                 <div className="space-y-5">
-                {showRoomSkeleton ? (
+                {showRoomSkeleton || (isRefreshingAvailability && roomCategoryList.length === 0) ? (
                   <>
-                    <RoomCardSkeleton />
                     <RoomCardSkeleton />
                     <RoomCardSkeleton />
                   </>
@@ -1686,7 +1616,7 @@ export function Property({
                     return (
                       <article
                         key={roomKey}
-                        className={`overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)] ${isSoldOut ? "opacity-70 grayscale-[0.25]" : ""}`}
+                        className="overflow-hidden rounded-[18px] border border-white/10 bg-[rgba(255,255,255,0.03)]"
                         style={{ backgroundColor: "#10111a" }}
                       >
                         <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_188px]">

@@ -2,15 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useContext } from "react";
 import { createPortal } from "react-dom";
 import { Loader2, X } from "lucide-react";
+import { OTPInput, OTPInputContext, REGEXP_ONLY_DIGITS } from "input-otp";
 
 import { isValidEmail, isValidPhone, normalizeEmail, normalizePhone } from "@/lib/guest-form-validation";
 
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
-type AuthMode = "signin" | "signup";
+import type { AuthMode } from "./guest-auth-provider";
 
 type SignInPayload = {
   email: string;
@@ -28,24 +29,34 @@ type SignUpPayload = {
 type GuestAuthModalProps = {
   open: boolean;
   mode: AuthMode;
+  prefillEmail?: string;
   pending: boolean;
   errorMessage: string | null;
   onClose: () => void;
   onSwitchMode: (mode: AuthMode) => void;
   onSignIn: (payload: SignInPayload) => Promise<void>;
   onSignUp: (payload: SignUpPayload) => Promise<void>;
+  onVerifyOtp?: (payload: { email: string; otp: string }) => Promise<void>;
+  onSendOtp?: (payload: { email: string }) => Promise<void>;
+  onForgotPassword?: (payload: { email: string }) => Promise<void>;
+  onResetPassword?: (payload: { email: string; otp: string; newPassword: string }) => Promise<void>;
   onGoogleAuth: () => void;
 };
 
 export function GuestAuthModal({
   open,
   mode,
+  prefillEmail,
   pending,
   errorMessage,
   onClose,
   onSwitchMode,
   onSignIn,
   onSignUp,
+  onVerifyOtp,
+  onSendOtp,
+  onForgotPassword,
+  onResetPassword,
   onGoogleAuth,
 }: GuestAuthModalProps) {
   const [email, setEmail] = useState("");
@@ -57,20 +68,82 @@ export function GuestAuthModal({
   const [rememberMe, setRememberMe] = useState(true);
   const [agreed, setAgreed] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [otp, setOtp] = useState("");
+  const [countdown, setCountdown] = useState(0);
+  const resolvedEmail = email || prefillEmail || "";
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
 
   const switchMode = (nextMode: AuthMode) => {
     setLocalError(null);
     setPassword("");
     setConfirmPassword("");
-    setPhone("");
+    if (nextMode !== "forgot-password" && nextMode !== "forgot-password-otp" && nextMode !== "set-new-password") {
+      setPhone("");
+      setOtp("");
+    }
     onSwitchMode(nextMode);
   };
 
-  const headline = mode === "signin" ? "Welcome Back" : "Join The Crew";
-  const ctaLabel = mode === "signin" ? "Let's Go!" : "Start My Journey!";
-  const switchLabel = mode === "signin" ? "New to the vibe?" : "Already vibing?";
-  const switchAction = mode === "signin" ? "Join the crew!" : "Sign in here!";
-  const switchTarget = mode === "signin" ? "signup" : "signin";
+  const headline = 
+    mode === "signin" ? "Welcome Back" : 
+    mode === "signup" ? "Join The Crew" : 
+    mode === "verify-otp" ? "Verify Email" : 
+    mode === "forgot-password" ? "Forgot Password?" : 
+    mode === "forgot-password-otp" ? "Enter OTP" :
+    "Set New Password";
+
+  const description = 
+    mode === "verify-otp" ? `We sent a 6-digit code to ${resolvedEmail || "your email"}` : 
+    mode === "forgot-password" ? "Enter your email and we will send you a 6-digit OTP." : 
+    mode === "forgot-password-otp" ? `Enter the OTP sent to ${resolvedEmail || "your email"}` : 
+    mode === "set-new-password" ? "Create a new password for your account." :
+    null;
+
+  const ctaLabel = 
+    mode === "signin" ? "Let's Go!" : 
+    mode === "signup" ? "Start My Journey!" : 
+    mode === "verify-otp" ? "Verify" : 
+    mode === "forgot-password" ? "Send OTP" : 
+    mode === "forgot-password-otp" ? "Continue" :
+    "Update Password";
+
+  const switchLabel = 
+    mode === "signin" ? "New to the vibe?" : 
+    mode === "signup" ? "Already vibing?" : 
+    "";
+
+  const switchAction = 
+    mode === "signin" ? "Join the crew!" : 
+    mode === "signup" ? "Sign in here!" :
+    "Back to Login";
+
+  const switchTarget = 
+    mode === "signin" ? "signup" : 
+    "signin";
+
+  const showOtpSection = mode === "verify-otp" || mode === "forgot-password-otp";
+
+  const onResendOtp = async () => {
+    const normalizedEmail = normalizeEmail(resolvedEmail);
+    if (!isValidEmail(normalizedEmail)) {
+      setLocalError("Please enter a valid email before requesting OTP.");
+      return;
+    }
+
+    if (mode === "forgot-password-otp") {
+      await onForgotPassword?.({ email: normalizedEmail });
+    } else {
+      await onSendOtp?.({ email: normalizedEmail });
+    }
+
+    setCountdown(60);
+  };
 
   // Check if form is valid for signup
   const isSignupValid = useMemo(() => {
@@ -98,12 +171,11 @@ export function GuestAuthModal({
       return;
     }
 
-    if (!PASSWORD_REGEX.test(password)) {
-      setLocalError("Password must be at least 8 characters and include letters and numbers.");
-      return;
-    }
-
     if (mode === "signin") {
+      if (!PASSWORD_REGEX.test(password)) {
+        setLocalError("Password must be at least 8 characters and include letters and numbers.");
+        return;
+      }
       await onSignIn({
         email: normalizedEmail,
         password,
@@ -112,35 +184,78 @@ export function GuestAuthModal({
       return;
     }
 
-    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
-
-    if (!fullName) {
-      setLocalError("Please add your first and last name.");
+    if (mode === "signup") {
+      if (!PASSWORD_REGEX.test(password)) {
+        setLocalError("Password must be at least 8 characters and include letters and numbers.");
+        return;
+      }
+      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+      if (!fullName) {
+        setLocalError("Please add your first and last name.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setLocalError("Passwords do not match.");
+        return;
+      }
+      if (!agreed) {
+        setLocalError("Please accept Terms & Conditions and Privacy Policy.");
+        return;
+      }
+      const normalizedPhone = normalizePhone(phone);
+      if (!isValidPhone(normalizedPhone, { optional: true })) {
+        setLocalError("Use a 10-digit mobile number. If it starts with 91, we trim it automatically.");
+        return;
+      }
+      await onSignUp({
+        name: fullName,
+        email: normalizedEmail,
+        password,
+        phone: normalizedPhone || undefined,
+      });
       return;
     }
 
-    if (password !== confirmPassword) {
-      setLocalError("Passwords do not match.");
+    if (mode === "verify-otp") {
+      if (otp.length !== 6) {
+        setLocalError("Please enter a 6-digit code.");
+        return;
+      }
+      await onVerifyOtp?.({ email: normalizedEmail, otp });
       return;
     }
 
-    if (!agreed) {
-      setLocalError("Please accept Terms & Conditions and Privacy Policy.");
+    if (mode === "forgot-password") {
+      await onForgotPassword?.({ email: normalizedEmail });
+      setCountdown(60);
       return;
     }
 
-    const normalizedPhone = normalizePhone(phone);
-    if (!isValidPhone(normalizedPhone, { optional: true })) {
-      setLocalError("Use a 10-digit mobile number. If it starts with 91, we trim it automatically.");
+    if (mode === "forgot-password-otp") {
+      if (otp.length !== 6) {
+        setLocalError("Please enter a 6-digit code.");
+        return;
+      }
+      switchMode("set-new-password");
       return;
     }
 
-    await onSignUp({
-      name: fullName,
-      email: normalizedEmail,
-      password,
-      phone: normalizedPhone || undefined,
-    });
+    if (mode === "set-new-password") {
+      if (otp.length !== 6) {
+        setLocalError("Please enter a 6-digit code.");
+        return;
+      }
+      if (!PASSWORD_REGEX.test(password)) {
+        setLocalError("Password must be at least 8 characters and include letters and numbers.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setLocalError("Passwords do not match.");
+        return;
+      }
+      await onResetPassword?.({ email: normalizedEmail, otp, newPassword: password });
+      return;
+    }
   };
 
   if (!open || typeof document === "undefined") {
@@ -168,6 +283,11 @@ export function GuestAuthModal({
 
         <div className="text-center">
           <h2 className="text-3xl font-extrabold uppercase tracking-[-0.8px] text-white md:text-[42px] md:leading-[1]">{headline}</h2>
+          {description && (
+            <p className="mt-2 text-sm text-[#cbd5e1] font-medium font-['Space_Grotesk']">
+              {description}
+            </p>
+          )}
         </div>
 
         <form className="mt-5 space-y-3 overflow-hidden" onSubmit={onSubmit}>
@@ -207,7 +327,7 @@ export function GuestAuthModal({
                 value={phone}
               />
             </div>
-          ) : (
+          ) : (mode === "signin" || mode === "forgot-password") ? (
             <LabelledInput
               autoComplete="email"
               label="Email Address"
@@ -216,9 +336,28 @@ export function GuestAuthModal({
               type="email"
               value={email}
             />
-          )}
+          ) : null}
 
-          {mode === "signup" ? (
+          {showOtpSection ? (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <span className="mb-1.5 block text-xs font-bold uppercase tracking-[1.2px] text-[#F1F5F9]">6-Digit Code</span>
+                <OtpField value={otp} onChange={setOtp} />
+              </div>
+              <div className="flex justify-end">
+                <button 
+                  type="button" 
+                  onClick={onResendOtp}
+                  disabled={countdown > 0 || pending}
+                  className="text-sm font-semibold text-[var(--vh-cyan)] disabled:opacity-50"
+                >
+                  {countdown > 0 ? `Resend in 00:${countdown.toString().padStart(2, '0')}` : "Didn't receive it? Resend"}
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {(mode === "signup" || mode === "set-new-password") ? (
             <div className="grid gap-3 sm:grid-cols-2">
               <LabelledInput
                 autoComplete="new-password"
@@ -237,7 +376,7 @@ export function GuestAuthModal({
                 value={confirmPassword}
               />
             </div>
-          ) : (
+          ) : mode === "signin" ? (
             <LabelledInput
               autoComplete="current-password"
               label="Password"
@@ -246,7 +385,7 @@ export function GuestAuthModal({
               type="password"
               value={password}
             />
-          )}
+          ) : null}
 
           {mode === "signin" ? (
             <div className="flex items-center justify-between text-sm text-white/80">
@@ -260,11 +399,15 @@ export function GuestAuthModal({
                 <span>Remember me</span>
               </label>
 
-              <button className="font-semibold text-[var(--vh-cyan)]" type="button">
+              <button 
+                className="font-semibold text-[var(--vh-cyan)]" 
+                type="button"
+                onClick={() => switchMode("forgot-password")}
+              >
                 Forgot?
               </button>
             </div>
-          ) : (
+          ) : mode === "signup" ? (
             <label className="block rounded-[10px] border border-dashed border-white/25 bg-white/[0.03] px-4 py-3 text-sm text-white/85">
               <span className="inline-flex items-start gap-2.5">
                 <input
@@ -279,7 +422,7 @@ export function GuestAuthModal({
                 </span>
               </span>
             </label>
-          )}
+          ) : null}
 
           <button
             className={`inline-flex h-14 w-full items-center justify-center rounded-[10px] border-2 border-[#0F172A] text-lg font-extrabold uppercase tracking-[0.4px] shadow-[4px_4px_0px_rgba(0,0,0,0.30)] transition hover:-translate-y-[1px] disabled:opacity-50 disabled:cursor-not-allowed ${
@@ -302,26 +445,30 @@ export function GuestAuthModal({
             <p className="rounded-lg border border-[#c62828]/50 bg-[#c62828]/10 px-3 py-2 text-sm text-[#FDECEC]">{localError ?? errorMessage}</p>
           ) : null}
 
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-white/20" />
-            <span className="text-xs font-bold uppercase tracking-[1px] text-white/60">or</span>
-            <div className="h-px flex-1 bg-white/20" />
-          </div>
+          {(mode === "signin" || mode === "signup") ? (
+            <>
+              <div className="mt-4 flex items-center gap-3">
+                <div className="h-px flex-1 bg-white/20" />
+                <span className="text-xs font-bold uppercase tracking-[1px] text-white/60">or</span>
+                <div className="h-px flex-1 bg-white/20" />
+              </div>
 
-          <button
-            className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-[10px] border border-[#39FF14]/35 bg-[#1E293B] text-sm font-medium text-[#F1F5F9] hover:bg-[#22314a]"
-            onClick={onGoogleAuth}
-            type="button"
-          >
-            <Image
-              alt="Google"
-              className="h-[20px] w-[20px]"
-              height={20}
-              src="/testimonials logos/icons8-google-logo-96.png"
-              width={20}
-            />
-            <span>{mode === "signin" ? "Continue with Google" : "Sign up with Google"}</span>
-          </button>
+              <button
+                className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-[10px] border border-[#39FF14]/35 bg-[#1E293B] text-sm font-medium text-[#F1F5F9] hover:bg-[#22314a]"
+                onClick={onGoogleAuth}
+                type="button"
+              >
+                <Image
+                  alt="Google"
+                  className="h-[20px] w-[20px]"
+                  height={20}
+                  src="/testimonials logos/icons8-google-logo-96.png"
+                  width={20}
+                />
+                <span>{mode === "signin" ? "Continue with Google" : "Sign up with Google"}</span>
+              </button>
+            </>
+          ) : null}
 
           <div className="text-center text-base text-white/80">
             <span>{switchLabel} </span>
@@ -370,5 +517,48 @@ function LabelledInput({
         value={value}
       />
     </label>
+  );
+}
+
+type OtpFieldProps = {
+  value: string;
+  onChange: (value: string) => void;
+};
+
+function OtpField({ value, onChange }: OtpFieldProps) {
+  return (
+    <OTPInput
+      value={value}
+      onChange={(nextValue) => onChange(nextValue.slice(0, 6))}
+      maxLength={6}
+      pattern={REGEXP_ONLY_DIGITS}
+      containerClassName="flex items-center justify-between gap-2 sm:gap-3"
+      className="w-full"
+      autoFocus
+      inputMode="numeric"
+    >
+      <OtpSlot index={0} />
+      <OtpSlot index={1} />
+      <OtpSlot index={2} />
+      <OtpSlot index={3} />
+      <OtpSlot index={4} />
+      <OtpSlot index={5} />
+    </OTPInput>
+  );
+}
+
+function OtpSlot({ index }: { index: number }) {
+  const inputOTPContext = useContext(OTPInputContext);
+  const slot = inputOTPContext?.slots?.[index];
+
+  return (
+    <div
+      className={`relative flex h-12 w-11 items-center justify-center rounded-[10px] border-2 bg-white/5 text-lg font-bold text-white transition sm:h-14 sm:w-12 ${
+        slot?.isActive ? "border-[var(--vh-cyan)]" : "border-white/25"
+      }`}
+    >
+      {slot?.char ?? ""}
+      {slot?.hasFakeCaret ? <div className="absolute h-5 w-px animate-pulse bg-[var(--vh-cyan)]" /> : null}
+    </div>
   );
 }

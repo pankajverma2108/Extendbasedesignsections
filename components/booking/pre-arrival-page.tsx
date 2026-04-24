@@ -599,6 +599,45 @@ function areAllSlotsCompleted(slots: BookingSlotSummary[]): boolean {
   return slots.length > 0 && slots.every((slot) => isKycCompletedStatus(slot.kyc_status));
 }
 
+function resolveNextActiveSlotId(
+  slots: BookingSlotSummary[],
+  options?: {
+    preferredSlotId?: string;
+    currentSlotId?: string | null;
+  },
+): string | null {
+  const preferred = options?.preferredSlotId;
+  if (preferred && slots.some((slot) => slot.slot_id === preferred && isSlotEditable(slot))) {
+    return preferred;
+  }
+
+  const current = options?.currentSlotId;
+  if (current && slots.some((slot) => slot.slot_id === current && isSlotEditable(slot))) {
+    return current;
+  }
+
+  const editableSlots = slots.filter((slot) => isSlotEditable(slot));
+  if (editableSlots.length === 1) {
+    return editableSlots[0].slot_id;
+  }
+
+  return null;
+}
+
+function getSlotDisplayName(slot: BookingSlotSummary): string {
+  const explicitName = slot.guest_name?.trim();
+  if (explicitName) {
+    return explicitName;
+  }
+
+  const label = slot.label?.trim();
+  if (label) {
+    return label;
+  }
+
+  return `Guest ${slot.slot_number}`;
+}
+
 function validateStepOne(state: KycEditorState): KycFieldErrors {
   const errors: KycFieldErrors = {};
 
@@ -757,6 +796,8 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
   const [cropZoom, setCropZoom] = useState(1);
   const [cropPixels, setCropPixels] = useState<Area | null>(null);
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
+  const [isResolvingSlot, setIsResolvingSlot] = useState(false);
+  const [slotSelectionError, setSlotSelectionError] = useState<string | null>(null);
 
   const documentUploadInputRef = useRef<HTMLInputElement | null>(null);
   const slotsRef = useRef<BookingSlotSummary[]>([]);
@@ -780,11 +821,11 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     () => slots.find((slot) => slot.slot_id === activeSlotId) ?? null,
     [activeSlotId, slots],
   );
+  const editableSlots = useMemo(() => slots.filter((slot) => isSlotEditable(slot)), [slots]);
 
-  const canEditActiveSlot =
-    Boolean(activeSlot?.can_edit ?? true) &&
-    activeSlot?.kyc_status !== "PRE_VERIFIED" &&
-    activeSlot?.kyc_status !== "VERIFIED";
+  const showSlotSelectionGate = editableSlots.length > 1 && !activeSlotId;
+
+  const canEditActiveSlot = Boolean(activeSlot && isSlotEditable(activeSlot));
 
   const documentPreview = localDocumentPreviewUrl || editorState.document_file_url;
   const detectedIdType = useMemo(
@@ -806,7 +847,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
   const documentUploadErrorMessage = fieldErrors.document_file_key
     || (shouldShowLiveDocumentError ? stepTwoLiveErrors.document_file_key : undefined);
   const canAdvanceToNextStep = useMemo(() => {
-    if (!canEditActiveSlot || activeStep >= 3) {
+    if (!activeSlotId || showSlotSelectionGate || !canEditActiveSlot || activeStep >= 3) {
       return false;
     }
 
@@ -819,7 +860,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     }
 
     return false;
-  }, [activeStep, canEditActiveSlot, editorState]);
+  }, [activeSlotId, activeStep, canEditActiveSlot, editorState, showSlotSelectionGate]);
 
   const showUploadPreviewModal = Boolean(uploadPreviewDraft);
 
@@ -1004,13 +1045,12 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
         setBookingTitle(cachedSlots.bookingTitle);
         setPropertyName(cachedSlots.propertyName);
         setBookingLifecycleStatus(cachedSlots.bookingStatus ?? null);
+        setSlotSelectionError(null);
         const currentActiveSlotId = activeSlotIdRef.current;
-        const cachedActive = preferredSlotId
-          || cachedSlots.slots.find((slot) => slot.slot_id === currentActiveSlotId && isSlotEditable(slot))?.slot_id
-          || cachedSlots.slots.find((slot) => isSlotEditable(slot))?.slot_id
-          || cachedSlots.slots.find((slot) => slot.slot_id === currentActiveSlotId)?.slot_id
-          || cachedSlots.slots[0]?.slot_id
-          || null;
+        const cachedActive = resolveNextActiveSlotId(cachedSlots.slots, {
+          preferredSlotId,
+          currentSlotId: currentActiveSlotId,
+        });
         setActiveSlotId(cachedActive);
         setIsLoading(false);
 
@@ -1067,15 +1107,13 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
         }
 
         const currentActiveSlotId = activeSlotIdRef.current;
-        const nextActiveSlotId = preferredSlotId
-          || slotResponse.slots.find((slot) => slot.slot_id === currentActiveSlotId && isSlotEditable(slot))?.slot_id
-          || slotResponse.slots.find((slot) => isSlotEditable(slot))?.slot_id
-          || slotResponse.slots.find((slot) => slot.slot_id === currentActiveSlotId)?.slot_id
-          || slotResponse.slots.find((slot) => slot.guest_id)?.slot_id
-          || slotResponse.slots[0]?.slot_id
-          || null;
+        const nextActiveSlotId = resolveNextActiveSlotId(slotResponse.slots, {
+          preferredSlotId,
+          currentSlotId: currentActiveSlotId,
+        });
 
         setActiveSlotId(nextActiveSlotId);
+        setSlotSelectionError(null);
 
         if (nextActiveSlotId) {
           await loadSlotDetail(token, nextActiveSlotId, slotResponse.slots);
@@ -1091,6 +1129,8 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
               gender: guestPrefill.gender,
             }),
           );
+          setActiveStep(1);
+          setFieldErrors({});
         }
       } catch (error) {
         setErrorMessage(toSafeErrorMessage(error, "We could not load web check-in right now."));
@@ -1309,6 +1349,31 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     }
   }
 
+  async function handleSelectSlot(slotId: string) {
+    const token = getStoredGuestToken();
+    if (!token) {
+      setSlotSelectionError("Your session ended. Please sign in again.");
+      return;
+    }
+
+    setIsResolvingSlot(true);
+    setSlotSelectionError(null);
+    setErrorMessage(null);
+
+    try {
+      await loadSlotDetail(token, slotId, slotsRef.current);
+      setActiveSlotId(slotId);
+      setActiveStep(1);
+      setFieldErrors({});
+    } catch (error) {
+      const message = toSafeErrorMessage(error, "We could not open this guest slot right now.");
+      setSlotSelectionError(message);
+      setErrorMessage(message);
+    } finally {
+      setIsResolvingSlot(false);
+    }
+  }
+
   function nextStep() {
     const stepErrors = activeStep === 1
       ? validateStep(1, editorState)
@@ -1518,6 +1583,23 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
     );
   }
 
+  if (editableSlots.length === 0) {
+    return (
+      <BookingPageShell
+        badge="Web Check-In"
+        title="No editable guest slot"
+        description="All visible guest slots are either locked or already verified."
+      >
+        <BookingEmptyState
+          title="No slot available to edit"
+          description="If you expected to complete check-in for a co-guest, ask the primary guest to share the latest link and ensure your guest account is linked to this reservation."
+          ctaHref={`/bookings/${encodeURIComponent(ezeeReservationId)}/confirmed`}
+          ctaLabel="Open booking status"
+        />
+      </BookingPageShell>
+    );
+  }
+
   return (
     <section className="min-h-screen bg-[#07070a] pb-12 pt-24 animate-vh-fade-in md:pt-28">
       <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
@@ -1544,6 +1626,66 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
               {errorMessage}
             </div>
           ) : null}
+
+          <section className="mt-6 rounded-[16px] border border-white/10 bg-[var(--vh-panel-strong)] p-4 md:p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-white">Select Guest Slot</h2>
+                <p className="mt-1 text-xs leading-6 text-[#99A1AF]">
+                  {showSlotSelectionGate
+                    ? "Choose the guest slot you are completing now."
+                    : "Guest slot selected. You can switch to another editable slot if needed."}
+                </p>
+              </div>
+              <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white/70">
+                {editableSlots.length} editable
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {editableSlots.map((slot) => {
+                const isActive = activeSlotId === slot.slot_id;
+                return (
+                  <button
+                    key={slot.slot_id}
+                    className={cn(
+                      "rounded-[12px] border px-4 py-3 text-left transition",
+                      isActive
+                        ? "border-[var(--vh-pink)] bg-[rgba(198,40,40,0.14)] text-white"
+                        : "border-white/12 bg-[#212121] text-white hover:border-white/25",
+                    )}
+                    disabled={isResolvingSlot}
+                    onClick={() => {
+                      void handleSelectSlot(slot.slot_id);
+                    }}
+                    type="button"
+                  >
+                    <p className="text-sm font-bold tracking-[0.02em]">{getSlotDisplayName(slot)}</p>
+                    <p className="mt-1 text-[11px] uppercase tracking-[0.08em] text-white/65">
+                      {slot.label || `Guest ${slot.slot_number}`}
+                    </p>
+                    <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#86efac]">
+                      {slot.kyc_status.replaceAll("_", " ")}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+
+            {isResolvingSlot ? (
+              <p className="mt-3 inline-flex items-center gap-2 text-xs text-[#99A1AF]" role="status">
+                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                Opening selected guest slot...
+              </p>
+            ) : null}
+
+            {slotSelectionError ? (
+              <p className="mt-3 text-xs text-[#ff6a5f]" role="alert">{slotSelectionError}</p>
+            ) : null}
+          </section>
+
+          {showSlotSelectionGate ? null : (
+          <>
 
           <div className="mx-auto mb-8 mt-8 w-full max-w-[980px] px-2 sm:px-4">
             <div className="mx-auto grid w-[80%] min-w-[280px] items-start" style={{ gridTemplateColumns: `repeat(${STEPS.length}, minmax(0, 1fr))` }}>
@@ -1957,6 +2099,8 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
             </div>
 
           </div>
+          </>
+          )}
         </div>
       </div>
 

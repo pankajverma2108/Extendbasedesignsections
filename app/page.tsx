@@ -1,11 +1,20 @@
+import { redirect } from "next/navigation";
 import { HeroCarousel } from "@/components/marketing/widgets/hero-carousel";
 import { HomeSections } from "@/components/marketing/pages/home-sections";
 import { BookingWidget } from "@/components/marketing/widgets/booking-widget";
 import { heroImages, homePageContent } from "@/content/home";
-import { getDefaultPropertyId, getPublicEvents, getRoomCatalog, roomTypesToHomeCards } from "@/lib/cx-api";
+import {
+  getDefaultPropertyId,
+  getDefaultPropertyDestinationHref,
+  getPublicEvents,
+  getRoomAvailabilitySnapshot,
+  roomTypesToHomeCards,
+} from "@/lib/cx-api";
 
 type HomePageProps = {
   searchParams?: Promise<{
+    checkin?: string;
+    checkout?: string;
     property_id?: string;
   }>;
 };
@@ -13,17 +22,26 @@ type HomePageProps = {
 export default async function HomePage({ searchParams }: HomePageProps) {
   const params = await searchParams;
   const propertyId = params?.property_id || getDefaultPropertyId() || undefined;
-  const propertyDestinationHref = propertyId
-    ? `/property?property_id=${encodeURIComponent(propertyId)}`
-    : "/property";
-  let roomTypes = await getRoomCatalog({ propertyId });
-  const usedFallbackRooms = roomTypes.every((room) => room.id.startsWith("fallback-"));
 
-  if (propertyId && usedFallbackRooms) {
-    roomTypes = await getRoomCatalog();
+  if (!params?.checkin || !params?.checkout || !params?.property_id) {
+    redirect(getDefaultPropertyDestinationHref(propertyId, "/"));
   }
 
-  const dynamicHomeRooms = roomTypesToHomeCards(roomTypes);
+  // Always route "Book Now" / room card links to /property with today→tomorrow pre-filled.
+  // The BookingWidget will update the dates when the user picks different ones.
+  const propertyDestinationHref = getDefaultPropertyDestinationHref(propertyId);
+
+  // checkin/checkout are guaranteed by the redirect guard above — always present here.
+  // getRoomAvailabilitySnapshot fetches /guest/booking/availability with the given dates,
+  // returning date-specific total prices + live inventory (available / limited / sold out).
+  // It internally falls back to the catalog if the availability endpoint is unavailable.
+  const snapshot = await getRoomAvailabilitySnapshot({
+    propertyId,
+    checkin: params.checkin,
+    checkout: params.checkout,
+  });
+
+  const dynamicHomeRooms = roomTypesToHomeCards(snapshot.roomTypes, { destinationHref: propertyDestinationHref });
   const dynamicHomeEvents = await getPublicEvents({ propertyId, limit: 3 });
 
   return (
@@ -34,6 +52,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <div className="w-full max-w-[560px]">
             <BookingWidget
               destinationHref={propertyDestinationHref}
+              initialCheckIn={params?.checkin}
+              initialCheckOut={params?.checkout}
               submitLabel="Book Now"
               variant="hero"
             />

@@ -111,7 +111,9 @@ export function RoomCard({
 
         <CardFooter className="mt-auto flex items-end justify-between gap-4">
           <div>
-            <p className="text-xs uppercase text-white/60">Starting from</p>
+            <p className="text-xs uppercase text-white/60">
+              {price.includes("/night") ? "Per night" : "Starting from"}
+            </p>
             <p className="text-2xl font-bold text-[#c62828]">{price}</p>
           </div>
           <Button asChild variant="outline">

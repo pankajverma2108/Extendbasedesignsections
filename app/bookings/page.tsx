@@ -8,6 +8,7 @@ import { CalendarDays, ChevronDown, LoaderCircle, MapPin, RefreshCcw, Sparkles }
 import { toast } from "sonner";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
+import { GuestVerificationBanner } from "@/components/auth/guest-verification-banner";
 import { BookingPageShell } from "@/components/booking/booking-shell";
 import { StickerTag } from "@/components/shared/sticker-tag";
 import { Button } from "@/components/ui/button";
@@ -468,6 +469,7 @@ export default function BookingsPage() {
       title="Your booking tickets"
       sectionClassName="bg-[#07070a]"
     >
+      <GuestVerificationBanner />
       <section className="space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="inline-flex flex-wrap items-center gap-2 rounded-full border border-white/12 bg-white/5 p-1">

@@ -1,8 +1,8 @@
 import type { CSSProperties } from "react";
 
 export const fontFamilies = {
-  navHeading: '"Space Grotesk", "Nunito", "Segoe UI", sans-serif',
-  navBody: '"Nunito", "Segoe UI", sans-serif',
+  navHeading: '"Geologica", "Segoe UI", sans-serif',
+  navBody: '"Geologica", "Segoe UI", sans-serif',
 } as const;
 
 export const navFontStyles = {

@@ -10,10 +10,7 @@ export const navItems: NavItem[] = [
 export const footerLinks = {
   quickLinks: navItems,
   legal: [
-    { label: "Guest Policies", href: "/policies/guest" },
-    { label: "Privacy Policy", href: "/policies/privacy" },
-    { label: "Refund Policy", href: "/policies/refund" },
-    { label: "Terms & Conditions", href: "/policies/terms" },
+    { label: "Policies", href: "/policies" },
   ],
 };
 

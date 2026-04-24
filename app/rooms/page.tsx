@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getDefaultPropertyDestinationHref } from "@/lib/cx-api";
 
 type RoomsPageProps = {
   searchParams?: Promise<{
@@ -34,5 +35,7 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
     query.set("location", params.location);
   }
 
-  redirect(query.toString() ? `/property?${query.toString()}` : "/property");
+  // If the caller already provided a date window, honour it; otherwise inject today→tomorrow
+  // so /property always opens with live availability pre-loaded.
+  redirect(query.toString() ? `/property?${query.toString()}` : getDefaultPropertyDestinationHref(params?.property_id));
 }
