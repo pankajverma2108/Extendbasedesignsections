@@ -10,7 +10,6 @@ import {
   ExternalLink,
   MapPin,
   ShieldCheck,
-  Sparkles,
   TriangleAlert,
   WalletCards,
 } from "lucide-react";
@@ -354,7 +353,7 @@ export function BookingConfirmedPage({ ezeeReservationId }: { ezeeReservationId:
 
                 <div className="mt-5 flex flex-1 flex-col gap-4 rounded-[18px] border border-white/10 bg-black/20 p-4 md:p-5">
                   <div className="flex items-center gap-3 text-white/88">
-                    {checkinDate ? <CheckCircle2 className="h-5 w-5 text-[#05DF72]" /> : <Sparkles className="h-5 w-5 text-[var(--vh-cyan)]" />}
+                    {checkinDate ? <CheckCircle2 className="h-5 w-5 text-[#05DF72]" /> : <ShieldCheck className="h-5 w-5 text-[var(--vh-cyan)]" />}
                     <p className="font-body">{checkinDate ? "Your stay is confirmed. The least chaotic path is still WhatsApp." : "Tiny task now, zero chaos later. Tap WhatsApp and move like a person with plans."}</p>
                   </div>
 
@@ -449,7 +448,7 @@ export function BookingConfirmedPage({ ezeeReservationId }: { ezeeReservationId:
                     <p className="font-body text-sm text-white/78">Bring a valid government ID and the same name used for the booking.</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Sparkles className="h-4 w-4 text-[var(--vh-pink)]" />
+                    <ShieldCheck className="h-4 w-4 text-[var(--vh-pink)]" />
                     <p className="font-body text-sm text-white/78">Quiet enough to crash, social enough to not feel like a waiting room.</p>
                   </div>
                 </div>
@@ -541,7 +540,7 @@ export function BookingConfirmedPage({ ezeeReservationId }: { ezeeReservationId:
                       <p className="font-body text-sm leading-7">Late arrival? Cool. Just don’t ghost the booking and call it vibes.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Sparkles className="h-4 w-4 text-[var(--vh-cyan)]" />
+                      <ShieldCheck className="h-4 w-4 text-[var(--vh-cyan)]" />
                       <p className="font-body text-sm leading-7">Sort the boring bits now so the arrival stays easy and low-drama.</p>
                     </div>
                   </div>

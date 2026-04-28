@@ -1,8 +1,9 @@
 import type { NavItem } from "@/content/types";
+import { getDefaultPropertyDestinationHref } from "@/lib/cx-api";
 
 export const navItems: NavItem[] = [
   { label: "Home", href: "/" },
-  { label: "Property", href: "/property" },
+  { label: "Property", href: getDefaultPropertyDestinationHref() },
   { label: "Experiences", href: "/events" },
   { label: "About", href: "/about" },
 ];

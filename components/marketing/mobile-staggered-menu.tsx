@@ -5,11 +5,13 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
 
 import { StickerTag } from "@/components/shared/sticker-tag";
-import { hostelNavItems, primaryHostelHref } from "@/content/nav-menu";
+import { hostelNavItems } from "@/content/nav-menu";
 import { navFontStyles } from "@/content/typography";
+import { getDefaultPropertyDestinationHref } from "@/lib/cx-api";
 import { cn } from "@/lib/utils";
 
 type MobileNavTile = {
@@ -48,10 +50,10 @@ const navIcons = {
   profile: "/nav_design/icon-profile.svg",
 } as const;
 
-const navTiles: MobileNavTile[] = [
+const buildNavTiles = (propertyHref: string): MobileNavTile[] => [
   {
     id: "hostels",
-    href: primaryHostelHref,
+      href: propertyHref,
     title: "HOSTELS",
     subtitle: "find your corner...",
     icon: navIcons.hostels,
@@ -275,8 +277,28 @@ type MobileStaggeredMenuProps = {
 };
 
 export function MobileStaggeredMenu({ isAuthenticated, onOpenSignIn }: MobileStaggeredMenuProps) {
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [hostelsExpanded, setHostelsExpanded] = useState(false);
+  const resolveHostelHref = (href: string, propertyId: string) => {
+    if (!href.startsWith("/property")) {
+      return href;
+    }
+
+    return getDefaultPropertyDestinationHref(
+      propertyId,
+      "/property",
+      searchParams.get("checkin"),
+      searchParams.get("checkout"),
+    );
+  };
+  const propertyHref = getDefaultPropertyDestinationHref(
+    hostelNavItems[0]?.id,
+    "/property",
+    searchParams.get("checkin"),
+    searchParams.get("checkout"),
+  );
+  const navTiles = buildNavTiles(propertyHref);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -485,7 +507,7 @@ export function MobileStaggeredMenu({ isAuthenticated, onOpenSignIn }: MobileSta
                                                 {hostelProperties.map((property) => (
                                                   <Link
                                                     key={property.id}
-                                                    href={property.href}
+                                                    href={resolveHostelHref(property.href, property.id)}
                                                     className="text-[15px] text-white/92 transition hover:text-white"
                                                     onClick={closeMenu}
                                                     style={navFontStyles.tileSubtitle}

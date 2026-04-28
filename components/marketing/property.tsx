@@ -28,7 +28,6 @@ import {
   Smartphone,
   Snowflake,
   Shirt,
-  Sparkles,
   UtensilsCrossed,
   Usb,
   Waves,
@@ -71,7 +70,7 @@ const amenityIcons = {
   wifi: Wifi,
   snowflake: Snowflake,
   building: Building2,
-  sparkles: Sparkles,
+  sparkles: ShieldCheck,
   car: Car,
   "paw-print": PawPrint,
   waves: Waves,
@@ -96,8 +95,8 @@ const roomFeatureIcons: Record<string, typeof Wifi> = {
   "Mini-fridge": GlassWater,
   AC: Snowflake,
   Locker: Lock,
-  "Fresh linen": Sparkles,
-  Housekeeping: Sparkles,
+  "Fresh linen": ShieldCheck,
+  Housekeeping: ShieldCheck,
   "Private bath": Droplets,
 };
 
@@ -352,7 +351,7 @@ const bookingEssentials = [
     price: 129,
     note: "per kit",
     actionLabel: "Add",
-    icon: Sparkles,
+    icon: ShieldCheck,
   },
   {
     id: "bath-towel",
@@ -368,7 +367,7 @@ const bookingEssentials = [
 const propertyAboutText = propertyOverview.join(" ");
 
 function iconForLabel(label: string) {
-  return roomFeatureIcons[label] ?? Sparkles;
+  return roomFeatureIcons[label] ?? ShieldCheck;
 }
 
 function getRoomGallery(room: RoomCategory) {
@@ -503,7 +502,7 @@ function DesktopBookingSummary({
   return (
     <aside className="hidden self-start lg:sticky lg:top-28 lg:block">
       <div className="rounded-[26px] border border-white/12 bg-[var(--vh-panel-strong)] p-5 shadow-[var(--vh-shadow-lg)] lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
-        <h2 className="text-3xl font-semibold uppercase text-white">{bookingSummary.title}</h2>
+        <h2 className="vh-title text-3xl text-white">{bookingSummary.title}</h2>
 
         <div className="mt-5 rounded-[18px] border border-white/10 bg-white/5 px-4 py-4 text-white">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
@@ -603,7 +602,7 @@ function DesktopBookingSummary({
           </span>
         </div>
 
-        <Button className="mt-5 w-full" disabled={!isAgeConfirmed || !hasSelection} onClick={onContinue} type="button">
+        <Button className="vh-cta-button mt-5 w-full disabled:cursor-not-allowed disabled:opacity-55" disabled={!isAgeConfirmed || !hasSelection} onClick={onContinue} type="button">
           Review Booking
         </Button>
       </div>
@@ -748,7 +747,7 @@ function MobileStickySummary({
               <Info className="h-3.5 w-3.5" />
             </button>
           </div>
-          <Button className="h-10 min-w-[128px] rounded-[12px] px-3 py-2.5 text-xs font-black sm:px-4 sm:text-sm" disabled={!hasSelection} onClick={onContinue} type="button">
+          <Button className="vh-cta-button h-10 min-w-[128px] px-3 py-2 text-xs sm:px-4 sm:text-sm disabled:cursor-not-allowed disabled:opacity-55" disabled={!hasSelection} onClick={onContinue} type="button">
             Review Booking
           </Button>
         </div>
@@ -792,7 +791,7 @@ function BuildYourStaySection() {
                 >
                   <span className="h-3.5 w-3.5 rounded-full" style={{ backgroundColor: tone.accent }} />
                 </div>
-                <h3 className="text-lg font-bold uppercase text-white">{item.title}</h3>
+                <h3 className="text-lg font-bold uppercase text-white font-['Geologica']">{item.title}</h3>
               </div>
 
               <p className="text-sm leading-6 text-white/80">{item.body}</p>
@@ -1532,7 +1531,7 @@ export function Property({
                   </button>
                 </div>
                 <div className="hidden lg:block lg:sticky lg:top-28">
-                  <Button asChild className="h-12 w-full rounded-[10px] text-sm font-black leading-none whitespace-nowrap uppercase tracking-[0.04em] sm:text-base">
+                  <Button asChild className="vh-cta-button h-12 w-full whitespace-nowrap px-4 text-sm sm:text-base">
                     <Link href="#availability">View rooms</Link>
                   </Button>
                 </div>
@@ -1548,7 +1547,7 @@ export function Property({
               </div>
               <div className="mt-5 grid grid-cols-4 gap-4 sm:gap-5 lg:grid-cols-12 lg:gap-2">
                   {propertyAmenities.map((amenity, index) => {
-                    const Icon = amenityIcons[amenity.icon as keyof typeof amenityIcons] ?? Sparkles;
+                    const Icon = amenityIcons[amenity.icon as keyof typeof amenityIcons] ?? ShieldCheck;
                     const colorIndex = index % 3;
                     const colors = ["var(--vh-pink)", "var(--vh-cyan)", "var(--vh-amber)"];
 
@@ -1645,17 +1644,10 @@ export function Property({
                             </div>
                           </div>
 
-                          <div className="space-y-4 p-5">
+                          <div className="space-y-1 p-5">
                             <div className="flex flex-wrap items-center justify-between gap-3">
                               <button className="text-left" onClick={() => openRoomPopup(roomKey)} type="button">
-                                <h3 className="text-xl font-semibold text-white hover:text-[var(--vh-cyan)]">{room.title}</h3>
-                              </button>
-                              <button
-                                className="text-sm font-semibold text-[var(--vh-cyan)] hover:text-white"
-                                onClick={() => openRoomPopup(roomKey)}
-                                type="button"
-                              >
-                                View details
+                                <h3 className="text-xl font-semibold text-white hover:text-[var(--vh-cyan)] font-['Geologica']">{room.title}</h3>
                               </button>
                             </div>
 
@@ -1747,19 +1739,17 @@ export function Property({
                 </div>
 
                 </div>
-                <div className="space-y-6">
-                  <DesktopBookingSummary
-                    checkIn={checkIn}
-                    checkOut={checkOut}
-                    essentials={selectedEssentialDrafts}
-                    essentialsTotal={essentialsTotal}
-                    isAgeConfirmed={isAgeConfirmed}
-                    onContinue={continueToCheckout}
-                    onAgeConfirmChange={setIsAgeConfirmed}
-                    selectedCounts={selectedCounts}
-                    roomCategoryList={roomCategoryList}
-                  />
-                </div>
+                <DesktopBookingSummary
+                  checkIn={checkIn}
+                  checkOut={checkOut}
+                  essentials={selectedEssentialDrafts}
+                  essentialsTotal={essentialsTotal}
+                  isAgeConfirmed={isAgeConfirmed}
+                  onContinue={continueToCheckout}
+                  onAgeConfirmChange={setIsAgeConfirmed}
+                  selectedCounts={selectedCounts}
+                  roomCategoryList={roomCategoryList}
+                />
               </div>
             </section>
 

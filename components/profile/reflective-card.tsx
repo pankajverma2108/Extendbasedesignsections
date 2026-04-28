@@ -201,7 +201,7 @@ export default function ReflectiveCard({
 
         <div className="mb-8 flex flex-1 flex-col items-center justify-end gap-6 text-center">
           <div>
-            <h2 className="mb-2 text-2xl font-bold tracking-[0.05em] drop-shadow-md">{name}</h2>
+            <h2 className="mb-2 text-2xl font-bold tracking-[0.05em] drop-shadow-md font-['Geologica']">{name}</h2>
             <p className="m-0 text-xs uppercase tracking-[0.2em] opacity-70">{roleLabel}</p>
           </div>
         </div>

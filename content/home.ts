@@ -53,7 +53,7 @@ export const experienceCards = [
   {
     title: "High Energy",
     body:
-      "Daily experiences, pub crawls, and game nights keep the energy alive. Meet travelers from around the world and create memories that last.",
+      "Pub crawls and game nights keep energy high while friendships spark fast, daily.",
     color: "#c62828",
   },
   {

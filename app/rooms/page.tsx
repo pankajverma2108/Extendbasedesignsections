@@ -13,7 +13,9 @@ type RoomsPageProps = {
 
 export default async function RoomsPage({ searchParams }: RoomsPageProps) {
   const params = await searchParams;
-  const query = new URLSearchParams();
+
+  const destination = new URL(getDefaultPropertyDestinationHref(params?.property_id), "http://localhost");
+  const query = destination.searchParams;
 
   if (params?.checkin) {
     query.set("checkin", params.checkin);
@@ -37,5 +39,5 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
 
   // If the caller already provided a date window, honour it; otherwise inject today→tomorrow
   // so /property always opens with live availability pre-loaded.
-  redirect(query.toString() ? `/property?${query.toString()}` : getDefaultPropertyDestinationHref(params?.property_id));
+  redirect(`/property?${query.toString()}`);
 }

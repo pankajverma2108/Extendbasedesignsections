@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { CalendarDays, ChevronDown, LoaderCircle, MapPin, RefreshCcw, Sparkles } from "lucide-react";
+import { getDefaultPropertyDestinationHref } from "@/lib/cx-api";
+import { CalendarDays, ChevronDown, LoaderCircle, MapPin, RefreshCcw, Ticket } from "lucide-react";
 import { toast } from "sonner";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
@@ -182,12 +183,12 @@ function BookingNoDataCard() {
   return (
     <div className="px-2 py-10 text-center">
       <p className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white/72">
-        <Sparkles className="h-3.5 w-3.5 text-[var(--vh-pink)]" />
+        <Ticket className="h-3.5 w-3.5 text-[var(--vh-pink)]" />
         No tickets in this view
       </p>
       <h3 className="mt-3 font-['Space_Grotesk'] text-2xl font-bold tracking-tight text-white sm:text-[30px]">Nothing to show right now</h3>
       <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-white/70">
-        <Link className="font-semibold text-white underline decoration-[var(--vh-pink)] underline-offset-4 transition-colors hover:text-[var(--vh-pink)]" href="/property">
+        <Link className="font-semibold text-white underline decoration-[var(--vh-pink)] underline-offset-4 transition-colors hover:text-[var(--vh-pink)]" href={getDefaultPropertyDestinationHref()}>
           Start a new booking
         </Link>
       </p>
@@ -262,7 +263,6 @@ function bookingMatchesDateRange(booking: GuestBookingMineItem, range: DateRange
 function AutoSyncedBookingCard({ booking, tab }: { booking: GuestBookingMineItem; tab: BookingTabKey }) {
   const statusLabel = tab === "past" ? "Past stay" : tab === "upcoming" ? "Upcoming" : "You're in";
   const propertyLabel = withBrandName(booking.property_id);
-  const roomNumber = booking.room_number || "Assigned at check-in";
   const destinationHref = bookingCardHref(booking);
 
   return (
@@ -279,7 +279,7 @@ function AutoSyncedBookingCard({ booking, tab }: { booking: GuestBookingMineItem
         <div className="rounded-[16px] border-2 border-[var(--vh-border)] bg-[var(--vh-ice)] p-4 text-[var(--vh-surface-2)] shadow-[8px_8px_0_0_var(--vh-pink)] transition-transform duration-300 sm:p-6 md:-rotate-1 md:hover:-translate-y-1 md:hover:-rotate-2 md:group-hover:-translate-y-1 md:group-hover:-rotate-2">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--vh-surface)]/70">Confirmation Receipt</p>
-            <p className="mt-2 break-all text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--vh-surface)]/55">
+            <p className="mt-2 break-all font-['Geologica'] text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--vh-surface)]/55">
               Reservation {booking.ezee_reservation_id}
             </p>
             <div className="mt-2 font-['Space_Grotesk'] text-[36px] font-black leading-[0.92] text-[var(--vh-surface)] sm:text-[44px]">
@@ -289,9 +289,7 @@ function AutoSyncedBookingCard({ booking, tab }: { booking: GuestBookingMineItem
           </div>
 
           <div className="mt-5 rounded-[12px] bg-[var(--vh-surface)] px-4 py-4 text-white sm:mt-6 sm:px-5">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-white/60">Room Details</p>
             <p className="mt-1 text-lg font-bold tracking-tight sm:text-xl">{booking.room_type_name || "Room details pending"}</p>
-            <p className="text-sm font-semibold text-white/80 sm:text-base">{roomNumber}</p>
           </div>
 
           <div className="mt-4 flex items-start gap-2 text-sm text-[var(--vh-surface)]/80 sm:mt-5">
@@ -480,7 +478,7 @@ export default function BookingsPage() {
                 <button
                   key={tab}
                   className={[
-                    "rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-[0.1em] transition-colors",
+                    "rounded-full px-4 py-2 text-[13px] font-bold uppercase tracking-[0.1em] transition-colors",
                     isActive ? "bg-[var(--vh-pink)] text-white" : "text-white/70 hover:bg-white/10 hover:text-white",
                   ].join(" ")}
                   onClick={() => setActiveTab(tab)}
@@ -493,10 +491,6 @@ export default function BookingsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button asChild className="rounded-full bg-[var(--vh-pink)] px-5 text-white hover:bg-[var(--vh-pink-soft)]">
-              <Link href="/property">New booking</Link>
-            </Button>
-
             <Popover onOpenChange={setIsDateFilterOpen} open={isDateFilterOpen}>
               <PopoverTrigger asChild>
                 <button
@@ -504,7 +498,6 @@ export default function BookingsPage() {
                   type="button"
                 >
                   <CalendarDays className="h-4 w-4 text-[var(--vh-cyan)]" />
-                  <span className="hidden text-[11px] font-bold uppercase tracking-[0.1em] text-white/72 sm:inline">Date filter</span>
                   <span className="text-sm font-semibold">{formatDateFilterLabel(dateFilter)}</span>
                   <ChevronDown className={`h-4 w-4 text-white/70 transition-transform ${isDateFilterOpen ? "rotate-180" : ""}`} />
                 </button>
@@ -558,20 +551,15 @@ export default function BookingsPage() {
             <Button
               type="button"
               variant="outline"
-              className="rounded-full border-white/15 bg-white/5 px-4 text-white hover:bg-white/10"
+              className="rounded-full border-white/15 bg-white/5 px-3 text-white hover:bg-white/10"
               disabled={bookingLoadState === "loading"}
               onClick={refreshBookings}
+              aria-label="Refresh bookings"
             >
               {bookingLoadState === "loading" ? (
-                <>
-                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                  Syncing
-                </>
+                <LoaderCircle className="h-4 w-4 animate-spin" />
               ) : (
-                <>
-                  <RefreshCcw className="mr-2 h-4 w-4" />
-                  Refresh
-                </>
+                <RefreshCcw className="h-4 w-4" />
               )}
             </Button>
           </div>
@@ -580,9 +568,6 @@ export default function BookingsPage() {
         <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.1em] text-white/65">
           <span className="rounded-full border border-white/12 bg-white/5 px-2.5 py-1">
             {BOOKING_TAB_LABELS[activeTab]}: {bookingSections[activeTab].length}
-          </span>
-          <span className="rounded-full border border-[var(--vh-pink)]/35 bg-[var(--vh-pink)]/10 px-2.5 py-1 text-white">
-            {totalBookingCount} {totalBookingCount === 1 ? "booking" : "bookings"} in view
           </span>
           {totalAvailableBookingCount !== totalBookingCount ? (
             <span className="rounded-full border border-white/12 bg-white/5 px-2.5 py-1">
@@ -628,6 +613,12 @@ export default function BookingsPage() {
             </div>
           </div>
         )}
+
+        <div className="pt-2 text-center">
+          <Button asChild className="vh-cta-button">
+            <Link href={getDefaultPropertyDestinationHref()}>New Booking</Link>
+          </Button>
+        </div>
       </section>
     </BookingPageShell>
   );

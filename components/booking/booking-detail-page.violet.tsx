@@ -9,7 +9,7 @@ import {
   ChevronRight,
   KeyRound,
   MapPin,
-  Sparkles,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 
@@ -252,7 +252,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                 type="button"
                 variant="ghost"
               >
-                <Sparkles className="h-4 w-4" />
+                <ShieldCheck className="h-4 w-4" />
               </Button>
             </div>
 
@@ -361,7 +361,7 @@ export function BookingDetailPage({ ezeeReservationId }: { ezeeReservationId: st
                   </div>
                   <div className="rounded-[22px] border border-white/10 bg-white/5 p-5 hover:-translate-y-1 hover:border-[rgba(151,135,243,0.4)] hover:bg-[rgba(151,135,243,0.05)] transition-all duration-300 shadow-sm hover:shadow-[0_10px_30px_-5px_rgba(151,135,243,0.2)]">
                     <div className="flex items-center gap-3">
-                      <Sparkles className="h-4 w-4 text-[var(--vh-pink)]" />
+                      <ShieldCheck className="h-4 w-4 text-[var(--vh-pink)]" />
                       <p className="text-sm font-semibold text-white tracking-wide">Amount paid</p>
                     </div>
                     <p className="mt-4 text-3xl font-black text-white">{formatCurrency(amountPaid)}</p>

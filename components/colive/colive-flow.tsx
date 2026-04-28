@@ -19,7 +19,7 @@ import {
   Plus,
   PlusCircle,
   Shield,
-  Sparkles,
+  ShieldCheck,
   Star,
   User,
   UtensilsCrossed,
@@ -519,7 +519,7 @@ const durationOptions = [
 
 const amenityShowcase = [
   { label: "Superfast Speed", icon: Wifi, accent: "#34d5ff" },
-  { label: "Daily Housekeeping", icon: Sparkles, accent: "#ff7b6b" },
+  { label: "Daily Housekeeping", icon: ShieldCheck, accent: "#ff7b6b" },
   { label: "Shared Kitchen", icon: Coffee, accent: "#f9cb37" },
   { label: "Laundry Support", icon: WashingMachine, accent: "#9bff6a" },
   { label: "Community Events", icon: CalendarDays, accent: "#34d5ff" },

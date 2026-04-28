@@ -8,6 +8,7 @@ import { SectionHeading } from "@/components/marketing/section-heading";
 import { ImageWithFallback } from "@/components/shared/image-with-fallback";
 import { FadeIn, Stagger, StaggerItem } from "@/components/shared/motion";
 import { Button } from "@/components/ui/button";
+import { getDefaultPropertyDestinationHref } from "@/lib/cx-api";
 
 export default function AboutPage() {
   const [expanded, setExpanded] = useState(false);
@@ -17,10 +18,7 @@ export default function AboutPage() {
       <section className="vh-section pt-28 md:pt-32">
         <div className="vh-container grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
           <FadeIn>
-            <p className="vh-kicker inline-block rounded-full border border-white/15 bg-white/6 px-4 py-1.5 text-white">
-              About The Daily Social
-            </p>
-            <h1 className="vh-retro-3d mt-6 text-[3rem] leading-none md:text-[5.5rem] lg:text-[6.5rem]">
+            <h1 className="vh-retro-3d mt-6 font-['Suez_One'] text-[3rem] leading-none md:text-[5.5rem] lg:text-[6.5rem]">
               More than
               <br />
               just a bed.
@@ -119,8 +117,8 @@ export default function AboutPage() {
           <p className="mx-auto mt-6 max-w-[640px] text-lg italic text-white">
             Join thousands of travelers who have made The Daily Social their home away from home.
           </p>
-          <Button asChild className="mt-10 bg-white text-[var(--vh-pink)] hover:translate-y-[-2px]" size="lg" variant="secondary">
-            <Link href="/property">Search Availability</Link>
+          <Button asChild className="mt-10 bg-white text-[var(--vh-pink)] hover:translate-y-[-2px] hover:bg-[#ffe8e8] hover:text-[#8e1b1b]" size="lg" variant="secondary">
+            <Link href={getDefaultPropertyDestinationHref()}>Search Availability</Link>
           </Button>
         </div>
       </section>

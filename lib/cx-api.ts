@@ -968,11 +968,16 @@ export function getDefaultPropertyId() {
 
 /**
  * Returns the canonical property booking URL with today and tomorrow pre-filled as the
- * check-in / check-out dates. Every "Book Now" and "View Details" link in the app should
- * use this so the /property page always loads with a valid date range and immediate live
- * availability — eliminating the need for users to pick dates manually on first load.
+ * check-in / check-out dates unless explicit dates are provided. Every "Book Now" and
+ * "View Details" link in the app should use this so the /property page always loads with
+ * a valid date range and immediate live availability.
  */
-export function getDefaultPropertyDestinationHref(propertyId?: string, basePath = "/property"): string {
+export function getDefaultPropertyDestinationHref(
+  propertyId?: string,
+  basePath = "/property",
+  checkin?: string | null,
+  checkout?: string | null,
+): string {
   const pid = sanitizePropertyId(propertyId ?? "") || getDefaultPropertyId();
 
   function localIsoDate(daysFromNow: number): string {
@@ -986,8 +991,8 @@ export function getDefaultPropertyDestinationHref(propertyId?: string, basePath 
   }
 
   const params = new URLSearchParams({
-    checkin: localIsoDate(0),
-    checkout: localIsoDate(1),
+    checkin: checkin?.trim() || localIsoDate(0),
+    checkout: checkout?.trim() || localIsoDate(1),
     property_id: pid,
   });
 

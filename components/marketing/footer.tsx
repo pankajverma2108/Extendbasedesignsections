@@ -32,7 +32,7 @@ export function Footer() {
 
           <div className="grid grid-cols-2 gap-8 md:col-span-2 md:grid-cols-2">
             <div>
-              <h3 className="mb-4 text-sm font-bold uppercase tracking-[1px] text-white">
+              <h3 className="mb-4 font-['Geologica'] text-sm font-bold uppercase tracking-[1px] text-white">
                 Quick Links
               </h3>
               <div className="space-y-2">
@@ -49,7 +49,7 @@ export function Footer() {
             </div>
 
             <div>
-              <h3 className="mb-4 text-sm font-bold uppercase tracking-[1px] text-white">
+              <h3 className="mb-4 font-['Geologica'] text-sm font-bold uppercase tracking-[1px] text-white">
                 Policies
               </h3>
               <div className="space-y-2">

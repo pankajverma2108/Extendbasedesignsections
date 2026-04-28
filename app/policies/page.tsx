@@ -124,7 +124,7 @@ export default function PoliciesPage() {
       <section className="vh-section pt-28 md:pt-32">
         <div className="vh-container">
           <FadeIn className="text-center">
-            <h1 className="vh-retro-3d mt-6 text-[3rem] leading-none md:text-[5.5rem] lg:text-[6.5rem]">
+            <h1 className="vh-retro-3d mt-6 font-['Suez_One'] text-[3rem] leading-none md:text-[5.5rem] lg:text-[6.5rem]">
               Policies
             </h1>
             <p className="mt-4 text-sm text-white/60">Last updated: {lastUpdated}</p>
@@ -133,10 +133,9 @@ export default function PoliciesPage() {
       </section>
 
       <section className="vh-section vh-section-alt">
-        <div className="vh-container grid grid-cols-1 gap-8 lg:grid-cols-[minmax(220px,28%)_minmax(0,1fr)]">
-          <div className="hidden lg:block relative">
-            <aside className="sticky top-28 z-10 transition-all">
-              <div className="vh-panel rounded-2xl p-5">
+        <div className="vh-container grid grid-cols-1 gap-8 lg:grid-cols-[minmax(220px,28%)_minmax(0,1fr)] lg:items-start">
+          <aside className="relative hidden self-start lg:sticky lg:top-28 lg:block">
+            <div className="vh-panel rounded-2xl p-5">
               <h2 className="text-sm font-bold uppercase tracking-[1px] text-white/90">Policy Menu</h2>
               <nav className="mt-5 space-y-2">
                 {policyAnchors.map((item) => (
@@ -150,8 +149,8 @@ export default function PoliciesPage() {
                 ))}
               </nav>
             </div>
-          </aside>          </div>
-          <div className="space-y-6">
+          </aside>
+          <div className="min-w-0 space-y-6 lg:pr-2">
             <div className="vh-panel rounded-2xl p-5 lg:hidden">
               <h2 className="text-sm font-bold uppercase tracking-[1px] text-white/90">Quick Jump</h2>
               <div className="mt-4">

@@ -12,7 +12,6 @@ import {
   MapPin,
   Plus,
   ShieldCheck,
-  Sparkles,
   Trash2,
   Upload,
   Users,
@@ -569,7 +568,7 @@ export function PreArrivalPage({ ezeeReservationId }: { ezeeReservationId: strin
                 Pre-Arrival
               </p>
               <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[rgba(151,135,243,0.3)] bg-[rgba(151,135,243,0.1)] text-[var(--vh-pink)] shadow-[0_0_10px_rgba(151,135,243,0.1)]">
-                <Sparkles className="h-4 w-4" />
+                <ShieldCheck className="h-4 w-4" />
               </div>
             </div>
 

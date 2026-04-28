@@ -49,7 +49,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <section className="relative min-h-[85vh] overflow-hidden">
         <HeroCarousel images={heroImages} titleParts={homePageContent.heroTitle} />
         <div className="absolute inset-x-0 bottom-8 z-10 flex justify-center px-4">
-          <div className="w-full max-w-[560px]">
+          <div className="w-full max-w-[500px]">
             <BookingWidget
               destinationHref={propertyDestinationHref}
               initialCheckIn={params?.checkin}

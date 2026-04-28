@@ -142,12 +142,13 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
   width: 100%;
   background: #07070a;
   color: white;
@@ -156,22 +157,27 @@ body {
   scrollbar-width: thin;
 }
 
-p,
-li,
-a,
-button,
-input,
-textarea,
-label,
-small,
-span,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-geologica);
+@layer base {
+  p,
+  li,
+  a,
+  button,
+  input,
+  textarea,
+  label,
+  small,
+  span {
+    font-family: var(--font-geologica);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-suez);
+  }
 }
 
 *::-webkit-scrollbar {
@@ -647,10 +653,10 @@ select optgroup {
   }
 
   .vh-cta-button {
-    @apply inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-md bg-[var(--vh-pink)] px-6 text-base font-extrabold uppercase text-white transition-all outline-none hover:-translate-y-0.5 focus-visible:ring-[3px] focus-visible:ring-white/30;
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[14px] bg-[var(--vh-pink)] px-6 py-3 text-center text-[18px] font-bold uppercase leading-7 text-white transition-all outline-none hover:bg-[#8e1b1b] focus-visible:ring-[3px] focus-visible:ring-white/30;
     font-family: var(--font-geologica);
-    box-shadow: 4px 4px 0 0 rgba(255, 255, 255, 0.18);
-    letter-spacing: 0.02em;
+    box-shadow: 4px 4px 0 0 rgba(128, 128, 128, 0.5);
+    letter-spacing: 0.9px;
   }
 
   .font-caption {

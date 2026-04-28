@@ -1,5 +1,5 @@
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
-import { Users, Sparkles, MapPin, Shield, ArrowRight } from 'lucide-react';
+import { Users, ShieldCheck, MapPin, Shield, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router';
 
 export default function AboutPage() {
@@ -11,7 +11,7 @@ export default function AboutPage() {
       color: '#c62828'
     },
     {
-      icon: <Sparkles className="w-10 h-10" />,
+      icon: <ShieldCheck className="w-10 h-10" />,
       title: 'Cleanliness',
       description: 'Fresh linens daily, spotless bathrooms, and professional housekeeping. Your health matters.',
       color: '#39ff14'

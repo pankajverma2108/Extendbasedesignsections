@@ -20,7 +20,6 @@ import {
   ShieldCheck,
   Shirt,
   Snowflake,
-  Sparkles,
   Sunset,
   UtensilsCrossed,
   Users,
@@ -74,7 +73,7 @@ const amenityIconMap = {
   lamp: LampDesk,
   briefcase: Briefcase,
   cross: Cross,
-  sparkles: Sparkles,
+  sparkles: ShieldCheck,
   "shield-check": ShieldCheck,
   "bed-double": BedDouble,
   "lock-keyhole": LockKeyhole,
@@ -106,7 +105,7 @@ function AmenitiesSection() {
         </FadeIn>
         <Stagger className="mx-auto flex max-w-[390px] flex-wrap items-start justify-center gap-x-2 gap-y-2.5 md:max-w-[980px] md:justify-center md:gap-3">
           {amenities.map((item, index) => {
-            const Icon = amenityIconMap[item.icon as keyof typeof amenityIconMap] ?? Sparkles;
+            const Icon = amenityIconMap[item.icon as keyof typeof amenityIconMap] ?? ShieldCheck;
             const scatterPattern = [
               "ml-0",
               "ml-1",
@@ -313,7 +312,7 @@ function ExperienceSection() {
                   rotate: index % 2 === 0 ? "-1deg" : "1deg",
                 }}
               >
-                <h3 className="mb-4 text-xl font-bold uppercase">{item.title}</h3>
+                <h3 className="mb-4 font-['Geologica'] text-xl font-bold uppercase">{item.title}</h3>
                 <p className="text-sm leading-6">{item.body}</p>
               </FloatCard>
             </StaggerItem>
@@ -355,7 +354,7 @@ function EnergySection() {
           ))}
         </Stagger>
         <FadeIn className="text-center">
-          <Button asChild size="lg">
+          <Button asChild className="vh-cta-button" size="lg">
             <Link href="https://instagram.com/thedailysocial01" rel="noreferrer" target="_blank">
               Follow on Instagram
             </Link>

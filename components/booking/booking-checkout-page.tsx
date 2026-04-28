@@ -5,29 +5,25 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
-  Gift,
+  BedSingle,
+  Droplets,
   GlassWater,
   Info,
-  LoaderCircle,
-  Lock,
+  KeyRound,
   Minus,
-  Package,
+  PartyPopper,
   Plus,
   PlusCircle,
   Shirt,
-  ShoppingBag,
   Sparkles,
-  TimerReset,
+  ShoppingBag,
   User,
   X,
 } from "lucide-react";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
-import { StickerTag } from "@/components/shared/sticker-tag";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   createBookingPaymentOrder,
@@ -48,10 +44,10 @@ import {
   savePendingBookingOrder,
   type BookingReviewGuest,
 } from "@/lib/booking-session";
+import { getDefaultPropertyDestinationHref } from "@/lib/cx-api";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { isValidEmail, isValidPhone, normalizeEmail, normalizePhone } from "@/lib/guest-form-validation";
-import { weeklyLineup } from "@/content/events";
-import { propertyGuidelines } from "@/content/rooms";
+import { propertyGuidelines, propertyHero } from "@/content/rooms";
 import { toast } from "sonner";
 
 type RazorpaySuccessResponse = {
@@ -67,20 +63,15 @@ type RazorpayInstance = {
 
 type RazorpayConstructor = new (options: Record<string, unknown>) => RazorpayInstance;
 
-type DiagnosticStatus = "request" | "success" | "error" | "info";
-type ReviewTab = "guest" | "addons" | "confirmation";
-
-type BookingDiagnosticEvent = {
-  id: string;
-  timestamp: number;
-  step: string;
-  status: DiagnosticStatus;
-  request?: unknown;
-  response?: unknown;
-  error?: string;
-};
+type ReviewTab = "guest" | "addons";
 
 type GuestFormErrors = Partial<Record<"firstName" | "lastName" | "email" | "phone" | "acceptedTerms", string>>;
+type CouponRule = {
+  code: string;
+  description: string;
+  discountPercent: number;
+  minGuests?: number;
+};
 
 declare global {
   interface Window {
@@ -91,10 +82,10 @@ declare global {
 const RAZORPAY_SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
 
 const PROMO_CODES = [
-  { code: "WORKATION", description: "Flat 15% off on workation plans" },
-  { code: "GROUP10", description: "Flat 10% off on group bookings (7+ adults)" },
-  { code: "NEWSIGNUP", description: "New user signup 5% OFF" },
-];
+  { code: "WORKATION", description: "Flat 15% off on workation plans", discountPercent: 15 },
+  { code: "GROUP10", description: "Flat 10% off on group bookings (7+ adults)", discountPercent: 10, minGuests: 7 },
+  { code: "NEWSIGNUP", description: "New user signup 5% off", discountPercent: 5 },
+] satisfies CouponRule[];
 
 const POLICY_SECTIONS = [
   {
@@ -121,14 +112,6 @@ const POLICY_SECTIONS = [
     ],
   },
   {
-    id: "loyalty-policy",
-    label: "Loyalty coins policy",
-    content: [
-      "Coins shown in the review summary are indicative until payment is captured.",
-      "Any loyalty settlement or issuance follows the final backend-confirmed booking value.",
-    ],
-  },
-  {
     id: "privacy-policy",
     label: "Privacy policy",
     content: [
@@ -148,35 +131,110 @@ const POLICY_SECTIONS = [
 
 const ROOM_GST_RATE = 0.05;
 const STANDARD_ADDON_GST_RATE = 0.18;
+const ADDON_PROPERTY_ID = "60765";
 
-function getAddonTaxRate(addonName: string): number {
-  const normalized = addonName.trim().toLowerCase();
-  if (normalized.includes("late checkout")) {
-    return ROOM_GST_RATE;
+function normalizeCouponCode(value?: string | null): string {
+  return (value ?? "").trim().toUpperCase();
+}
+
+function calculateCouponDiscount(coupon: CouponRule | null, roomSubtotal: number): number {
+  if (!coupon || roomSubtotal <= 0) {
+    return 0;
   }
-  return STANDARD_ADDON_GST_RATE;
+
+  return Math.min(roomSubtotal, roomSubtotal * (coupon.discountPercent / 100));
+}
+
+async function validateCouponCode(params: {
+  couponCode: string;
+  totalGuests: number;
+  roomSubtotal: number;
+}): Promise<{ coupon: CouponRule | null; message: string | null }> {
+  // This stays async so the client contract matches a future coupon validation API.
+  const normalizedCouponCode = normalizeCouponCode(params.couponCode);
+  if (!normalizedCouponCode) {
+    return {
+      coupon: null,
+      message: "Enter a coupon code to apply the offer.",
+    };
+  }
+
+  const matchedCoupon = PROMO_CODES.find((coupon) => coupon.code === normalizedCouponCode);
+  if (!matchedCoupon) {
+    return {
+      coupon: null,
+      message: "That coupon is not available for this booking.",
+    };
+  }
+
+  if (matchedCoupon.minGuests && params.totalGuests < matchedCoupon.minGuests) {
+    return {
+      coupon: null,
+      message: `${matchedCoupon.code} unlocks on bookings for ${matchedCoupon.minGuests}+ guests.`,
+    };
+  }
+
+  if (params.roomSubtotal <= 0) {
+    return {
+      coupon: null,
+      message: "Add a room selection before applying a coupon.",
+    };
+  }
+
+  return {
+    coupon: matchedCoupon,
+    message: `${matchedCoupon.code} applied to this booking.`,
+  };
+}
+
+function getAddonTaxLabel(addon: { name: string; category: "COMMODITY" | "SERVICE" | "RETURNABLE" }): string {
+  const normalized = addon.name.trim().toLowerCase();
+  if (normalized.includes("laundry") || normalized.includes("towel")) {
+    return "Laundry";
+  }
+  if (addon.category === "RETURNABLE" || normalized.includes("lock") || normalized.includes("blanket") || normalized.includes("mattress")) {
+    return "Rental items";
+  }
+  return "Toiletries / goods";
 }
 
 function calculatePricingBreakdown(params: {
   roomSubtotal: number;
-  activeAddons: Array<{ name: string; unitPrice: number; quantity: number }>;
+  activeAddons: Array<{
+    name: string;
+    category: "COMMODITY" | "SERVICE" | "RETURNABLE";
+    unitPrice: number;
+    quantity: number;
+  }>;
+  couponDiscount: number;
 }) {
+  // Pricing stays derived from one source so the summary and payment payload stay in sync.
   const addonSubtotal = params.activeAddons.reduce((sum, addon) => sum + addon.unitPrice * addon.quantity, 0);
   const roomTaxExact = params.roomSubtotal * ROOM_GST_RATE;
   const addonTaxExact = params.activeAddons.reduce(
-    (sum, addon) => sum + (addon.unitPrice * addon.quantity * getAddonTaxRate(addon.name)),
+    (sum, addon) => sum + (addon.unitPrice * addon.quantity * STANDARD_ADDON_GST_RATE),
     0,
   );
   const taxesExact = roomTaxExact + addonTaxExact;
-  const taxes = taxesExact;
-  const grandTotal = params.roomSubtotal + addonSubtotal + taxesExact;
+  const discountedRoomSubtotal = Math.max(0, params.roomSubtotal - params.couponDiscount);
+  const totalCharges = discountedRoomSubtotal + addonSubtotal;
+  const grandTotal = totalCharges + taxesExact;
+  const addonTaxBreakdown = params.activeAddons.reduce<Record<string, number>>((summary, addon) => {
+    const nextKey = getAddonTaxLabel(addon);
+    summary[nextKey] = (summary[nextKey] ?? 0) + (addon.unitPrice * addon.quantity * STANDARD_ADDON_GST_RATE);
+    return summary;
+  }, {});
 
   return {
     addonSubtotal,
+    couponDiscount: Math.max(0, params.couponDiscount),
+    discountedRoomSubtotal,
     roomTaxExact,
     addonTaxExact,
+    addonTaxBreakdown,
+    totalCharges,
     taxesExact,
-    taxes,
+    taxes: taxesExact,
     grandTotal,
   };
 }
@@ -206,14 +264,6 @@ function loadRazorpayCheckout(): Promise<void> {
     script.onerror = () => reject(new Error("Unable to load Razorpay checkout."));
     document.body.appendChild(script);
   });
-}
-
-function toDiagnosticPreview(value: unknown): string {
-  try {
-    return JSON.stringify(value, null, 2);
-  } catch {
-    return String(value);
-  }
 }
 
 function formatCurrency(amount: number): string {
@@ -377,21 +427,81 @@ function validateGuestForm(form: BookingReviewGuest): GuestFormErrors {
   return errors;
 }
 
-function addonIcon(name: string) {
+function addonPresentation(name: string) {
   const value = name.toLowerCase();
 
-  if (value.includes("water")) return GlassWater;
-  if (value.includes("towel") || value.includes("laundry")) return Shirt;
-  if (value.includes("toilet")) return Sparkles;
-  if (value.includes("lock")) return Lock;
-  if (value.includes("check")) return TimerReset;
-  if (value.includes("blanket") || value.includes("mattress") || value.includes("bunk") || value.includes("upgrade")) return Package;
-  if (value.includes("storage") || value.includes("stay")) return ShoppingBag;
-  return Gift;
+  if (value.includes("water")) {
+    return {
+      icon: GlassWater,
+      frameClassName: "bg-[linear-gradient(135deg,#0ea5e9,#22d3ee_55%,#ecfeff)] text-[#032b3b] shadow-[0_14px_24px_rgba(34,211,238,0.22)]",
+    };
+  }
+
+  if (value.includes("towel") || value.includes("laundry")) {
+    return {
+      icon: Shirt,
+      frameClassName: "bg-[linear-gradient(135deg,#f59e0b,#fcd34d_55%,#fff7ed)] text-[#5b2100] shadow-[0_14px_24px_rgba(245,158,11,0.24)]",
+    };
+  }
+
+  if (value.includes("toilet")) {
+    return {
+      icon: Droplets,
+      frameClassName: "bg-[linear-gradient(135deg,#38bdf8,#818cf8_55%,#eef2ff)] text-[#1e1b4b] shadow-[0_14px_24px_rgba(99,102,241,0.24)]",
+    };
+  }
+
+  if (value.includes("lock")) {
+    return {
+      icon: KeyRound,
+      frameClassName: "bg-[linear-gradient(135deg,#f97316,#fb7185_55%,#fff1f2)] text-[#431407] shadow-[0_14px_24px_rgba(249,115,22,0.24)]",
+    };
+  }
+
+  if (value.includes("check")) {
+    return {
+      icon: Sparkles,
+      frameClassName: "bg-[linear-gradient(135deg,#c084fc,#f472b6_55%,#fdf2f8)] text-[#4a044e] shadow-[0_14px_24px_rgba(244,114,182,0.24)]",
+    };
+  }
+
+  if (value.includes("blanket") || value.includes("mattress") || value.includes("bunk") || value.includes("upgrade")) {
+    return {
+      icon: BedSingle,
+      frameClassName: "bg-[linear-gradient(135deg,#34d399,#22c55e_55%,#ecfdf5)] text-[#052e16] shadow-[0_14px_24px_rgba(34,197,94,0.22)]",
+    };
+  }
+
+  if (value.includes("storage") || value.includes("stay")) {
+    return {
+      icon: ShoppingBag,
+      frameClassName: "bg-[linear-gradient(135deg,#60a5fa,#2dd4bf_55%,#f0fdfa)] text-[#082f49] shadow-[0_14px_24px_rgba(45,212,191,0.22)]",
+    };
+  }
+
+  return {
+    icon: PartyPopper,
+    frameClassName: "bg-[linear-gradient(135deg,#fb7185,#facc15_55%,#fff7ed)] text-[#4a044e] shadow-[0_14px_24px_rgba(251,113,133,0.22)]",
+  };
 }
 
 function isStockTrackedCategory(category: StoreCatalogItem["category"]): boolean {
   return category === "COMMODITY" || category === "RETURNABLE";
+}
+
+function isStoreCatalogItem(value: unknown): value is StoreCatalogItem {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  return typeof candidate.id === "string"
+    && typeof candidate.name === "string"
+    && (candidate.category === "COMMODITY" || candidate.category === "SERVICE" || candidate.category === "BORROWABLE" || candidate.category === "RETURNABLE")
+    && typeof candidate.base_price === "number"
+    && Number.isFinite(candidate.base_price)
+    && typeof candidate.in_stock === "boolean"
+    && (candidate.available_stock === null || typeof candidate.available_stock === "number");
 }
 
 function hasKnownStockLimit(item: StoreCatalogItem): boolean {
@@ -427,46 +537,19 @@ export function BookingCheckoutPage() {
   const [guestErrors, setGuestErrors] = useState<GuestFormErrors>({});
   const [catalog, setCatalog] = useState<StoreCatalogItem[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
-  const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [, setCatalogError] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponRule | null>(null);
+  const [couponMessage, setCouponMessage] = useState<string | null>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [inventoryMessageById, setInventoryMessageById] = useState<Record<string, string>>({});
   const [showMobileSummary, setShowMobileSummary] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [verifyErrorMessage, setVerifyErrorMessage] = useState<string | null>(null);
-  const [failErrorMessage, setFailErrorMessage] = useState<string | null>(null);
-  const [flowStage, setFlowStage] = useState<
+  const [, setFlowStage] = useState<
     "idle" | "creating-order" | "creating-payment-order" | "opening-razorpay" | "verifying-payment" | "confirmed" | "failed"
   >("idle");
-  const [diagnostics, setDiagnostics] = useState<BookingDiagnosticEvent[]>([]);
-  const [resumeAfterAuth, setResumeAfterAuth] = useState(false);
-  const [triggerPaymentOpen, setTriggerPaymentOpen] = useState(false);
   const paymentHandledRef = useRef(false);
   const hydratedGuestRef = useRef(false);
-
-  const appendDiagnostic = useCallback(
-    (
-      step: string,
-      status: DiagnosticStatus,
-      payload?: {
-        request?: unknown;
-        response?: unknown;
-        error?: string;
-      },
-    ) => {
-      const event: BookingDiagnosticEvent = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        timestamp: Date.now(),
-        step,
-        status,
-        request: payload?.request,
-        response: payload?.response,
-        error: payload?.error,
-      };
-
-      setDiagnostics((current) => [...current, event].slice(-40));
-    },
-    [],
-  );
+  const resumePaymentAfterAuthRef = useRef(false);
 
   useEffect(() => {
     const stored = getStoredBookingState();
@@ -474,9 +557,15 @@ export function BookingCheckoutPage() {
       return;
     }
 
-    setDraft(stored.draft);
-    setGuestForm(createInitialGuestForm(stored.draft, stored.review?.guest ?? null));
-    hydratedGuestRef.current = true;
+    const frameId = window.requestAnimationFrame(() => {
+      setDraft(stored.draft);
+      setGuestForm(createInitialGuestForm(stored.draft, stored.review?.guest ?? null));
+      hydratedGuestRef.current = true;
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
   }, []);
 
   useEffect(() => {
@@ -503,16 +592,21 @@ export function BookingCheckoutPage() {
 
   useEffect(() => {
     let cancelled = false;
-    setCatalogLoading(true);
-    setCatalogError(null);
+    const loadCatalog = async () => {
+      setCatalogLoading(true);
+      setCatalogError(null);
 
-    void getStoreCatalog(draft?.propertyId)
-      .then((response) => {
+      try {
+        // Add-ons stay pinned to the current storefront property until booking-specific catalog routing is expanded.
+        const response = await getStoreCatalog(ADDON_PROPERTY_ID);
         if (cancelled) {
           return;
         }
 
-        const nextCatalog = response.filter((item) => item.category !== "BORROWABLE");
+        // The API has returned non-array payloads before, so filtering only starts after a strict array guard.
+        const nextCatalog = (Array.isArray(response) ? response : [])
+          .filter(isStoreCatalogItem)
+          .filter((item) => item.category !== "BORROWABLE");
         setCatalog(nextCatalog);
 
         setDraft((current) => {
@@ -545,34 +639,27 @@ export function BookingCheckoutPage() {
           saveBookingDraft(nextDraft);
           return nextDraft;
         });
-      })
-      .catch((error) => {
+      } catch (error) {
         if (cancelled) {
           return;
         }
 
-        const message = error instanceof Error ? error.message : "Unable to load add-ons right now.";
-        setCatalogError(message);
-      })
-      .finally(() => {
+        console.error("Failed to load booking add-ons", error);
+        setCatalog([]);
+        setCatalogError("fallback-empty");
+      } finally {
         if (!cancelled) {
           setCatalogLoading(false);
         }
-      });
+      }
+    };
+
+    void loadCatalog();
 
     return () => {
       cancelled = true;
     };
   }, [draft?.propertyId]);
-
-  useEffect(() => {
-    if (!resumeAfterAuth || !isAuthenticated) {
-      return;
-    }
-
-    setResumeAfterAuth(false);
-    setTriggerPaymentOpen(true);
-  }, [isAuthenticated, resumeAfterAuth]);
 
   useEffect(() => {
     if (!showMobileSummary) {
@@ -593,26 +680,70 @@ export function BookingCheckoutPage() {
     [draft?.rooms, nights],
   );
   const activeAddons = useMemo(() => (draft?.addons ?? []).filter((addon) => addon.quantity > 0), [draft?.addons]);
+  const couponDiscount = useMemo(() => calculateCouponDiscount(appliedCoupon, roomSubtotal), [appliedCoupon, roomSubtotal]);
   const pricingBreakdown = useMemo(
-    () => calculatePricingBreakdown({ roomSubtotal, activeAddons }),
-    [activeAddons, roomSubtotal],
+    () => calculatePricingBreakdown({ roomSubtotal, activeAddons, couponDiscount }),
+    [activeAddons, couponDiscount, roomSubtotal],
   );
   const addonSubtotal = pricingBreakdown.addonSubtotal;
+  const discountedRoomSubtotal = pricingBreakdown.discountedRoomSubtotal;
   const roomTaxExact = pricingBreakdown.roomTaxExact;
   const addonTaxExact = pricingBreakdown.addonTaxExact;
+  const addonTaxBreakdown = pricingBreakdown.addonTaxBreakdown;
+  const totalCharges = pricingBreakdown.totalCharges;
   const taxes = pricingBreakdown.taxes;
   const estimatedGrandTotal = pricingBreakdown.grandTotal;
-  const coinsEarned = Math.round(roomSubtotal + addonSubtotal);
   const commodityItems = useMemo(
     () => catalog.filter((item) => item.category === "COMMODITY" || item.category === "RETURNABLE"),
     [catalog],
   );
   const serviceItems = useMemo(() => catalog.filter((item) => item.category === "SERVICE"), [catalog]);
-
   const updateGuestField = useCallback(<K extends keyof BookingReviewGuest>(field: K, value: BookingReviewGuest[K]) => {
     setGuestForm((current) => (current ? { ...current, [field]: value } : current));
     setGuestErrors((current) => ({ ...current, [field]: undefined }));
   }, []);
+
+  const handleCouponInputChange = useCallback((value: string) => {
+    const normalizedValue = normalizeCouponCode(value);
+    updateGuestField("coupon", normalizedValue);
+
+    if (appliedCoupon?.code && appliedCoupon.code !== normalizedValue) {
+      setAppliedCoupon(null);
+      setCouponMessage(null);
+    }
+  }, [appliedCoupon, updateGuestField]);
+
+  const applyCoupon = useCallback(async () => {
+    if (!guestForm) {
+      return;
+    }
+
+    setIsApplyingCoupon(true);
+
+    try {
+      // Coupon validation is isolated here so API wiring can replace the mock rules without changing the pricing UI.
+      const result = await validateCouponCode({
+        couponCode: guestForm.coupon,
+        totalGuests,
+        roomSubtotal,
+      });
+
+      if (!result.coupon) {
+        setAppliedCoupon(null);
+        setCouponMessage(result.message);
+        return;
+      }
+
+      setAppliedCoupon(result.coupon);
+      setCouponMessage(result.message);
+    } catch (error) {
+      console.error("Failed to validate coupon", error);
+      setAppliedCoupon(null);
+      setCouponMessage("Unable to validate that coupon right now.");
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  }, [guestForm, roomSubtotal, totalGuests]);
 
   const updateAdditionalGuest = useCallback((index: number, field: "name" | "phone", value: string) => {
     setGuestForm((current) => {
@@ -770,15 +901,6 @@ export function BookingCheckoutPage() {
     setActiveTab("addons");
   }, [validateAndStoreGuestDetails]);
 
-  const openPaymentFlow = useCallback(() => {
-    if (!validateAndStoreGuestDetails()) {
-      return;
-    }
-
-    setActiveTab("addons");
-    setTriggerPaymentOpen(true);
-  }, [validateAndStoreGuestDetails]);
-
   const handleTabClick = useCallback((tab: ReviewTab) => {
     if (tab === "guest") {
       setActiveTab("guest");
@@ -798,27 +920,15 @@ export function BookingCheckoutPage() {
 
     const token = getStoredGuestToken();
     if (!token || !isAuthenticated) {
-      appendDiagnostic("auth-check", "info", {
-        response: { isAuthenticated, hasToken: Boolean(token) },
-      });
-      setResumeAfterAuth(true);
+      resumePaymentAfterAuthRef.current = true;
       openAuthModal("signin");
       return;
     }
 
+    resumePaymentAfterAuthRef.current = false;
+
     setIsPaying(true);
     setFlowStage("creating-order");
-    setErrorMessage(null);
-    setVerifyErrorMessage(null);
-    setFailErrorMessage(null);
-    setDiagnostics([]);
-    appendDiagnostic("flow-start", "info", {
-      response: {
-        property_id: draft.propertyId,
-        checkin_date: draft.checkinDate,
-        checkout_date: draft.checkoutDate,
-      },
-    });
 
     try {
       const activeRooms = draft.rooms.filter((room) => room.quantity > 0);
@@ -844,6 +954,7 @@ export function BookingCheckoutPage() {
             status: pendingSnapshot.order.status,
           }
         : await createGuestBookingOrder(token, {
+            // Keep the payload backend-safe: only send normalized booking primitives and applied add-ons.
             property_id: draft.propertyId,
             checkin_date: draft.checkinDate,
             checkout_date: draft.checkoutDate,
@@ -856,24 +967,6 @@ export function BookingCheckoutPage() {
               quantity: addon.quantity,
             })),
           });
-
-      if (pendingSnapshot) {
-        appendDiagnostic("create-booking-order", "info", {
-          response: { source: "pending-snapshot", ezee_reservation_id: orderSummary.ezee_reservation_id },
-        });
-      } else {
-        appendDiagnostic("create-booking-order", "success", {
-          response: orderSummary,
-          request: {
-            guest: {
-              first_name: guestForm.firstName,
-              last_name: guestForm.lastName,
-              email: normalizeEmail(guestForm.email),
-              phone: normalizePhone(guestForm.phone),
-            },
-          },
-        });
-      }
 
       savePendingBookingOrder({
         signature: draft.signature,
@@ -895,29 +988,14 @@ export function BookingCheckoutPage() {
 
       setFlowStage("creating-payment-order");
       const payableGrandTotal = Math.max(0, Math.round(estimatedGrandTotal));
-      appendDiagnostic("create-payment-order", "request", {
-        request: {
-          ezee_reservation_id: orderSummary.ezee_reservation_id,
-          grand_total: payableGrandTotal,
-          addon_order_id: orderSummary.addon_order_id ?? undefined,
-          backend_subtotal: orderSummary.grand_total,
-        },
-      });
-
       const paymentOrder = await createBookingPaymentOrder(token, {
         ezee_reservation_id: orderSummary.ezee_reservation_id,
         grand_total: payableGrandTotal,
         ...(orderSummary.addon_order_id ? { addon_order_id: orderSummary.addon_order_id } : {}),
       });
 
-      appendDiagnostic("create-payment-order", "success", {
-        response: paymentOrder,
-      });
-
       setFlowStage("opening-razorpay");
-      appendDiagnostic("load-razorpay-script", "request");
       await loadRazorpayCheckout();
-      appendDiagnostic("load-razorpay-script", "success");
 
       if (!window.Razorpay) {
         throw new Error("Razorpay checkout did not initialise correctly.");
@@ -934,23 +1012,11 @@ export function BookingCheckoutPage() {
 
           paymentHandledRef.current = true;
           setFlowStage("failed");
-          appendDiagnostic("razorpay-failed", "error", {
-            error: message,
-          });
 
           try {
-            appendDiagnostic("payment-fail", "request", {
-              request: { razorpay_order_id: paymentOrder.razorpay_order_id },
-            });
             await failBookingPayment(token, paymentOrder.razorpay_order_id);
-            appendDiagnostic("payment-fail", "success", {
-              response: { razorpay_order_id: paymentOrder.razorpay_order_id },
-            });
-          } catch {
-            setFailErrorMessage("Rollback API call failed after payment failure or cancellation.");
-            appendDiagnostic("payment-fail", "error", {
-              error: "Rollback API call failed",
-            });
+          } catch (error) {
+            console.error("Failed to roll back booking payment", error);
           }
 
           clearPendingBookingOrder();
@@ -989,21 +1055,17 @@ export function BookingCheckoutPage() {
 
             paymentHandledRef.current = true;
             setFlowStage("verifying-payment");
-            appendDiagnostic("verify-payment", "request", {
-              request: response,
-            });
 
             try {
               const verification = await verifyBookingPayment(token, response);
-              appendDiagnostic("verify-payment", "success", {
-                response: verification,
-              });
               clearPendingBookingOrder();
               clearBookingDraft();
+              const confirmedRooms = Array.isArray(orderSummary.rooms) ? orderSummary.rooms : [];
+              const confirmedAddons = Array.isArray(orderSummary.addons) ? orderSummary.addons : [];
               saveConfirmedBookingSnapshot({
                 ezeeReservationId: orderSummary.ezee_reservation_id,
                 propertyId: orderSummary.property_id,
-                propertyName: orderSummary.property_name,
+                propertyName: orderSummary.property_name || propertyHero.title,
                 roomTypeName: draft.rooms.map((room) => room.title).join(", "),
                 roomSummary: draft.rooms
                   .filter((room) => room.quantity > 0)
@@ -1024,7 +1086,7 @@ export function BookingCheckoutPage() {
                   phone: normalizePhone(guestForm.phone),
                 },
                 additionalGuests: guestForm.additionalGuests,
-                rooms: orderSummary.rooms.map((room) => ({
+                rooms: confirmedRooms.map((room) => ({
                   roomTypeId: room.room_type_id,
                   roomTypeName: room.room_type_name,
                   type: room.type,
@@ -1032,7 +1094,7 @@ export function BookingCheckoutPage() {
                   pricePerNight: room.price_per_night,
                   lineTotal: room.line_total,
                 })),
-                addons: orderSummary.addons.map((addon) => ({
+                addons: confirmedAddons.map((addon) => ({
                   productId: addon.product_id,
                   productName: addon.product_name,
                   category: draft.addons.find((draftAddon) => draftAddon.productId === addon.product_id)?.category ?? "SERVICE",
@@ -1054,13 +1116,9 @@ export function BookingCheckoutPage() {
               resolve();
             } catch (error) {
               clearPendingBookingOrder();
-              const message = error instanceof Error ? error.message : "Payment verification failed.";
-              setVerifyErrorMessage(message);
+              console.error("Failed to verify booking payment", error);
               setFlowStage("failed");
-              toast.error(message);
-              appendDiagnostic("verify-payment", "error", {
-                error: message,
-              });
+              toast.error("Payment verification is still pending. Please check My Bookings in a moment.");
               reject(error instanceof Error ? error : new Error("Payment verification failed."));
             }
           },
@@ -1075,37 +1133,44 @@ export function BookingCheckoutPage() {
       });
     } catch (error) {
       setFlowStage("failed");
-      const message = error instanceof Error ? error.message : "Unable to start the payment flow.";
-      setErrorMessage(message);
-      toast.error(message);
-      appendDiagnostic("checkout-flow", "error", {
-        error: message,
-      });
+      console.error("Failed to start booking checkout", error);
+      toast.error("Unable to start checkout right now. Please try again.");
     } finally {
       setIsPaying(false);
     }
-  }, [appendDiagnostic, draft, estimatedGrandTotal, guestForm, isAuthenticated, openAuthModal, router, taxes, totalGuests]);
+  }, [draft, estimatedGrandTotal, guestForm, isAuthenticated, openAuthModal, router, taxes, totalGuests]);
 
   useEffect(() => {
-    if (!triggerPaymentOpen) {
+    if (!isAuthenticated || !resumePaymentAfterAuthRef.current) {
       return;
     }
 
-    setTriggerPaymentOpen(false);
+    resumePaymentAfterAuthRef.current = false;
     void handlePayment();
-  }, [handlePayment, triggerPaymentOpen]);
+  }, [handlePayment, isAuthenticated]);
+
+  const openPaymentFlow = useCallback(() => {
+    if (!validateAndStoreGuestDetails()) {
+      return;
+    }
+
+    setActiveTab("addons");
+    void handlePayment();
+  }, [handlePayment, validateAndStoreGuestDetails]);
 
   if (!draft || !guestForm) {
+    const returnToPropertyHref = getDefaultPropertyDestinationHref(draft?.propertyId);
+
     return (
       <section className="vh-section min-h-screen pt-28 md:pt-32">
         <div className="mx-auto w-full max-w-[1200px] px-4 md:px-6 lg:px-10">
           <div className="rounded-[28px] border border-white/12 bg-[rgba(15,16,26,0.92)] p-8 text-center shadow-[var(--vh-shadow-lg)]">
-            <h1 className="font-['Space_Grotesk'] text-3xl font-bold uppercase tracking-[-0.04em] text-white">No active booking draft</h1>
+            <h1 className="text-3xl font-bold uppercase tracking-[-0.04em] text-white">No active booking draft</h1>
             <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-white/70">
               Pick your dates and room selection on the property page first, then come back here to review the booking.
             </p>
             <Button asChild className="mt-6 rounded-full px-6">
-              <Link href="/property">
+              <Link href={returnToPropertyHref}>
                 Return to property
                 <ArrowLeft className="ml-2 h-4 w-4" />
               </Link>
@@ -1117,96 +1182,121 @@ export function BookingCheckoutPage() {
   }
 
   const bookingSummaryDesktop = (
-    <div className="hidden lg:block lg:col-span-1">
-      <div className="sticky top-28 overflow-hidden rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(52,18,26,0.98),rgba(26,10,14,0.98))] shadow-[10px_10px_0px_rgba(0,0,0,0.28)]">
-        <div className="h-1.5 bg-[#c62828]" />
+    <aside className="relative hidden self-start lg:sticky lg:top-28 lg:block">
+      <div className="rounded-[22px] border border-dashed border-[rgba(255,255,255,0.28)] bg-[#07070a] shadow-[0_20px_45px_rgba(0,0,0,0.24)]">
         <div className="p-6">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <StickerTag bg="#fef08a" className="px-3 py-1 font-bold not-italic uppercase tracking-[0.12em]" label="Locked rates" rotate="rotate-[-2deg]" text="#111827" />
-            <StickerTag bg="#39ff14" className="px-3 py-1 font-bold not-italic uppercase tracking-[0.12em]" label="Fast check-in" rotate="rotate-[2deg]" text="#111827" />
-          </div>
-          <h2 className="font-['Space_Grotesk'] text-xl font-bold uppercase text-white">Booking details</h2>
+          <h2 className="font-sectiontitle text-[22px] text-white">Booking details</h2>
 
-          <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-[14px] border border-white/10 bg-white/5 px-4 py-4">
+          <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-[18px] border border-white/10 bg-white/5 px-4 py-4">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.16em] text-white/50">Check-in</p>
-              <p className="mt-1 text-base font-bold text-white">{formatDateLabel(draft.checkinDate)}</p>
-              <p className="text-[10px] text-white/40">from {propertyGuidelines.checkIn}</p>
+              <p className="font-caption text-white/55">Check-in</p>
+              <p className="font-subtitle mt-1 text-white">{formatDateLabel(draft.checkinDate)}</p>
+              <p className="text-[11px] text-white/48">from {propertyGuidelines.checkIn}</p>
             </div>
-            <div className="rounded bg-[#ffdf00] px-2 py-1 text-[10px] font-bold uppercase text-black">
+            <div className="rounded bg-[#f9cb37] px-2 py-1 text-[10px] font-bold uppercase text-black">
               {nights} {nights === 1 ? "Night" : "Nights"}
             </div>
             <div className="text-right">
-              <p className="text-[10px] uppercase tracking-[0.16em] text-white/50">Check-out</p>
-              <p className="mt-1 text-base font-bold text-white">{formatDateLabel(draft.checkoutDate)}</p>
-              <p className="text-[10px] text-white/40">by {propertyGuidelines.checkOut}</p>
+              <p className="font-caption text-white/55">Check-out</p>
+              <p className="font-subtitle mt-1 text-white">{formatDateLabel(draft.checkoutDate)}</p>
+              <p className="text-[11px] text-white/48">by {propertyGuidelines.checkOut}</p>
             </div>
           </div>
 
           <div className="mt-5 space-y-4 border-t border-white/10 pt-5">
-            <p className="text-lg font-bold text-white">The Daily Social Bangalore, Koramangala</p>
+            <div>
+              <p className="font-bodyfocus text-[18px] text-white">{propertyHero.title}</p>
+              <p className="font-caption text-white/48">{propertyHero.location}</p>
+            </div>
             {draft.rooms.map((room) => (
               <div key={room.roomTypeId} className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-bold text-white/92">{room.title}</p>
-                  <p className="text-xs text-white/45">
-                    {formatCurrency(room.basePrice)} /night x {room.quantity} ({room.guestText.replace(/^x\s*/, "")})
+                  <p className="font-body text-sm text-white/92">{room.title}</p>
+                  <p className="text-xs text-white/48">
+                    {formatCurrency(room.basePrice)} x {room.quantity} x {nights} {nights === 1 ? "night" : "nights"}
                   </p>
                 </div>
-                <p className="text-sm font-bold text-white">{formatCurrency(room.basePrice * room.quantity * nights)}</p>
-              </div>
-            ))}
-
-            {activeAddons.map((addon) => (
-              <div key={addon.productId} className="flex items-start justify-between gap-3 border-t border-white/10 pt-3">
-                <div>
-                  <p className="text-sm font-bold text-white/92">{addon.name}</p>
-                  <p className="text-xs text-white/45">
-                    {formatCurrency(addon.unitPrice)} x {addon.quantity}
-                  </p>
-                </div>
-                <p className="text-sm font-bold text-white">{formatCurrency(addon.unitPrice * addon.quantity)}</p>
+                <p className="font-body text-sm text-white">{formatCurrency(room.basePrice * room.quantity * nights)}</p>
               </div>
             ))}
           </div>
 
           <div className="mt-5 space-y-2 border-t border-white/10 pt-4 text-sm text-white/82">
             <div className="flex items-center justify-between">
-              <p>Total room charges</p>
-              <p className="font-bold text-white">{formatCurrency(roomSubtotal)}</p>
+              <p className="font-body">Room charges</p>
+              <p className="font-body text-white">{formatCurrency(roomSubtotal)}</p>
             </div>
             <div className="flex items-center justify-between">
-              <p>Total extra charges</p>
-              <p className="font-bold text-white">{formatCurrency(addonSubtotal)}</p>
+              <div>
+                <p className="font-body">Coupon deduction</p>
+                {appliedCoupon ? <p className="font-caption text-[#f9cb37]">{appliedCoupon.code}</p> : null}
+              </div>
+              <p className="font-body text-[#05DF72]">- {formatCurrency(couponDiscount)}</p>
             </div>
             <div className="flex items-center justify-between">
-              <p className="inline-flex items-center gap-1">
-                Total taxes
+              <p className="font-body">Total room charges</p>
+              <p className="font-body text-white">{formatCurrency(discountedRoomSubtotal)}</p>
+            </div>
+            <div className="space-y-3 border-t border-white/10 pt-3">
+              <div className="flex items-center justify-between">
+                <p className="font-body">Add-ons</p>
+                <p className="font-caption text-white/48">{activeAddons.length === 0 ? "None" : `${activeAddons.length} selected`}</p>
+              </div>
+              {activeAddons.length === 0 ? (
+                <p className="rounded-[12px] border border-dashed border-white/12 bg-black/20 px-3 py-3 text-xs text-white/55">
+                  No extras added yet.
+                </p>
+              ) : (
+                activeAddons.map((addon) => (
+                  <div key={addon.productId} className="flex items-start justify-between gap-3 rounded-[12px] border border-white/10 bg-black/20 px-3 py-3">
+                    <div>
+                      <p className="font-body text-sm text-white/92">{addon.name}</p>
+                      <p className="text-xs text-white/48">
+                        {formatCurrency(addon.unitPrice)} x {addon.quantity}
+                      </p>
+                    </div>
+                    <p className="font-body text-sm text-white">{formatCurrency(addon.unitPrice * addon.quantity)}</p>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="flex items-center justify-between border-t border-white/10 pt-3">
+              <p className="font-body">Total extra charges</p>
+              <p className="font-body text-white">{formatCurrency(addonSubtotal)}</p>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="font-body">Total charges</p>
+              <p className="font-body text-white">{formatCurrency(totalCharges)}</p>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="font-body inline-flex items-center gap-1">
+                Taxes
                 <span className="group relative inline-flex">
                   <Info className="h-3.5 w-3.5 text-white/45" />
-                  <span className="pointer-events-none absolute left-0 top-[calc(100%+8px)] hidden min-w-[180px] rounded-md border border-white/15 bg-[#10111a] px-3 py-2 text-[11px] leading-4 text-white/85 shadow-[0_10px_28px_rgba(0,0,0,0.35)] group-hover:block">
-                    <span className="block">Room tax - {formatCurrency(roomTaxExact)}</span>
-                    <span className="mt-1 block">Add-on tax - {formatCurrency(addonTaxExact)}</span>
+                  <span className="pointer-events-none absolute left-0 top-[calc(100%+8px)] hidden min-w-[220px] rounded-md border border-white/15 bg-[#10111a] px-3 py-2 text-[11px] leading-4 text-white/85 shadow-[0_10px_28px_rgba(0,0,0,0.35)] group-hover:block">
+                    <span className="block">Room GST - {formatCurrency(roomTaxExact)}</span>
+                    {Object.entries(addonTaxBreakdown).map(([label, value]) => (
+                      <span key={label} className="mt-1 block">
+                        {label} GST - {formatCurrency(value)}
+                      </span>
+                    ))}
+                    {addonTaxExact <= 0 ? <span className="mt-1 block">Add-ons GST - {formatCurrency(0)}</span> : null}
                   </span>
                 </span>
               </p>
-              <p className="font-bold text-white">{formatCurrency(taxes)}</p>
+              <p className="font-body text-white">{formatCurrency(taxes)}</p>
             </div>
             <div className="mt-3 flex items-end justify-between border-t border-white/10 pt-4">
-              <p className="text-lg font-bold uppercase text-white">Total price</p>
-              <p className="text-[28px] font-bold text-[#00f0ff]">{formatCurrency(estimatedGrandTotal)}</p>
+              <p className="font-sectiontitle text-lg text-white">Final total price</p>
+              <p className="font-bodyfocus text-[28px] text-white">{formatCurrency(estimatedGrandTotal)}</p>
             </div>
           </div>
-        </div>
-
-        <div className="border-t border-white/10 bg-white/[0.03] px-6 py-4 text-sm text-white/88">
-          You will earn <span className="font-bold text-[#ffdf00]">{coinsEarned} coins</span> on this booking
         </div>
 
         <div className="p-6 pt-4">
           {activeTab === "guest" ? (
             <button
-              className="w-full rounded-[12px] bg-[#c62828] px-4 py-3 text-sm font-bold leading-none whitespace-nowrap uppercase tracking-[0.04em] text-white shadow-[4px_4px_0px_rgba(0,0,0,0.45)] sm:px-5 sm:py-4 sm:text-base lg:text-lg"
+              className="vh-cta-button w-full justify-center text-base"
               onClick={openAddonsTab}
               type="button"
             >
@@ -1214,7 +1304,7 @@ export function BookingCheckoutPage() {
             </button>
           ) : (
             <button
-              className="w-full rounded-[12px] bg-[#c62828] px-4 py-3 text-sm font-bold leading-none whitespace-nowrap uppercase tracking-[0.04em] text-white shadow-[4px_4px_0px_rgba(0,0,0,0.45)] disabled:cursor-not-allowed disabled:opacity-60 sm:px-5 sm:py-4 sm:text-base lg:text-lg"
+              className="vh-cta-button w-full justify-center text-base disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isPaying}
               onClick={openPaymentFlow}
               type="button"
@@ -1224,86 +1314,56 @@ export function BookingCheckoutPage() {
           )}
         </div>
       </div>
-    </div>
+    </aside>
   );
 
   const reviewTabs = [
-    { key: "guest" as const, label: "Guest details", icon: User, sticker: "Names first" },
-    { key: "addons" as const, label: "Add to your stay", icon: PlusCircle, sticker: "Pay secure" },
+    { key: "guest" as const, label: "Guest details", icon: User },
+    { key: "addons" as const, label: "Add to your stay", icon: PlusCircle },
   ];
 
-  return (
-    <div className="min-h-screen overflow-x-clip bg-[#07070a] pb-28 text-white lg:pb-12">
-      <section className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-20 md:px-6 md:pb-12 md:pt-24">
-        <div className="relative overflow-hidden rounded-[26px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(58,95,132,0.16),transparent_28%),radial-gradient(circle_at_top_right,rgba(198,40,40,0.12),transparent_24%),linear-gradient(135deg,rgba(26,26,26,0.96),rgba(17,17,17,0.96))] px-4 py-5 shadow-[10px_10px_0px_rgba(0,0,0,0.24)] sm:rounded-[30px] sm:px-5 sm:py-6 md:px-8 md:py-8">
-          <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end lg:gap-6">
-            <div className="space-y-4 sm:space-y-5">
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:gap-3 sm:overflow-visible sm:pb-0">
-                <StickerTag bg="#fef08a" className="shrink-0 px-3 py-1.5 text-[10px] font-bold not-italic uppercase tracking-[0.1em] sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-[0.12em]" label="Review booking" rotate="rotate-[-2deg]" text="#111827" />
-                <StickerTag bg="#00d1ff" className="shrink-0 px-3 py-1.5 text-[10px] font-bold not-italic uppercase tracking-[0.1em] sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-[0.12em]" label="Rates locked" rotate="rotate-[1deg]" text="#111827" />
-                <StickerTag bg="#39ff14" className="hidden shrink-0 px-4 py-2 text-[11px] font-bold not-italic uppercase tracking-[0.12em] sm:inline-flex" label="Add-ons synced live" rotate="rotate-[-1deg]" text="#111827" />
-              </div>
-
-              <div>
-                <p className="vh-chip inline-flex w-fit items-center rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white/72 sm:text-[11px] sm:tracking-[0.16em]">
-                  Stay tuned. Check fast. Pay once.
-                </p>
-                <h1 className="mt-3 max-w-4xl leading-none sm:mt-4">
-                  <span className="vh-retro-sign-flat block text-[1.22rem] leading-[1.06] sm:text-[2rem] md:text-[3.8rem] lg:text-[4.6rem]">
-                    Lock the bunk.
-                  </span>
-                  <span className="vh-retro-sign-flat mt-0.5 block text-[1.08rem] leading-[1.06] sm:mt-1 sm:text-[1.75rem] md:text-[3.2rem] lg:text-[4rem] text-[var(--vh-ice)]">
-                    Add the fun.
-                  </span>
-                </h1>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-white/76 md:mt-4 md:max-w-2xl md:leading-7 md:text-base">
-                  Guest details, stay upgrades, and payment now sit in one booking lane. This page keeps the energy of the property page, but the flow stays strict: details first, extras next, payment last.
-                </p>
-              </div>
-
-              <Carousel className="w-full pr-1">
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {weeklyLineup.map((item) => (
-                    <CarouselItem key={item.day} className="basis-full pl-2 sm:basis-1/2 md:pl-4 lg:basis-1/3">
-                      <div className="p-1">
-                        <Card className="rounded-[18px] border border-white/10 bg-black/20">
-                          <CardContent className="px-4 py-4">
-                            <p className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: item.color }}>
-                              {item.day}
-                            </p>
-                            <p className="mt-2 text-lg font-bold leading-tight text-white sm:text-xl">{item.event}</p>
-                            <p className="mt-2 inline-flex rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#ffdf00]">
-                              {item.hook}
-                            </p>
-                            <p className="mt-2 text-sm text-white/78">{item.description}</p>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="-left-3 hidden h-8 w-8 border-white/20 bg-black/55 text-white hover:bg-black/70 sm:flex" />
-                <CarouselNext className="-right-3 hidden h-8 w-8 border-white/20 bg-black/55 text-white hover:bg-black/70 sm:flex" />
-              </Carousel>
+  const eventCta = (
+    <div className="rounded-[20px] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.22)]">
+      <div className="flex items-start gap-4">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[18px] bg-[linear-gradient(135deg,#fb7185,#f59e0b_52%,#fde68a)] text-[#2f1100] shadow-[0_14px_30px_rgba(249,115,22,0.26)]">
+          <PartyPopper className="h-8 w-8" strokeWidth={2.2} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#f7c948]">Events</p>
+              <h2 className="mt-2 font-sectiontitle text-[22px] text-white md:text-[24px]">Step out after check-in.</h2>
             </div>
+            <span className="rounded-full border border-white/12 bg-white/6 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/68">
+              Night plans
+            </span>
+          </div>
+          <p className="mt-3 font-body text-sm leading-6 text-white/72">
+            Keep this booking compact, then jump into the event lineup for live music, mixers, and rooftop scenes.
+          </p>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+            <Link className="vh-cta-button w-full justify-center sm:w-auto" href="/events">
+              Explore events
+            </Link>
+            <Link className="inline-flex items-center justify-center rounded-[14px] border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-white/10 sm:w-auto" href="/events?tab=rsvp">
+              RSVP board
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
-            <div className="rounded-[20px] border border-white/10 bg-[rgba(0,0,0,0.28)] p-4 shadow-[6px_6px_0px_rgba(0,0,0,0.22)] sm:rounded-[24px] sm:p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#ffdf00]">Tonight&apos;s scene</p>
-                  <p className="mt-2 text-lg font-bold uppercase leading-tight text-white sm:text-2xl">Pre-book the stay. Plan the night.</p>
-                </div>
-              </div>
-              <p className="mt-3 text-sm leading-5 text-white/72 sm:leading-6">
-                Heading out after check-in? Browse the latest community nights, open mics, and rooftop scenes before you pay.
-              </p>
-              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
-                <Button asChild className="w-full rounded-full bg-[#ffdf00] px-5 text-black whitespace-nowrap hover:bg-[#ffe864] sm:w-auto">
-                  <Link href="/events">See event calendar</Link>
-                </Button>
-                <Button asChild className="w-full rounded-full border border-white/15 bg-white/5 px-5 text-white whitespace-nowrap hover:bg-white/10 sm:w-auto">
-                  <Link href="/events?tab=rsvp">Open RSVP board</Link>
-                </Button>
+  return (
+    <div className="min-h-screen bg-[#07070a] pb-28 text-white lg:pb-12">
+      <section className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-20 md:px-6 md:pb-12 md:pt-24">
+        <div className="bg-[#07070a] px-4 py-5 sm:px-5 sm:py-6 md:px-8 md:py-8">
+          <div className="relative space-y-4 sm:space-y-5">
+            <div className="space-y-4 sm:space-y-5">
+              <div>
+                <h1 className="vh-title mt-3 max-w-4xl text-center text-[28px] leading-[1.04] text-white sm:mt-4 md:text-[42px] lg:text-[56px]">
+                  Lock the bunk. Add the fun.
+                </h1>
               </div>
             </div>
           </div>
@@ -1332,9 +1392,6 @@ export function BookingCheckoutPage() {
                     <p className={`text-center text-[11px] font-bold uppercase tracking-[0.08em] ${isActive || isComplete ? "text-white" : "text-white/45"}`}>
                       {tab.label}
                     </p>
-                    <span className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${isActive || isComplete ? "bg-white/10 text-white/75" : "bg-white/5 text-white/35"}`}>
-                      {tab.sticker}
-                    </span>
                   </div>
                 </div>
               );
@@ -1342,22 +1399,22 @@ export function BookingCheckoutPage() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_360px] lg:items-start">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
           <div className="space-y-6">
             {activeTab === "guest" ? (
               <>
-                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
-                  <div className="border-l-[8px] border-l-[#c62828] p-6 md:p-8">
+                <div className="overflow-hidden rounded-[22px] border border-dashed border-[rgba(255,255,255,0.28)] bg-[#07070a] shadow-[0_20px_45px_rgba(0,0,0,0.24)]">
+                  <div className="p-6 md:p-8">
                     <div className="mb-6 flex items-start justify-between gap-4">
                       <div>
-                        <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase text-white">Guest details</h2>
-                        <p className="mt-2 text-sm leading-6 text-white/65">
-                          Primary guest details are required now. Additional guest details are optional and can be updated later.
-                        </p>
+                        <h2 className="font-sectiontitle text-[22px] text-white md:text-[24px]">Guest details</h2>
                       </div>
+                      <span className="rounded-full border border-[#f7c948]/25 bg-[#f7c948]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#fce588]">
+                        Guest details
+                      </span>
                       {!isAuthenticated ? (
                         <button
-                          className="rounded-full border border-[rgba(0,240,255,0.3)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#00f0ff]"
+                          className="rounded-full border border-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white/82"
                           onClick={() => openAuthModal("signin")}
                           type="button"
                         >
@@ -1464,7 +1521,7 @@ export function BookingCheckoutPage() {
                       </div>
                     ) : null}
 
-                    <div className={`mt-6 rounded-[14px] border bg-[rgba(198,40,40,0.1)] p-4 ${guestErrors.acceptedTerms ? "border-[#ff2e62]" : "border-[rgba(198,40,40,0.2)]"}`}>
+                    <div className={`mt-6 rounded-[14px] border p-4 ${guestErrors.acceptedTerms ? "border-[#e30613]" : "border-[rgba(198,40,40,0.2)]"}`}>
                       <label className="flex items-start gap-3">
                         <input
                           checked={guestForm.acceptedTerms}
@@ -1474,7 +1531,7 @@ export function BookingCheckoutPage() {
                         />
                         <span className="text-sm leading-6 text-white/80">
                           Yes, I confirm <span className="font-bold text-white">all the guests are above 18 year old</span> and I acknowledge and accept the{" "}
-                          <Link className="text-[#00f0ff] hover:underline" href="/policies/guest">
+                          <Link className="text-[#00f0ff] hover:underline" href="/policies">
                             Terms of Booking Conditions, Cancellation Policy &amp; Property Policy.
                           </Link>
                         </span>
@@ -1484,44 +1541,61 @@ export function BookingCheckoutPage() {
                   </div>
                 </div>
 
-                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
-                  <div className="border-l-[8px] border-l-[#ffdf00] p-6 md:p-8">
-                    <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase text-white">Coupon codes</h2>
+                <div className="overflow-hidden rounded-[22px] border border-dashed border-[rgba(255,255,255,0.28)] bg-[#07070a] shadow-[0_20px_45px_rgba(0,0,0,0.24)]">
+                  <div className="p-6 md:p-8">
+                    <div className="flex items-start justify-between gap-4">
+                      <h2 className="font-sectiontitle text-[22px] text-white md:text-[24px]">Coupon codes</h2>
+                      <span className="rounded-full border border-[#6ee7b7]/25 bg-[#6ee7b7]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#b7f5d5]">
+                        Coupon codes
+                      </span>
+                    </div>
                     <div className="mt-5 flex gap-3">
                       <input
-                        className="flex-1 rounded-[14px] border border-white/10 bg-black/30 px-4 py-4 text-base text-white outline-none focus:border-[#ffdf00]"
-                        onChange={(event) => updateGuestField("coupon", event.target.value.toUpperCase())}
+                        className="flex-1 rounded-[14px] border border-white/10 bg-black/30 px-4 py-4 text-base text-white outline-none focus:border-white/25"
+                        onChange={(event) => handleCouponInputChange(event.target.value)}
                         placeholder="Have a coupon code?"
                         value={guestForm.coupon}
                       />
-                      <button className="rounded-[12px] border border-[#ffdf00] px-5 text-sm font-bold uppercase tracking-[0.08em] text-[#ffdf00]" type="button">
-                        Apply
+                      <button
+                        className="rounded-[12px] border border-white/15 bg-white/5 px-5 text-sm font-bold uppercase tracking-[0.08em] text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        disabled={isApplyingCoupon}
+                        onClick={() => void applyCoupon()}
+                        type="button"
+                      >
+                        {isApplyingCoupon ? "Applying..." : "Apply"}
                       </button>
                     </div>
-                    <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-white/40">
-                      Coupon selection is captured for review. Discount computation is not applied in this screen yet.
-                    </p>
+                    {couponMessage ? (
+                      <p className={`mt-3 text-sm ${appliedCoupon ? "text-[#05DF72]" : "text-white/60"}`}>{couponMessage}</p>
+                    ) : null}
 
                     <div className="mt-5 space-y-3">
                       {PROMO_CODES.map((coupon) => (
                         <button
                           key={coupon.code}
-                          className={`block w-full rounded-[14px] border p-4 text-left ${guestForm.coupon === coupon.code ? "border-[#ffdf00] bg-[rgba(255,223,0,0.06)]" : "border-white/10 bg-black/20"}`}
-                          onClick={() => updateGuestField("coupon", coupon.code)}
+                          className={`block w-full rounded-[14px] border p-4 text-left ${guestForm.coupon === coupon.code ? "border-white/25 bg-white/5" : "border-white/10 bg-black/20"}`}
+                          onClick={() => handleCouponInputChange(coupon.code)}
                           type="button"
                         >
-                          <p className="text-base font-bold uppercase tracking-[0.08em] text-white">{coupon.code}</p>
-                          <p className="mt-1 text-sm font-bold text-[#39ff14]">{coupon.description}</p>
-                          <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-white/40">Terms &amp; Conditions</p>
+                          <p className="font-bodyfocus text-base text-white">{coupon.code}</p>
+                          <p className="mt-1 font-body text-sm text-white/82">{coupon.description}</p>
+                          <p className="mt-2 text-[10px] uppercase tracking-[0.12em] text-white/40">
+                            {coupon.minGuests ? `${coupon.minGuests}+ guests required` : `${coupon.discountPercent}% off room charges`}
+                          </p>
                         </button>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
-                  <div className="border-l-[8px] border-l-[#00f0ff] p-6 md:p-8">
-                    <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase text-white">Booking policies</h2>
+                <div className="overflow-hidden rounded-[22px] border border-dashed border-[rgba(255,255,255,0.28)] bg-[#07070a] shadow-[0_20px_45px_rgba(0,0,0,0.24)]">
+                  <div className="p-6 md:p-8">
+                    <div className="flex items-start justify-between gap-4">
+                      <h2 className="font-sectiontitle text-[22px] text-white md:text-[24px]">Booking policies</h2>
+                      <span className="rounded-full border border-[#93c5fd]/25 bg-[#93c5fd]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#dbeafe]">
+                        Booking policies
+                      </span>
+                    </div>
                     <div className="mt-4">
                       <Accordion defaultValue={["general-policy"]} type="multiple">
                         {POLICY_SECTIONS.map((policy) => (
@@ -1543,16 +1617,17 @@ export function BookingCheckoutPage() {
 
             {activeTab === "addons" ? (
               <>
-                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
-                  <div className="border-l-[8px] border-l-[#ffdf00] p-6 md:p-8">
-                    <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase text-white">Add essentials</h2>
-                    <p className="mt-2 text-sm leading-6 text-white/62">
-                      Live inventory is pulled from the guest store API. Chargeable essentials and returnable stay items both render from the database-backed catalog.
-                    </p>
+                <div className="overflow-hidden rounded-[22px] border border-dashed border-[rgba(255,255,255,0.28)] bg-[#07070a] shadow-[0_20px_45px_rgba(0,0,0,0.24)]">
+                  <div className="p-6 md:p-8">
+                    <div className="flex items-start justify-between gap-4">
+                      <h2 className="font-sectiontitle text-[22px] text-white md:text-[24px]">Add essentials</h2>
+                      <span className="rounded-full border border-[#f9a8d4]/25 bg-[#f9a8d4]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#fbcfe8]">
+                        Add essentials
+                      </span>
+                    </div>
 
                     {catalogLoading ? (
                       <div aria-busy="true" aria-live="polite" className="mt-5 space-y-3" role="status">
-                        <span className="sr-only">Loading add-ons from the property store.</span>
                         {Array.from({ length: 3 }).map((_, index) => (
                           <div key={`catalog-loading-${index}`} className="flex items-center justify-between rounded-[14px] border border-white/10 bg-black/20 px-4 py-4">
                             <div className="flex min-w-0 items-center gap-4">
@@ -1568,61 +1643,48 @@ export function BookingCheckoutPage() {
                       </div>
                     ) : null}
 
-                    {catalogError ? (
-                      <div className="mt-5 rounded-[14px] border border-[rgba(255,76,48,0.24)] bg-[rgba(255,76,48,0.1)] px-4 py-4 text-sm text-white/88">
-                        {catalogError}
-                      </div>
-                    ) : null}
-
-                    {!catalogLoading && commodityItems.length === 0 && !catalogError ? (
+                    {!catalogLoading && commodityItems.length === 0 ? (
                       <div className="mt-5 rounded-[14px] border border-dashed border-white/12 bg-black/20 px-4 py-5 text-sm text-white/70">
-                        No essentials are available right now for this property.
+                        No essentials are available right now.
                       </div>
                     ) : null}
 
                     <div className="mt-5 divide-y divide-white/5">
                       {commodityItems.map((item) => {
-                        const Icon = addonIcon(item.name);
+                        const { icon: Icon, frameClassName } = addonPresentation(item.name);
                         const quantity = draft.addons.find((addon) => addon.productId === item.id)?.quantity ?? 0;
                         const disabled = isItemDisabled(item);
-                        const helperMessage = inventoryMessageById[item.id];
+                        const helperMessage = inventoryMessageById[item.id] || (!item.in_stock ? "Available at property" : "");
 
                         return (
                           <div key={item.id} className={`flex items-center justify-between gap-4 py-4 ${disabled ? "opacity-55" : ""}`}>
                             <div className="flex min-w-0 items-center gap-4">
-                              <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-[rgba(255,223,0,0.3)] bg-[rgba(255,223,0,0.1)] text-[#f1f5f9]">
-                                <Icon className="h-5 w-5" />
+                              <div className={`flex h-14 w-14 items-center justify-center rounded-[18px] ${frameClassName}`}>
+                                <Icon className="h-7 w-7" strokeWidth={2.1} />
                               </div>
                               <div className="min-w-0">
-                                <p className="text-lg font-bold text-white">{item.name}</p>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm text-white/40 line-through">{formatCurrency(item.base_price * 1.1)}</span>
-                                  <span className="font-bold text-white">{formatCurrency(item.base_price)}</span>
-                                </div>
+                                <p className="font-bodyfocus text-[18px] text-white">{item.name}</p>
+                                <p className="font-body text-sm text-white/78">{formatCurrency(item.base_price)}</p>
                                 {item.category === "RETURNABLE" ? (
-                                  <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#00f0ff]">Issued for stay, collected later</p>
+                                  <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white/55">Issued for stay, collected later</p>
                                 ) : null}
-                                {disabled ? (
-                                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-[#ffdf00]">Avail at property</p>
-                                ) : helperMessage ? (
-                                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-[#ffdf00]">{helperMessage}</p>
-                                ) : null}
+                                {helperMessage ? <p className="mt-1 text-xs uppercase tracking-[0.08em] text-white/55">{helperMessage}</p> : null}
                               </div>
                             </div>
 
                             {quantity > 0 ? (
                               <div className="flex items-center gap-3 rounded-[10px] border border-white/10 bg-black/40 px-2 py-1">
-                                <button className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#ffdf00] hover:bg-white/5" onClick={() => decrementAddon(item)} type="button">
+                                <button className="flex h-8 w-8 items-center justify-center rounded-[8px] text-white hover:bg-white/5" onClick={() => decrementAddon(item)} type="button">
                                   <Minus className="h-4 w-4" />
                                 </button>
                                 <span className="w-4 text-center text-base font-bold text-white">{quantity}</span>
-                                <button className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#ffdf00] hover:bg-white/5" onClick={() => incrementAddon(item)} type="button">
+                                <button className="flex h-8 w-8 items-center justify-center rounded-[8px] text-white hover:bg-white/5" onClick={() => incrementAddon(item)} type="button">
                                   <Plus className="h-4 w-4" />
                                 </button>
                               </div>
                             ) : (
                               <button
-                                className="rounded-[10px] bg-[#ffdf00] px-5 py-2 text-sm font-bold uppercase tracking-[0.08em] text-black disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40"
+                                className="rounded-[10px] border border-white/15 bg-white/5 px-5 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white disabled:cursor-not-allowed disabled:bg-white/5 disabled:text-white/40"
                                 disabled={disabled}
                                 onClick={() => incrementAddon(item)}
                                 type="button"
@@ -1637,22 +1699,21 @@ export function BookingCheckoutPage() {
                   </div>
                 </div>
 
-                <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
-                  <div className="border-l-[8px] border-l-[#00f0ff] p-6 md:p-8">
-                    <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase text-white">Add to your stay</h2>
-                    <p className="mt-2 text-sm leading-6 text-white/62">
-                      Service upgrades do not expose stock counts. Quantities stay dynamic and follow the catalog returned by the API.
-                    </p>
+                {eventCta}
+
+                <div className="overflow-hidden rounded-[22px] border border-dashed border-[rgba(255,255,255,0.28)] bg-[#07070a] shadow-[0_20px_45px_rgba(0,0,0,0.24)]">
+                  <div className="p-6 md:p-8">
+                    <h2 className="font-sectiontitle text-[22px] text-white md:text-[24px]">Add to your stay</h2>
 
                     {!catalogLoading && serviceItems.length === 0 ? (
                       <div className="mt-5 rounded-[14px] border border-dashed border-white/12 bg-black/20 px-4 py-5 text-sm text-white/70">
-                        No service add-ons are configured for this property yet.
+                        No stay upgrades are available right now.
                       </div>
                     ) : null}
 
                     <div className="mt-5 divide-y divide-white/5">
                       {serviceItems.map((item) => {
-                        const Icon = addonIcon(item.name);
+                        const { icon: Icon, frameClassName } = addonPresentation(item.name);
                         const quantity = draft.addons.find((addon) => addon.productId === item.id)?.quantity ?? 0;
                         const singleQuantity = isSingleQuantityService(item);
                         const helperMessage = inventoryMessageById[item.id] || (singleQuantity ? "Only 1 per booking" : "");
@@ -1660,28 +1721,28 @@ export function BookingCheckoutPage() {
                         return (
                           <div key={item.id} className="flex items-center justify-between gap-4 py-4">
                             <div className="flex min-w-0 items-center gap-4">
-                              <div className="flex h-12 w-12 items-center justify-center rounded-[14px] border border-[rgba(0,240,255,0.3)] bg-[rgba(0,240,255,0.1)] text-[#f1f5f9]">
-                                <Icon className="h-5 w-5" />
+                              <div className={`flex h-14 w-14 items-center justify-center rounded-[18px] ${frameClassName}`}>
+                                <Icon className="h-7 w-7" strokeWidth={2.1} />
                               </div>
                               <div className="min-w-0">
-                                <p className="text-lg font-bold text-white">{item.name}</p>
-                                <p className="text-sm text-white/50">
+                                <p className="font-bodyfocus text-[18px] text-white">{item.name}</p>
+                                <p className="font-body text-sm text-white/78">
                                   {item.base_price > 0 ? `Starts at ${formatCurrency(item.base_price)}` : "Included on request"}
                                 </p>
                                 {helperMessage ? (
-                                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-[#00f0ff]">{helperMessage}</p>
+                                  <p className="mt-1 text-xs uppercase tracking-[0.08em] text-white/55">{helperMessage}</p>
                                 ) : null}
                               </div>
                             </div>
 
                             {quantity > 0 ? (
                               <div className="flex items-center gap-3 rounded-[10px] border border-white/10 bg-black/40 px-2 py-1">
-                                <button className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#00f0ff] hover:bg-white/5" onClick={() => decrementAddon(item)} type="button">
+                                <button className="flex h-8 w-8 items-center justify-center rounded-[8px] text-white hover:bg-white/5" onClick={() => decrementAddon(item)} type="button">
                                   <Minus className="h-4 w-4" />
                                 </button>
                                 <span className="w-4 text-center text-base font-bold text-white">{quantity}</span>
                                 <button
-                                  className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#00f0ff] hover:bg-white/5 disabled:cursor-not-allowed disabled:text-white/25 disabled:hover:bg-transparent"
+                                  className="flex h-8 w-8 items-center justify-center rounded-[8px] text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:text-white/25 disabled:hover:bg-transparent"
                                   disabled={singleQuantity && quantity >= 1}
                                   onClick={() => incrementAddon(item)}
                                   type="button"
@@ -1691,7 +1752,7 @@ export function BookingCheckoutPage() {
                               </div>
                             ) : (
                               <button
-                                className="rounded-[10px] border border-[#00f0ff] px-5 py-2 text-sm font-bold uppercase tracking-[0.08em] text-[#00f0ff]"
+                                className="rounded-[10px] border border-white/15 bg-white/5 px-5 py-2 text-sm font-bold uppercase tracking-[0.08em] text-white"
                                 onClick={() => incrementAddon(item)}
                                 type="button"
                               >
@@ -1706,116 +1767,6 @@ export function BookingCheckoutPage() {
                 </div>
               </>
             ) : null}
-
-            {activeTab === "confirmation" ? (
-              <div className="overflow-hidden rounded-[16px] border border-white/10 bg-[#1A1A1A] shadow-[8px_8px_0px_rgba(0,0,0,0.28)]">
-                <div className="border-l-[8px] border-l-[#c62828] p-6 md:p-8">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <h2 className="font-['Space_Grotesk'] text-2xl font-bold uppercase text-white">Booking confirmation</h2>
-                      <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">
-                        This step validates live availability again, creates the pending booking in the backend, and opens Razorpay only after the cart passes server-side checks.
-                      </p>
-                    </div>
-                    <div className="rounded-full border border-[rgba(0,240,255,0.2)] bg-[rgba(0,240,255,0.08)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#00f0ff]">
-                      Status: {flowStage.replaceAll("-", " ")}
-                    </div>
-                  </div>
-
-                  <div className="mt-6 grid gap-4 md:grid-cols-2">
-                    <div className="rounded-[14px] border border-white/10 bg-white/5 p-4">
-                      <p className="font-semibold text-white">Inventory is revalidated before payment</p>
-                      <p className="mt-2 text-sm leading-6 text-white/66">
-                        The backend re-checks room and add-on availability before the Razorpay order is created.
-                      </p>
-                    </div>
-                    <div className="rounded-[14px] border border-white/10 bg-white/5 p-4">
-                      <p className="font-semibold text-white">Razorpay test mode</p>
-                      <p className="mt-2 text-sm leading-6 text-white/66">
-                        Use sandbox credentials in the widget. Payment confirmation is verified through the backend before redirect.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 rounded-[16px] border border-white/10 bg-black/20 p-5">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.16em] text-white/45">Ready to pay</p>
-                        <p className="mt-2 text-2xl font-bold text-[#00f0ff]">{formatCurrency(estimatedGrandTotal)}</p>
-                      </div>
-                      <button
-                        className="rounded-[12px] bg-[#c62828] px-5 py-3 text-sm font-bold uppercase tracking-[0.08em] text-white shadow-[4px_4px_0px_rgba(0,0,0,0.45)] disabled:cursor-not-allowed disabled:opacity-60"
-                        disabled={isPaying}
-                        onClick={() => setTriggerPaymentOpen(true)}
-                        type="button"
-                      >
-                        {isPaying ? (
-                          <span className="inline-flex items-center gap-2">
-                            <LoaderCircle className="h-4 w-4 animate-spin" />
-                            Opening Razorpay
-                          </span>
-                        ) : (
-                          "Open Razorpay"
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {errorMessage ? (
-                    <div className="mt-5 rounded-[14px] border border-[rgba(255,76,48,0.24)] bg-[rgba(255,76,48,0.1)] px-4 py-4 text-sm text-white/88">
-                      {errorMessage}
-                    </div>
-                  ) : null}
-
-                  {verifyErrorMessage ? (
-                    <div className="mt-5 rounded-[14px] border border-[rgba(255,204,102,0.24)] bg-[rgba(255,204,102,0.1)] px-4 py-4 text-sm text-white/90">
-                      Verification failed after checkout success: {verifyErrorMessage}
-                    </div>
-                  ) : null}
-
-                  {failErrorMessage ? (
-                    <div className="mt-5 rounded-[14px] border border-[rgba(255,76,48,0.24)] bg-[rgba(255,76,48,0.1)] px-4 py-4 text-sm text-white/90">
-                      {failErrorMessage}
-                    </div>
-                  ) : null}
-
-                  <details className="mt-6 rounded-[14px] border border-white/10 bg-white/5 p-4 text-xs text-white/80">
-                    <summary className="cursor-pointer select-none font-semibold text-white">
-                      Temporary booking diagnostics ({flowStage})
-                    </summary>
-                    <div className="mt-3 space-y-3">
-                      {diagnostics.length === 0 ? (
-                        <p className="text-white/55">No events yet. Opening Razorpay will start diagnostics capture.</p>
-                      ) : (
-                        diagnostics.map((event) => (
-                          <div key={event.id} className="rounded-[12px] border border-white/10 bg-[#0b1020] p-3">
-                            <p className="font-semibold text-white">
-                              {event.step} - {event.status}
-                            </p>
-                            <p className="mt-1 text-[11px] text-white/50">{new Date(event.timestamp).toLocaleString()}</p>
-                            {event.error ? (
-                              <pre className="mt-2 overflow-auto whitespace-pre-wrap rounded-[10px] bg-[rgba(255,76,48,0.12)] p-2 text-[11px] text-white">
-                                {event.error}
-                              </pre>
-                            ) : null}
-                            {typeof event.request !== "undefined" ? (
-                              <pre className="mt-2 overflow-auto whitespace-pre-wrap rounded-[10px] bg-black/30 p-2 text-[11px] text-white/90">
-                                req: {toDiagnosticPreview(event.request)}
-                              </pre>
-                            ) : null}
-                            {typeof event.response !== "undefined" ? (
-                              <pre className="mt-2 overflow-auto whitespace-pre-wrap rounded-[10px] bg-black/30 p-2 text-[11px] text-white/90">
-                                res: {toDiagnosticPreview(event.response)}
-                              </pre>
-                            ) : null}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </details>
-                </div>
-              </div>
-            ) : null}
           </div>
 
           {bookingSummaryDesktop}
@@ -1823,23 +1774,22 @@ export function BookingCheckoutPage() {
       </section>
 
       <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[rgba(17,17,17,0.96)] backdrop-blur-md lg:hidden">
-        <div className="h-1 bg-[#c62828]" />
         <div className="flex items-center justify-between gap-4 px-5 py-4">
           <div>
             <p className="text-xl font-bold text-white">{formatCurrency(estimatedGrandTotal)}</p>
-            <button className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.08em] text-[#00f0ff]" onClick={() => setShowMobileSummary(true)} type="button">
+            <button className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.08em] text-white/72" onClick={() => setShowMobileSummary(true)} type="button">
               Price breakup
               <Info className="h-3.5 w-3.5" />
             </button>
           </div>
 
           {activeTab === "guest" ? (
-            <button className="rounded-[10px] bg-[#ffdf00] px-5 py-3 text-sm font-bold uppercase text-black shadow-[4px_4px_0px_rgba(0,0,0,0.45)]" onClick={openAddonsTab} type="button">
+            <button className="vh-cta-button px-5 py-3 text-sm" onClick={openAddonsTab} type="button">
               Continue
             </button>
           ) : (
             <button
-              className="rounded-[10px] bg-[#ffdf00] px-5 py-3 text-sm font-bold uppercase text-black shadow-[4px_4px_0px_rgba(0,0,0,0.45)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="vh-cta-button px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isPaying}
               onClick={openPaymentFlow}
               type="button"
@@ -1851,7 +1801,7 @@ export function BookingCheckoutPage() {
       </div>
 
       <div className={`fixed inset-0 z-[60] transition ${showMobileSummary ? "pointer-events-auto bg-black/80" : "pointer-events-none bg-transparent"}`}>
-        <div className={`absolute bottom-0 left-0 right-0 max-h-[85vh] rounded-t-[28px] border-t border-white/10 bg-[#1A1A1A] transition-transform duration-300 ${showMobileSummary ? "translate-y-0" : "translate-y-full"}`}>
+        <div className={`absolute bottom-0 left-0 right-0 max-h-[85vh] rounded-t-[28px] border-t border-white/10 bg-[#07070a] transition-transform duration-300 ${showMobileSummary ? "translate-y-0" : "translate-y-full"}`}>
           <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
             <div>
               <p className="text-lg font-bold uppercase text-white">Booking details</p>
@@ -1869,7 +1819,7 @@ export function BookingCheckoutPage() {
                 <p className="mt-1 text-base font-bold text-white">{formatDateLabel(draft.checkinDate)}</p>
                 <p className="text-[10px] text-white/40">from {propertyGuidelines.checkIn}</p>
               </div>
-              <div className="rounded bg-[#ffdf00] px-2 py-1 text-[10px] font-bold uppercase text-black">
+              <div className="rounded bg-[#f9cb37] px-2 py-1 text-[10px] font-bold uppercase text-black">
                 {nights} {nights === 1 ? "Night" : "Nights"}
               </div>
               <div className="text-right">
@@ -1880,6 +1830,10 @@ export function BookingCheckoutPage() {
             </div>
 
             <div className="space-y-3">
+              <div className="rounded-[14px] border border-white/10 bg-white/5 px-4 py-4">
+                <p className="text-base font-bold text-white">{propertyHero.title}</p>
+                <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-white/45">{propertyHero.location}</p>
+              </div>
               {draft.rooms.map((room) => (
                 <div key={room.roomTypeId} className="flex items-start justify-between gap-3 rounded-[14px] border border-white/10 bg-white/5 px-4 py-4">
                   <div>
@@ -1891,35 +1845,62 @@ export function BookingCheckoutPage() {
                   <p className="font-semibold text-white">{formatCurrency(room.basePrice * room.quantity * nights)}</p>
                 </div>
               ))}
-              {activeAddons.map((addon) => (
-                <div key={addon.productId} className="flex items-start justify-between gap-3 rounded-[14px] border border-white/10 bg-white/5 px-4 py-4">
-                  <div>
-                    <p className="font-semibold text-white">{addon.name}</p>
-                    <p className="text-xs text-white/55">
-                      {formatCurrency(addon.unitPrice)} x {addon.quantity}
-                    </p>
-                  </div>
-                  <p className="font-semibold text-white">{formatCurrency(addon.unitPrice * addon.quantity)}</p>
-                </div>
-              ))}
             </div>
 
             <div className="space-y-2 rounded-[14px] border border-white/10 bg-white/5 px-4 py-4 text-sm text-white/82">
               <div className="flex items-center justify-between">
-                <p>Total room charges</p>
+                <p>Room charges</p>
                 <p className="font-bold text-white">{formatCurrency(roomSubtotal)}</p>
               </div>
               <div className="flex items-center justify-between">
+                <div>
+                  <p>Coupon deduction</p>
+                  {appliedCoupon ? <p className="text-[11px] uppercase tracking-[0.12em] text-[#f9cb37]">{appliedCoupon.code}</p> : null}
+                </div>
+                <p className="font-bold text-[#05DF72]">- {formatCurrency(couponDiscount)}</p>
+              </div>
+              <div className="flex items-center justify-between">
+                <p>Total room charges</p>
+                <p className="font-bold text-white">{formatCurrency(discountedRoomSubtotal)}</p>
+              </div>
+              <div className="space-y-3 border-t border-white/10 pt-3">
+                <div className="flex items-center justify-between">
+                  <p>Add-ons</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-white/45">{activeAddons.length === 0 ? "None" : `${activeAddons.length} selected`}</p>
+                </div>
+                {activeAddons.length === 0 ? (
+                  <p className="rounded-[12px] border border-dashed border-white/12 bg-black/20 px-3 py-3 text-xs text-white/55">
+                    No extras added yet.
+                  </p>
+                ) : (
+                  activeAddons.map((addon) => (
+                    <div key={addon.productId} className="flex items-start justify-between gap-3 rounded-[12px] border border-white/10 bg-black/20 px-3 py-3">
+                      <div>
+                        <p className="font-semibold text-white">{addon.name}</p>
+                        <p className="text-xs text-white/55">
+                          {formatCurrency(addon.unitPrice)} x {addon.quantity}
+                        </p>
+                      </div>
+                      <p className="font-semibold text-white">{formatCurrency(addon.unitPrice * addon.quantity)}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="flex items-center justify-between border-t border-white/10 pt-3">
                 <p>Total extra charges</p>
                 <p className="font-bold text-white">{formatCurrency(addonSubtotal)}</p>
               </div>
               <div className="flex items-center justify-between">
-                <p>Total taxes</p>
+                <p>Total charges</p>
+                <p className="font-bold text-white">{formatCurrency(totalCharges)}</p>
+              </div>
+              <div className="flex items-center justify-between">
+                <p>Taxes</p>
                 <p className="font-bold text-white">{formatCurrency(taxes)}</p>
               </div>
               <div className="mt-3 flex items-end justify-between border-t border-white/10 pt-4">
-                <p className="text-lg font-bold uppercase text-white">Total price</p>
-                <p className="text-[28px] font-bold text-[#00f0ff]">{formatCurrency(estimatedGrandTotal)}</p>
+                <p className="text-lg font-bold uppercase text-white">Final total price</p>
+                <p className="text-[28px] font-bold text-white">{formatCurrency(estimatedGrandTotal)}</p>
               </div>
             </div>
           </div>

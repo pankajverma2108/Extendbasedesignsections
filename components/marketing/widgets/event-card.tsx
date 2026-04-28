@@ -44,7 +44,7 @@ export function EventCard({
             </div>
           ) : null}
           <div className="absolute bottom-4 left-4 right-4">
-            <h3 className="text-2xl font-bold uppercase text-white">{title}</h3>
+            <h3 className="font-['Geologica'] text-2xl font-bold uppercase text-white">{title}</h3>
           </div>
         </div>
 

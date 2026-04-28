@@ -422,7 +422,7 @@ export default function TestimonialsMarquee() {
   const row3 = buildPatternedRowFixedPlatform(photosRow3, REVIEWS, platformRow3, countRow3, ROW_LENGTH);
 
   return (
-    <section className="overflow-hidden bg-[#10111a] pb-8 pt-0">
+    <section className="overflow-hidden bg-[#07070a] pb-8 pt-0">
       <div className="mx-auto w-[95vw] max-w-[1400px] px-1 md:px-3">
         <div className="text-center mb-3 px-4">
           <h2 className="vh-title text-[2rem] md:text-[2.7rem] text-white">Guests keep talking. We keep hosting.</h2>

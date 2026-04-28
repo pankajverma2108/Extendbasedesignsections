@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
+import { getDefaultPropertyDestinationHref } from "@/lib/cx-api";
 
 type BentoItem = {
   id: string;
@@ -88,7 +89,7 @@ export function MagicBentoUpsell({ title, subtitle, items }: MagicBentoUpsellPro
                 </p>
               </div>
               <Button asChild className="w-full">
-                <Link href="/property">Add to Booking</Link>
+                <Link href={getDefaultPropertyDestinationHref()}>Add to Booking</Link>
               </Button>
             </div>
           </div>

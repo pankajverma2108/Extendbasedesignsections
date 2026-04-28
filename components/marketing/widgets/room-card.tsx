@@ -89,7 +89,7 @@ export function RoomCard({
         </div>
 
         <CardContent className="pt-3">
-          <h3 className="text-2xl font-bold uppercase text-white">{title}</h3>
+          <h3 className="font-['Geologica'] text-2xl font-bold uppercase text-white">{title}</h3>
 
           <ul className="mt-3 flex flex-wrap gap-1 text-xs text-white/85">
             {detailLabels.slice(0, 10).map((feature, index) => {
@@ -116,7 +116,7 @@ export function RoomCard({
             </p>
             <p className="text-2xl font-bold text-[#c62828]">{price}</p>
           </div>
-          <Button asChild variant="outline">
+          <Button asChild className="border-white/35 bg-white/5 text-white hover:bg-[var(--vh-pink)] hover:text-white" variant="outline">
             <Link href={href}>View Details</Link>
           </Button>
         </CardFooter>

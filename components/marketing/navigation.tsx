@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ArrowUpRight, CircleUserRound } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { MobileStaggeredMenu } from "./mobile-staggered-menu";
-import { hostelNavItems, primaryHostelHref } from "@/content/nav-menu";
+import { hostelNavItems } from "@/content/nav-menu";
 import { siteMeta } from "@/content/site";
 import { navFontStyles } from "@/content/typography";
+import { getDefaultPropertyDestinationHref } from "@/lib/cx-api";
 import { cn } from "@/lib/utils";
 
 type DesktopNavLink = {
@@ -27,6 +28,27 @@ type DesktopNavCard = {
   textColor: string;
   links: DesktopNavLink[];
 };
+
+function matchesNavLink(pathname: string, searchParams: Pick<URLSearchParams, "get">, href: string): boolean {
+  if (!href.startsWith("/")) {
+    return false;
+  }
+
+  const resolvedHref = new URL(href, "https://vibehouse.local");
+  const targetPathname = resolvedHref.pathname;
+
+  if (pathname !== targetPathname && !pathname.startsWith(`${targetPathname}/`)) {
+    return false;
+  }
+
+  for (const [key, value] of resolvedHref.searchParams.entries()) {
+    if (searchParams.get(key) !== value) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 const hostelCardLinks: DesktopNavLink[] = hostelNavItems.map((property) => ({
   label: property.label,
@@ -71,6 +93,7 @@ const desktopNavCards: DesktopNavCard[] = [
 
 export function Navigation() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const { guest, isAuthenticated, isRestoringSession, openAuthModal, signOut } = useGuestAuth();
@@ -83,6 +106,16 @@ export function Navigation() {
     const firstToken = guest?.name?.trim().split(/\s+/)[0];
     return firstToken || "Profile";
   }, [guest]);
+  const propertyHref = useMemo(
+    () =>
+      getDefaultPropertyDestinationHref(
+        hostelNavItems[0]?.id,
+        "/property",
+        searchParams.get("checkin"),
+        searchParams.get("checkout"),
+      ),
+    [searchParams],
+  );
 
   useEffect(() => {
     let lastY = window.scrollY;
@@ -173,7 +206,10 @@ export function Navigation() {
                 aria-expanded={isDesktopMenuOpen}
                 aria-label={isDesktopMenuOpen ? "Close navigation menu" : "Open navigation menu"}
                 className="group inline-flex h-10 w-10 items-center justify-center rounded-lg text-white"
-                onClick={() => setIsDesktopMenuOpen((value) => !value)}
+                onClick={() => {
+                  setIsProfileMenuOpen(false);
+                  setIsDesktopMenuOpen((value) => !value);
+                }}
                 type="button"
               >
                 <span className={cn("relative h-3.5 w-3.5 transition-transform duration-300", isDesktopMenuOpen && "rotate-45")}> 
@@ -205,7 +241,10 @@ export function Navigation() {
                     <button
                       className="inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--vh-pink)]/45 bg-[rgba(35,15,20,0.82)] px-3 text-sm font-semibold text-white transition hover:bg-[rgba(198,40,40,0.16)]"
                       disabled={isRestoringSession && !isAuthenticated}
-                      onClick={() => setIsProfileMenuOpen((value) => !value)}
+                      onClick={() => {
+                        setIsDesktopMenuOpen(false);
+                        setIsProfileMenuOpen((value) => !value);
+                      }}
                       type="button"
                     >
                       <CircleUserRound className="h-4.5 w-4.5" />
@@ -245,7 +284,7 @@ export function Navigation() {
                 </div>
 
               <Link
-                href={primaryHostelHref}
+                href={propertyHref}
                 className="inline-flex h-9 items-center rounded-lg bg-[var(--vh-pink)] px-3.5 text-sm font-semibold text-white shadow-[0px_-1px_0px_0px_#FFFFFF40_inset,_0px_1px_0px_0px_#FFFFFF40_inset] transition hover:bg-[var(--vh-pink-soft)]"
               >
                 Book Now
@@ -308,7 +347,7 @@ export function Navigation() {
                               );
                             }
 
-                            const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+                            const active = matchesNavLink(pathname, searchParams, link.href);
 
                             return (
                               <Link
@@ -352,7 +391,7 @@ export function Navigation() {
 
             <div className="flex items-center gap-2">
               <Link
-                href={primaryHostelHref}
+                href={propertyHref}
                 className="rounded-full bg-[var(--vh-pink)] px-3.5 py-2 text-xs font-medium whitespace-nowrap text-white shadow-[0px_-1px_0px_0px_#FFFFFF40_inset,_0px_1px_0px_0px_#FFFFFF40_inset]"
               >
                 Book Now

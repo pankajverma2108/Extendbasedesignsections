@@ -72,7 +72,7 @@ export function HeroCarousel({ images, titleParts }: HeroCarouselProps) {
 
       <div className="relative z-10 flex h-full flex-col items-center justify-start px-4 pb-28 pt-32 md:justify-center md:pb-24 md:pt-36">
         <div className="mb-12 mt-16 max-w-[1000px] px-4 md:mt-0">
-          <h1 className="vh-title text-center text-[52px] uppercase leading-[0.92] md:text-[88px] lg:text-[108px]">
+          <h1 className="vh-title font-['Suez_One'] text-center text-[52px] uppercase leading-[0.92] md:text-[88px] lg:text-[108px]">
             <span className="bg-gradient-to-r from-white via-slate-100 to-white bg-clip-text text-transparent">
               {titleParts[0]}
             </span>{" "}

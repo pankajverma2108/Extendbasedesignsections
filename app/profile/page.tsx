@@ -373,7 +373,7 @@ export default function ProfilePage() {
             <p className="font-['Caveat'] text-xl leading-none md:text-2xl" style={{ color: theme.accent }}>
               Your signature guest identity
             </p>
-            <h1 className="mt-1 whitespace-nowrap font-['Space_Grotesk'] text-[15px] font-bold uppercase tracking-[0.1em] text-slate-100 sm:text-lg md:text-xl">
+            <h1 className="mt-1 whitespace-nowrap font-['Suez_One'] text-[15px] font-normal uppercase tracking-[0.1em] text-slate-100 sm:text-lg md:text-xl">
               Daily Social Passport
             </h1>
           </header>
