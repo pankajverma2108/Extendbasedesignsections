@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 
 import { GuestAuthProvider } from "@/components/auth/guest-auth-provider";
 import { Footer } from "@/components/marketing/footer";
@@ -28,7 +29,9 @@ export default function RootLayout({
     <html lang="en" data-scroll-behavior="smooth">
       <body className="vh-shell flex min-h-screen flex-col font-body">
         <GuestAuthProvider>
-          <Navigation />
+          <Suspense fallback={null}>
+            <Navigation />
+          </Suspense>
           <main className="flex-1">{children}</main>
           <Footer />
           <Toaster position="bottom-right" />
