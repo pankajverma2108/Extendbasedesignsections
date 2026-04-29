@@ -29,6 +29,14 @@ export type BookingDraft = {
   addons: BookingDraftAddon[];
   signature: string;
   createdAt: number;
+  source?: "nightly" | "colive";
+  colive?: {
+    propertyId: string;
+    moveInDate: string;
+    durationMonths: number;
+    stayType: "solo" | "couple" | "remote";
+    propertyName?: string;
+  };
 };
 
 export type BookingReviewGuest = {

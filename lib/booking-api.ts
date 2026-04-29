@@ -72,7 +72,7 @@ export type CreateColiveQuotePayload = {
   property_id: string;
   room_type_id: string;
   move_in_date: string;
-  duration_months: number;
+  duration_days: number;
   stay_type: ColiveStayType;
   addons: Array<{
     addon_id: string;
@@ -99,7 +99,7 @@ export type CreateColiveDraftBookingPayload = {
   property_id: string;
   room_type_id: string;
   move_in_date: string;
-  duration_months: number;
+  duration_days: number;
   stay_type: ColiveStayType;
   guest_details: {
     first_name: string;

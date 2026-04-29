@@ -28,10 +28,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StickerTag } from "@/components/shared/sticker-tag";
 import {
   createBookingPaymentOrder,
+  createColiveDraftBooking,
+  createColivePaymentOrder,
+  createColiveQuote,
   createGuestBookingOrder,
   failBookingPayment,
   getStoreCatalog,
   type StoreCatalogItem,
+  verifyColivePayment,
   verifyBookingPayment,
 } from "@/lib/booking-api";
 import {
@@ -46,6 +50,7 @@ import {
   type BookingReviewGuest,
 } from "@/lib/booking-session";
 import { getDefaultPropertyDestinationHref } from "@/lib/cx-api";
+import { getColivePropertyAddons } from "@/lib/colive-api";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { isValidEmail, isValidPhone, normalizeEmail, normalizePhone } from "@/lib/guest-form-validation";
 import { propertyGuidelines, propertyHero } from "@/content/rooms";
@@ -308,6 +313,36 @@ function getNightCount(checkIn?: string | null, checkOut?: string | null): numbe
   return Math.max(1, Math.round((end - start) / 86400000));
 }
 
+function isColiveDraft(draft: BookingDraft | null): draft is BookingDraft & { colive: NonNullable<BookingDraft["colive"]> } {
+  return Boolean(draft?.source === "colive" && draft.colive);
+}
+
+function getColiveDurationDays(durationMonths: number): number {
+  return Math.min(730, Math.max(30, Math.round(durationMonths * 30)));
+}
+
+function getColiveRoomOptionId(room: { roomTypeId: string; slug?: string; title: string; roomType?: string }): string {
+  const haystack = `${room.roomTypeId} ${room.slug ?? ""} ${room.title} ${room.roomType ?? ""}`.toLowerCase();
+
+  if (haystack.includes("deluxe") || haystack.includes("queen") || haystack.includes("private")) {
+    return "rt-ka-queen";
+  }
+
+  if (haystack.includes("6") && haystack.includes("female")) {
+    return "rt-ka-6dorm-female";
+  }
+
+  if (haystack.includes("4") && haystack.includes("female")) {
+    return "rt-ka-4dorm-female";
+  }
+
+  if (haystack.includes("6")) {
+    return "rt-ka-6dorm";
+  }
+
+  return "rt-ka-4dorm";
+}
+
 function splitGuestName(name?: string | null): Pick<BookingReviewGuest, "firstName" | "lastName"> {
   const clean = (name || "").trim();
   if (!clean) {
@@ -551,6 +586,9 @@ export function BookingCheckoutPage() {
   const paymentHandledRef = useRef(false);
   const hydratedGuestRef = useRef(false);
   const resumePaymentAfterAuthRef = useRef(false);
+  const draftIsColive = isColiveDraft(draft);
+  const coliveAddonPropertyId = draftIsColive ? draft.colive.propertyId : null;
+  const coliveAddonDurationMonths = draftIsColive ? draft.colive.durationMonths : null;
 
   useEffect(() => {
     const stored = getStoredBookingState();
@@ -598,8 +636,23 @@ export function BookingCheckoutPage() {
       setCatalogError(null);
 
       try {
-        // Add-ons stay pinned to the current storefront property until booking-specific catalog routing is expanded.
-        const response = await getStoreCatalog(ADDON_PROPERTY_ID);
+        const response = coliveAddonPropertyId && coliveAddonDurationMonths
+          ? await getColivePropertyAddons({
+              propertyId: coliveAddonPropertyId,
+              durationMonths: coliveAddonDurationMonths,
+            }).then((payload) =>
+              (Array.isArray(payload.addons) ? payload.addons : [])
+                .filter((addon) => addon.is_available !== false)
+                .map<StoreCatalogItem>((addon) => ({
+                  id: addon.addon_id,
+                  name: addon.name,
+                  category: "SERVICE",
+                  base_price: addon.unit_price ?? 0,
+                  in_stock: addon.is_available !== false,
+                  available_stock: addon.max_quantity ?? null,
+                })),
+            )
+          : await getStoreCatalog(ADDON_PROPERTY_ID);
         if (cancelled) {
           return;
         }
@@ -660,7 +713,7 @@ export function BookingCheckoutPage() {
     return () => {
       cancelled = true;
     };
-  }, [draft?.propertyId]);
+  }, [coliveAddonDurationMonths, coliveAddonPropertyId, draft?.propertyId, draft?.source]);
 
   useEffect(() => {
     if (!showMobileSummary) {
@@ -675,10 +728,13 @@ export function BookingCheckoutPage() {
   }, [showMobileSummary]);
 
   const nights = useMemo(() => getNightCount(draft?.checkinDate, draft?.checkoutDate), [draft?.checkinDate, draft?.checkoutDate]);
+  const isColiveBooking = isColiveDraft(draft);
+  const stayUnitCount = isColiveBooking ? draft.colive.durationMonths : nights;
+  const stayUnitLabel = isColiveBooking ? (stayUnitCount === 1 ? "month" : "months") : (nights === 1 ? "night" : "nights");
   const totalGuests = useMemo(() => getTotalGuestCount(draft), [draft]);
   const roomSubtotal = useMemo(
-    () => (draft?.rooms ?? []).reduce((sum, room) => sum + room.basePrice * room.quantity * nights, 0),
-    [draft?.rooms, nights],
+    () => (draft?.rooms ?? []).reduce((sum, room) => sum + room.basePrice * room.quantity * (isColiveDraft(draft) ? draft.colive.durationMonths : nights), 0),
+    [draft, nights],
   );
   const activeAddons = useMemo(() => (draft?.addons ?? []).filter((addon) => addon.quantity > 0), [draft?.addons]);
   const couponDiscount = useMemo(() => calculateCouponDiscount(appliedCoupon, roomSubtotal), [appliedCoupon, roomSubtotal]);
@@ -934,6 +990,143 @@ export function BookingCheckoutPage() {
     try {
       const activeRooms = draft.rooms.filter((room) => room.quantity > 0);
       const selectedAddons = draft.addons.filter((addon) => addon.quantity > 0);
+
+      if (isColiveDraft(draft)) {
+        if (activeRooms.length !== 1 || activeRooms[0]?.quantity !== 1) {
+          toast.error("Select one Colive room for this checkout.");
+          setFlowStage("failed");
+          return;
+        }
+
+        const activeRoom = activeRooms[0];
+        const coliveRoomTypeId = getColiveRoomOptionId(activeRoom);
+        const selectedColiveAddons = selectedAddons.map((addon) => ({
+          addon_id: addon.productId,
+          quantity: addon.quantity,
+        }));
+        const durationDays = getColiveDurationDays(draft.colive.durationMonths);
+
+        const quote = await createColiveQuote(token, {
+          property_id: draft.colive.propertyId,
+          room_type_id: coliveRoomTypeId,
+          move_in_date: draft.colive.moveInDate,
+          duration_days: durationDays,
+          stay_type: draft.colive.stayType,
+          addons: selectedColiveAddons,
+          coupon_code: guestForm.coupon || null,
+        });
+
+        const coliveDraft = await createColiveDraftBooking(token, {
+          quote_id: quote.quote_id,
+          property_id: draft.colive.propertyId,
+          room_type_id: coliveRoomTypeId,
+          move_in_date: draft.colive.moveInDate,
+          duration_days: durationDays,
+          stay_type: draft.colive.stayType,
+          guest_details: {
+            first_name: guestForm.firstName.trim(),
+            last_name: guestForm.lastName.trim(),
+            email: normalizeEmail(guestForm.email),
+            phone: normalizePhone(guestForm.phone),
+          },
+          addons: selectedColiveAddons,
+          source: "web_colive_property_page",
+          notes: "Shared booking review checkout for Colive monthly flow.",
+        });
+
+        setFlowStage("creating-payment-order");
+        const paymentOrder = await createColivePaymentOrder(token, {
+          draft_booking_id: coliveDraft.draft_booking_id,
+          grand_total: coliveDraft.charges.grand_total,
+          currency: quote.currency,
+        });
+
+        setFlowStage("opening-razorpay");
+        await loadRazorpayCheckout();
+
+        if (!window.Razorpay) {
+          throw new Error("Razorpay checkout did not initialise correctly.");
+        }
+
+        const Razorpay = window.Razorpay;
+        paymentHandledRef.current = false;
+
+        await new Promise<void>((resolve, reject) => {
+          const markFailed = (message: string) => {
+            if (paymentHandledRef.current) {
+              return;
+            }
+
+            paymentHandledRef.current = true;
+            setFlowStage("failed");
+            reject(new Error(message));
+          };
+
+          const razorpay = new Razorpay({
+            key: paymentOrder.razorpay_key,
+            amount: paymentOrder.amount_paise,
+            currency: paymentOrder.currency,
+            order_id: paymentOrder.razorpay_order_id,
+            name: "The Daily Social",
+            description: `${draft.colive.propertyName || propertyHero.title} Colive booking`,
+            prefill: {
+              name: `${guestForm.firstName} ${guestForm.lastName}`.trim(),
+              email: normalizeEmail(guestForm.email),
+              contact: normalizePhone(guestForm.phone),
+            },
+            theme: {
+              color: "#c62828",
+            },
+            notes: {
+              draft_booking_id: coliveDraft.draft_booking_id,
+              property_id: draft.colive.propertyId,
+              duration_days: String(durationDays),
+            },
+            modal: {
+              ondismiss: () => {
+                markFailed("Payment was cancelled before confirmation.");
+              },
+            },
+            handler: async (response: RazorpaySuccessResponse) => {
+              if (paymentHandledRef.current) {
+                return;
+              }
+
+              paymentHandledRef.current = true;
+              setFlowStage("verifying-payment");
+
+              try {
+                const verification = await verifyColivePayment(token, {
+                  draft_booking_id: coliveDraft.draft_booking_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                });
+
+                clearBookingDraft();
+                setFlowStage("confirmed");
+                toast.success("Payment successful! Redirecting to My Bookings...");
+                router.push(`/bookings?fresh=${encodeURIComponent(verification.booking_reference || verification.booking_id)}`);
+                resolve();
+              } catch (error) {
+                console.error("Failed to verify Colive payment", error);
+                setFlowStage("failed");
+                toast.error("Payment verification is still pending. Please check My Bookings in a moment.");
+                reject(error instanceof Error ? error : new Error("Colive payment verification failed."));
+              }
+            },
+          });
+
+          razorpay.on("payment.failed", () => {
+            toast.error("Razorpay reported a payment failure. Please try again.");
+            markFailed("Razorpay reported a payment failure. Please try again.");
+          });
+
+          razorpay.open();
+        });
+        return;
+      }
+
       const storedState = getStoredBookingState();
       const pendingSnapshot = storedState?.pendingOrder?.signature === draft.signature ? storedState.pendingOrder : null;
 
@@ -1190,34 +1383,34 @@ export function BookingCheckoutPage() {
 
           <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-[18px] border border-white/10 bg-white/5 px-4 py-4">
             <div>
-              <p className="font-caption text-white/55">Check-in</p>
+              <p className="font-caption text-white/55">{isColiveBooking ? "Move-in" : "Check-in"}</p>
               <p className="font-subtitle mt-1 text-white">{formatDateLabel(draft.checkinDate)}</p>
-              <p className="text-[11px] text-white/48">from {propertyGuidelines.checkIn}</p>
+              <p className="text-[11px] text-white/48">{isColiveBooking ? "monthly stay" : `from ${propertyGuidelines.checkIn}`}</p>
             </div>
             <div className="rounded bg-[#f9cb37] px-2 py-1 text-[10px] font-bold uppercase text-black">
-              {nights} {nights === 1 ? "Night" : "Nights"}
+              {stayUnitCount} {stayUnitLabel}
             </div>
             <div className="text-right">
-              <p className="font-caption text-white/55">Check-out</p>
+              <p className="font-caption text-white/55">{isColiveBooking ? "Until" : "Check-out"}</p>
               <p className="font-subtitle mt-1 text-white">{formatDateLabel(draft.checkoutDate)}</p>
-              <p className="text-[11px] text-white/48">by {propertyGuidelines.checkOut}</p>
+              <p className="text-[11px] text-white/48">{isColiveBooking ? "backend quote before payment" : `by ${propertyGuidelines.checkOut}`}</p>
             </div>
           </div>
 
           <div className="mt-5 space-y-4 border-t border-white/10 pt-5">
             <div>
-              <p className="font-bodyfocus text-[18px] text-white">{propertyHero.title}</p>
-              <p className="font-caption text-white/48">{propertyHero.location}</p>
+              <p className="font-bodyfocus text-[18px] text-white">{draft.colive?.propertyName || propertyHero.title}</p>
+              <p className="font-caption text-white/48">{isColiveBooking ? "Koramangala, Bengaluru" : propertyHero.location}</p>
             </div>
             {draft.rooms.map((room) => (
               <div key={room.roomTypeId} className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-body text-sm text-white/92">{room.title}</p>
                   <p className="text-xs text-white/48">
-                    {formatCurrency(room.basePrice)} x {room.quantity} x {nights} {nights === 1 ? "night" : "nights"}
+                    {formatCurrency(room.basePrice)} x {room.quantity} x {stayUnitCount} {stayUnitLabel}
                   </p>
                 </div>
-                <p className="font-body text-sm text-white">{formatCurrency(room.basePrice * room.quantity * nights)}</p>
+                <p className="font-body text-sm text-white">{formatCurrency(room.basePrice * room.quantity * stayUnitCount)}</p>
               </div>
             ))}
           </div>
@@ -1408,7 +1601,7 @@ export function BookingCheckoutPage() {
                       <div>
                         <h2 className="font-sectiontitle text-[22px] text-white md:text-[24px]">Guest details</h2>
                       </div>
-                      <StickerTag label="Your Identity, Jefe!" bg="#f9cb37" className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]" text="#111111" rotate="rotate-[8deg]" />
+                      <StickerTag label="Your Identity, Jefe!" bg="#f9cb37" className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]" text="#111111" rotate="rotate-[6deg]" />
                       {!isAuthenticated ? (
                         <button
                           className="rounded-full border border-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white/82"
@@ -1542,7 +1735,7 @@ export function BookingCheckoutPage() {
                   <div className="p-6 md:p-8">
                     <div className="flex items-start justify-between gap-4">
                       <h2 className="font-sectiontitle text-[22px] text-white md:text-[24px]">Coupon codes</h2>
-                      <StickerTag label="Unlock rewards" bg="#f9cb37" className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]" text="#111111" rotate="rotate-[8deg]" />
+                      <StickerTag label="Unlock rewards" bg="#f9cb37" className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]" text="#111111" rotate="rotate-[6deg]" />
                     </div>
                     <div className="mt-5 flex gap-3">
                       <input
@@ -1587,7 +1780,7 @@ export function BookingCheckoutPage() {
                   <div className="p-6 md:p-8">
                     <div className="flex items-start justify-between gap-4">
                       <h2 className="font-sectiontitle text-[22px] text-white md:text-[24px]">Booking policies</h2>
-                      <StickerTag label="Read the rules" bg="#dc2626" className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]" text="#ffffff" rotate="rotate-[-6deg]" />
+                      <StickerTag label="Read the rules" bg="#dc2626" className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]" text="#ffffff" rotate="rotate-[6deg]" />
                     </div>
                     <div className="mt-4">
                       <Accordion defaultValue={["general-policy"]} type="multiple">
@@ -1806,34 +1999,34 @@ export function BookingCheckoutPage() {
           <div className="space-y-4 overflow-y-auto px-5 py-5">
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-[14px] border border-white/10 bg-white/5 px-4 py-4">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.16em] text-white/50">Check-in</p>
+                <p className="text-[10px] uppercase tracking-[0.16em] text-white/50">{isColiveBooking ? "Move-in" : "Check-in"}</p>
                 <p className="mt-1 text-base font-bold text-white">{formatDateLabel(draft.checkinDate)}</p>
-                <p className="text-[10px] text-white/40">from {propertyGuidelines.checkIn}</p>
+                <p className="text-[10px] text-white/40">{isColiveBooking ? "monthly stay" : `from ${propertyGuidelines.checkIn}`}</p>
               </div>
               <div className="rounded bg-[#f9cb37] px-2 py-1 text-[10px] font-bold uppercase text-black">
-                {nights} {nights === 1 ? "Night" : "Nights"}
+                {stayUnitCount} {stayUnitLabel}
               </div>
               <div className="text-right">
-                <p className="text-[10px] uppercase tracking-[0.16em] text-white/50">Check-out</p>
+                <p className="text-[10px] uppercase tracking-[0.16em] text-white/50">{isColiveBooking ? "Until" : "Check-out"}</p>
                 <p className="mt-1 text-base font-bold text-white">{formatDateLabel(draft.checkoutDate)}</p>
-                <p className="text-[10px] text-white/40">by {propertyGuidelines.checkOut}</p>
+                <p className="text-[10px] text-white/40">{isColiveBooking ? "backend quote before payment" : `by ${propertyGuidelines.checkOut}`}</p>
               </div>
             </div>
 
             <div className="space-y-3">
               <div className="rounded-[14px] border border-white/10 bg-white/5 px-4 py-4">
-                <p className="text-base font-bold text-white">{propertyHero.title}</p>
-                <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-white/45">{propertyHero.location}</p>
+                <p className="text-base font-bold text-white">{draft.colive?.propertyName || propertyHero.title}</p>
+                <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-white/45">{isColiveBooking ? "Koramangala, Bengaluru" : propertyHero.location}</p>
               </div>
               {draft.rooms.map((room) => (
                 <div key={room.roomTypeId} className="flex items-start justify-between gap-3 rounded-[14px] border border-white/10 bg-white/5 px-4 py-4">
                   <div>
                     <p className="font-semibold text-white">{room.title}</p>
                     <p className="text-xs text-white/55">
-                      {formatCurrency(room.basePrice)} x {room.quantity} x {nights} night{nights === 1 ? "" : "s"}
+                      {formatCurrency(room.basePrice)} x {room.quantity} x {stayUnitCount} {stayUnitLabel}
                     </p>
                   </div>
-                  <p className="font-semibold text-white">{formatCurrency(room.basePrice * room.quantity * nights)}</p>
+                  <p className="font-semibold text-white">{formatCurrency(room.basePrice * room.quantity * stayUnitCount)}</p>
                 </div>
               ))}
             </div>
