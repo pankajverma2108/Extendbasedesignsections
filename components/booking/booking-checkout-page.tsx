@@ -25,6 +25,7 @@ import { useGuestAuth } from "@/components/auth/guest-auth-provider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StickerTag } from "@/components/shared/sticker-tag";
 import {
   createBookingPaymentOrder,
   createGuestBookingOrder,
@@ -1334,9 +1335,7 @@ export function BookingCheckoutPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#f7c948]">Events</p>
               <h2 className="mt-2 font-sectiontitle text-[22px] text-white md:text-[24px]">Step out after check-in.</h2>
             </div>
-            <span className="rounded-full border border-white/12 bg-white/6 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/68">
-              Night plans
-            </span>
+            <StickerTag label="After hours" bg="#3b82f6" className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]" text="#ffffff" rotate="rotate-[-8deg]" />
           </div>
           <p className="mt-3 font-body text-sm leading-6 text-white/72">
             Keep this booking compact, then jump into the event lineup for live music, mixers, and rooftop scenes.
@@ -1409,9 +1408,7 @@ export function BookingCheckoutPage() {
                       <div>
                         <h2 className="font-sectiontitle text-[22px] text-white md:text-[24px]">Guest details</h2>
                       </div>
-                      <span className="rounded-full border border-[#f7c948]/25 bg-[#f7c948]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#fce588]">
-                        Guest details
-                      </span>
+                      <StickerTag label="Your Identity, Jefe!" bg="#f9cb37" className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]" text="#111111" rotate="rotate-[8deg]" />
                       {!isAuthenticated ? (
                         <button
                           className="rounded-full border border-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white/82"
@@ -1545,9 +1542,7 @@ export function BookingCheckoutPage() {
                   <div className="p-6 md:p-8">
                     <div className="flex items-start justify-between gap-4">
                       <h2 className="font-sectiontitle text-[22px] text-white md:text-[24px]">Coupon codes</h2>
-                      <span className="rounded-full border border-[#6ee7b7]/25 bg-[#6ee7b7]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#b7f5d5]">
-                        Coupon codes
-                      </span>
+                      <StickerTag label="Unlock rewards" bg="#f9cb37" className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]" text="#111111" rotate="rotate-[8deg]" />
                     </div>
                     <div className="mt-5 flex gap-3">
                       <input
@@ -1592,9 +1587,7 @@ export function BookingCheckoutPage() {
                   <div className="p-6 md:p-8">
                     <div className="flex items-start justify-between gap-4">
                       <h2 className="font-sectiontitle text-[22px] text-white md:text-[24px]">Booking policies</h2>
-                      <span className="rounded-full border border-[#93c5fd]/25 bg-[#93c5fd]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#dbeafe]">
-                        Booking policies
-                      </span>
+                      <StickerTag label="Read the rules" bg="#dc2626" className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]" text="#ffffff" rotate="rotate-[-6deg]" />
                     </div>
                     <div className="mt-4">
                       <Accordion defaultValue={["general-policy"]} type="multiple">
@@ -1621,9 +1614,7 @@ export function BookingCheckoutPage() {
                   <div className="p-6 md:p-8">
                     <div className="flex items-start justify-between gap-4">
                       <h2 className="font-sectiontitle text-[22px] text-white md:text-[24px]">Add essentials</h2>
-                      <span className="rounded-full border border-[#f9a8d4]/25 bg-[#f9a8d4]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#fbcfe8]">
-                        Add essentials
-                      </span>
+                      <StickerTag label="Level up" bg="#ec4899" className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]" text="#ffffff" rotate="rotate-[10deg]" />
                     </div>
 
                     {catalogLoading ? (
