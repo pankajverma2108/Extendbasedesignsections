@@ -86,7 +86,7 @@ const desktopNavCards: DesktopNavCard[] = [
       { label: "My Stay - Past", href: "/bookings?status=past", requiresAuth: true },
       { label: "My Stay - Cancelled", href: "/bookings?status=cancelled", requiresAuth: true },
       { label: "Profile", href: "/profile", requiresAuth: true },
-      { label: "Invest & Partner", href: `${siteMeta.contact.emailHref}?subject=Invest%20%26%20Partner%20Inquiry`, external: true },
+      { label: "Invest & Partner", href: "/partner-with-us" },
     ],
   },
 ];
@@ -113,11 +113,16 @@ export function Navigation() {
         "/property",
         searchParams.get("checkin"),
         searchParams.get("checkout"),
-      ),
+    ),
     [searchParams],
   );
+  const isStandalonePage = pathname === "/upcoming" || pathname === "/partner-with-us";
 
   useEffect(() => {
+    if (isStandalonePage) {
+      return;
+    }
+
     let lastY = window.scrollY;
 
     const onScroll = () => {
@@ -140,10 +145,10 @@ export function Navigation() {
     window.addEventListener("scroll", onScroll, { passive: true });
 
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [isStandalonePage]);
 
   useEffect(() => {
-    if (!isProfileMenuOpen) {
+    if (isStandalonePage || !isProfileMenuOpen) {
       return;
     }
 
@@ -155,10 +160,10 @@ export function Navigation() {
 
     window.addEventListener("mousedown", onWindowClick);
     return () => window.removeEventListener("mousedown", onWindowClick);
-  }, [isProfileMenuOpen]);
+  }, [isProfileMenuOpen, isStandalonePage]);
 
   useEffect(() => {
-    if (!isDesktopMenuOpen) {
+    if (isStandalonePage || !isDesktopMenuOpen) {
       return;
     }
 
@@ -181,7 +186,11 @@ export function Navigation() {
       window.removeEventListener("mousedown", onWindowClick);
       window.removeEventListener("keydown", onEscape);
     };
-  }, [isDesktopMenuOpen]);
+  }, [isDesktopMenuOpen, isStandalonePage]);
+
+  if (isStandalonePage) {
+    return null;
+  }
 
   return (
     <motion.nav

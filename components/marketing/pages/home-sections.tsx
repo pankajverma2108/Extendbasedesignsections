@@ -323,6 +323,107 @@ function ExperienceSection() {
   );
 }
 
+function MoreAboutUsSection() {
+  return (
+    <SectionFrame>
+      <div className="vh-container">
+        <SectionHeading title="More About Us" />
+        <Stagger className="mx-auto mt-2 grid max-w-screen-lg grid-cols-1 gap-6 md:grid-cols-2">
+
+          {/* Upcoming Properties card */}
+          <StaggerItem className="h-full">
+            <Link
+              href="/upcoming"
+              className="group flex h-full flex-col rounded-[22px] border border-dashed border-[rgba(255,255,255,0.3)] bg-[#07070a] p-5 shadow-[0_20px_45px_rgba(0,0,0,0.24)] transition-all duration-200 hover:border-[rgba(255,255,255,0.5)] hover:shadow-[0_24px_60px_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 md:p-6"
+            >
+              {/* Header */}
+              <div className="space-y-3">
+                <StickerTag
+                  bg="#f9cb37"
+                  className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]"
+                  label="Coming Soon"
+                  rotate="rotate-[-2deg]"
+                  text="#111111"
+                />
+                <h2 className="font-sectiontitle mt-3 text-[22px] text-white">
+                  Upcoming Properties
+                </h2>
+                <p className="text-sm leading-7 text-white/72">
+                  Two bold new social hubs landing in Bangalore — built for creators, travellers, and doers. Bold. Social. Unforgettable.
+                </p>
+              </div>
+
+              {/* Inner info panel */}
+              <div className="mt-5 flex-1 space-y-3 rounded-[18px] border border-white/10 bg-black/20 p-4 md:p-5">
+                <p className="font-caption text-white/55">What&apos;s coming</p>
+                <p className="font-bodyfocus text-[15px] text-white">TDSocial Stay · Buteak Suites</p>
+                <p className="font-body text-sm leading-7 text-white/72">
+                  Koramangala, Bangalore &mdash; opening Q2 &amp; Q3 2026.
+                </p>
+                <div className="pt-1">
+                  <p className="font-body text-xs uppercase tracking-[0.12em] text-white/48">02 Sites · 2026</p>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="mt-6">
+                <span className="vh-cta-button inline-flex w-full items-center justify-center gap-2 group-hover:bg-[#8e1b1b]">
+                  Get Excited &rarr;
+                </span>
+              </div>
+            </Link>
+          </StaggerItem>
+
+          {/* Partner with Us card */}
+          <StaggerItem className="h-full">
+            <Link
+              href="/partner-with-us"
+              className="group flex h-full flex-col rounded-[22px] border border-dashed border-[rgba(255,255,255,0.3)] bg-[#07070a] p-5 shadow-[0_20px_45px_rgba(0,0,0,0.24)] transition-all duration-200 hover:border-[rgba(255,255,255,0.5)] hover:shadow-[0_24px_60px_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 md:p-6"
+            >
+              {/* Header */}
+              <div className="space-y-3">
+                <StickerTag
+                  bg="#39ff14"
+                  className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em]"
+                  label="Invest &amp; Grow"
+                  rotate="rotate-[1deg]"
+                  text="#111111"
+                />
+                <h2 className="font-sectiontitle mt-3 text-[22px] text-white">
+                  Partner With Us
+                </h2>
+                <p className="text-sm leading-7 text-white/72">
+                  We manage. You earn. Full-stack hospitality, staffing, software &amp; branding handled — with unsurpassed ROI.
+                </p>
+              </div>
+
+              {/* Inner info panel */}
+              <div className="mt-5 flex-1 space-y-3 rounded-[18px] border border-white/10 bg-black/20 p-4 md:p-5">
+                <p className="font-caption text-white/55">Partnership models</p>
+                <p className="font-bodyfocus text-[15px] text-white">Leasing Model · Revenue Share</p>
+                <p className="font-body text-sm leading-7 text-white/72">
+                  Fixed rent or scalable profit &mdash; pick the model that fits. A partnership lead reaches out within 48 hours.
+                </p>
+                <div className="pt-1">
+                  <p className="font-body text-xs uppercase tracking-[0.12em] text-white/48">Zero Operational Load</p>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="mt-6">
+                <span className="vh-cta-button inline-flex w-full items-center justify-center gap-2 group-hover:bg-[#8e1b1b]">
+                  Get In Touch &rarr;
+                </span>
+              </div>
+            </Link>
+          </StaggerItem>
+
+        </Stagger>
+      </div>
+    </SectionFrame>
+  );
+}
+
 function EnergySection() {
   return (
     <SectionFrame>
@@ -424,6 +525,7 @@ export function HomeSections({
           amenities: AmenitiesSection,
           upsell: UpsellSection,
           experience: ExperienceSection,
+          moreAboutUs: MoreAboutUsSection,
           energy: EnergySection,
           reviews: ReviewsSection,
           cta: () => <CtaSection destinationHref={propertyDestinationHref} />,

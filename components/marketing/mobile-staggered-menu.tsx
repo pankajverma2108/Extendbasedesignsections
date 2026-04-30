@@ -112,7 +112,7 @@ const buildNavTiles = (propertyHref: string): MobileNavTile[] => [
   },
   {
     id: "invest",
-    href: "mailto:thedailysocial01@gmail.com?subject=Invest%20%26%20Partner%20Inquiry",
+    href: "/partner-with-us",
     title: "INVEST",
     subtitle: "partner up",
     icon: navIcons.invest,
@@ -124,7 +124,6 @@ const buildNavTiles = (propertyHref: string): MobileNavTile[] => [
     subtitleClass: "text-[rgba(35,15,20,0.6)]",
     iconBgClass: "bg-[rgba(0,0,0,0.08)]",
     rotationClass: "rotate-1",
-    external: true,
     // stickerLabel: "Partner Up",
     // stickerBg: "#DCFCE7",
     // stickerText: "#0f172a",

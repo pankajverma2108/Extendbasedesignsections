@@ -15,6 +15,11 @@ const nextConfig = {
         destination: '/bookings/:eri/web-check-in',
         permanent: false,
       },
+      {
+        source: '/launching-soon',
+        destination: '/upcoming',
+        permanent: false,
+      },
     ];
   },
 };

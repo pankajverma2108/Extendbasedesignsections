@@ -9,7 +9,11 @@ export const navItems: NavItem[] = [
 ];
 
 export const footerLinks = {
-  quickLinks: navItems,
+  quickLinks: [
+    ...navItems,
+    { label: "Upcoming", href: "/upcoming" },
+    { label: "Partner With Us", href: "/partner-with-us" },
+  ],
   legal: [
     { label: "Policies", href: "/policies" },
   ],

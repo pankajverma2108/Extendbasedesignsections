@@ -7,6 +7,7 @@ export type HomeSectionId =
   | "upsell"
   | "events"
   | "experience"
+  | "moreAboutUs"
   | "energy"
   | "reviews"
   | "cta";
@@ -210,6 +211,7 @@ export const homeSectionOrder: HomeSectionId[] = [
   "rooms",
   "events",
   "experience",
+  "moreAboutUs",
   "energy",
   "reviews",
   "cta",
