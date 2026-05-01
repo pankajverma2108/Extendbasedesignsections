@@ -37,7 +37,7 @@ type GuestAuthModalProps = {
   onSignIn: (payload: SignInPayload) => Promise<void>;
   onSignUp: (payload: SignUpPayload) => Promise<void>;
   onVerifyOtp?: (payload: { email: string; otp: string }) => Promise<void>;
-  onSendOtp?: (payload: { email: string }) => Promise<void>;
+  onSendOtp?: (email: string) => Promise<void>;
   onForgotPassword?: (payload: { email: string }) => Promise<void>;
   onResetPassword?: (payload: { email: string; otp: string; newPassword: string }) => Promise<void>;
   onGoogleAuth: () => void;
@@ -139,7 +139,7 @@ export function GuestAuthModal({
     if (mode === "forgot-password-otp") {
       await onForgotPassword?.({ email: normalizedEmail });
     } else {
-      await onSendOtp?.({ email: normalizedEmail });
+      await onSendOtp?.(normalizedEmail);
     }
 
     setCountdown(60);

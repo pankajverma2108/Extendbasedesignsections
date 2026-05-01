@@ -337,14 +337,14 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [closeAuthModal]);
 
-  const onSendOtp = useCallback(async (payload: { email: string }) => {
+  const onSendOtp = useCallback(async (email: string) => {
     setIsPending(true);
     setErrorMessage(null);
 
     try {
-      await sendOtp(payload);
+      await sendOtp({ email });
       toast.success("Code sent", {
-        description: `We've sent a new code to ${payload.email}.`,
+        description: `We've sent a new code to ${email}.`,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to send code.";
