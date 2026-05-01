@@ -259,7 +259,7 @@
 }
 
 .siteBody h2 {
-  margin: -5px 0 14px;
+  margin: 15px 0 14px;
   font-size: clamp(54px, 5.7vw, 88px);
   font-weight: 900;
   line-height: 0.85;
@@ -684,7 +684,7 @@
   }
 
   .siteBody h2 {
-    margin-top: 0;
+    margin-top: 20px;
     font-size: 40px;
     line-height: 34px;
   }
