@@ -629,7 +629,7 @@ export default function ProfilePage() {
                     Save Profile
                   </Button>
                   <Button
-                    onClick={() => router.push("/profile#reset-password")}
+                    onClick={() => openAuthModal("forgot-password")}
                     variant="outline"
                     className="rounded-lg border !bg-transparent text-[#d94a4a] transition-colors duration-200 hover:!bg-[#2a1212] hover:text-[#ff8c8c]"
                     style={{ borderColor: theme.border }}
@@ -662,7 +662,7 @@ export default function ProfilePage() {
 
                 <div className="mt-2 flex justify-center sm:hidden">
                   <Button
-                    onClick={() => router.push("/profile#reset-password")}
+                    onClick={() => openAuthModal("forgot-password")}
                     variant="outline"
                     className="rounded-lg border !bg-transparent px-6 text-[#d94a4a] transition-colors duration-200 hover:!bg-[#2a1212] hover:text-[#ff8c8c]"
                     style={{ borderColor: theme.border }}
