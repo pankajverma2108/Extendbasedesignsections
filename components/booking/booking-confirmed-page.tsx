@@ -7,7 +7,9 @@ import {
   BadgeCheck,
   CalendarDays,
   CheckCircle2,
+  Download,
   ExternalLink,
+  Loader2,
   MapPin,
   ShieldCheck,
   TriangleAlert,
@@ -28,6 +30,7 @@ import { getConfirmedBookingSnapshot } from "@/lib/booking-session";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { cn } from "@/lib/utils";
 import { toSafeErrorMessage } from "@/lib/ui-error";
+import { useDownloadReceipt } from "@/hooks/use-download-receipt";
 
 import { BookingEmptyState, BookingPageShell } from "./booking-shell";
 
@@ -261,6 +264,7 @@ export function BookingConfirmedPage({ ezeeReservationId }: { ezeeReservationId:
   const cancellationMilestones = useMemo(() => buildCancellationMilestones(checkinDate), [checkinDate]);
   const checkinLink = toBrandCheckinLink(ezeeReservationId);
   const absoluteCheckinLink = toAbsoluteBrandCheckinLink(ezeeReservationId);
+  const { downloadReceipt, isGenerating: isReceiptGenerating, error: receiptError } = useDownloadReceipt(ezeeReservationId);
   const supportPhoneDigits = siteMeta.contact.phoneDisplay.replace(/\D/g, "");
 
   const whatsappShareHref = useMemo(() => {
@@ -451,6 +455,32 @@ export function BookingConfirmedPage({ ezeeReservationId }: { ezeeReservationId:
                     <ShieldCheck className="h-4 w-4 text-[var(--vh-pink)]" />
                     <p className="font-body text-sm text-white/78">Quiet enough to crash, social enough to not feel like a waiting room.</p>
                   </div>
+                </div>
+
+                {/* Download Receipt CTA */}
+                <div className="mt-5 pt-4 border-t border-white/10">
+                  <button
+                    id="download-receipt-btn"
+                    type="button"
+                    onClick={() => void downloadReceipt()}
+                    disabled={isReceiptGenerating}
+                    className="vh-cta-button w-full justify-center gap-2 disabled:pointer-events-none disabled:opacity-60"
+                  >
+                    {isReceiptGenerating ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    {isReceiptGenerating ? "Generating receipt…" : "Download Receipt"}
+                  </button>
+                  {receiptError ? (
+                    <p className="mt-2 text-center text-xs leading-6 text-[#ffd9d4]">
+                      {receiptError}
+                    </p>
+                  ) : null}
+                  <p className="mt-2 text-center text-xs leading-6 text-white/44">
+                    Downloads a PDF copy of your booking receipt.
+                  </p>
                 </div>
               </div>
             </motion.article>

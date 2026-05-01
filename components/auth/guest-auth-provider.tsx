@@ -51,6 +51,7 @@ type AuthContextValue = {
   isRestoringSession: boolean;
   openAuthModal: (mode?: AuthMode) => void;
   closeAuthModal: () => void;
+  resendVerificationCode: (email: string) => Promise<void>;
   updateGuestProfile: (payload: GuestProfileUpdatePayload) => void;
   signOut: () => void;
 };
@@ -376,22 +377,27 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
     setErrorMessage(null);
 
     try {
-      await resetPassword(payload);
-      clearStoredGuestToken();
-      clearCachedGuestProfile();
-      setGuest(null);
+      const response = await resetPassword(payload);
+      setStoredGuestToken(response.access_token);
+      const me = await getGuestMe(response.access_token).catch(() => response.guest);
+      const nextGuest = mergeWithOverrides(me);
+      setGuest(nextGuest);
+      writeCachedGuestProfile(nextGuest);
       setIsRestoringSession(false);
       toast.success("Password reset", {
-        description: "Your password was updated. Please sign in with your new password.",
+        description: "Your password was updated successfully.",
       });
-      setMode("signin");
+      closeAuthModal();
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to reset password.";
       setErrorMessage(message);
     } finally {
       setIsPending(false);
     }
-  }, []);
+  }, [closeAuthModal]);
 
   const onGoogleAuth = useCallback(() => {
     rememberPostAuthRedirect();
@@ -453,10 +459,11 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
       isRestoringSession,
       openAuthModal,
       closeAuthModal,
+      resendVerificationCode: onSendOtp,
       updateGuestProfile,
       signOut,
     }),
-    [closeAuthModal, guest, isModalOpen, isPending, isRestoringSession, mode, openAuthModal, signOut, updateGuestProfile],
+    [closeAuthModal, guest, isModalOpen, isPending, isRestoringSession, mode, onSendOtp, openAuthModal, signOut, updateGuestProfile],
   );
 
   return (

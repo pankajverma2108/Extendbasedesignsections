@@ -83,7 +83,7 @@ export function GuestAuthModal({
     setLocalError(null);
     setPassword("");
     setConfirmPassword("");
-    if (nextMode !== "forgot-password" && nextMode !== "forgot-password-otp" && nextMode !== "set-new-password") {
+    if (nextMode !== "forgot-password" && nextMode !== "forgot-password-otp") {
       setPhone("");
       setOtp("");
     }
@@ -95,13 +95,13 @@ export function GuestAuthModal({
     mode === "signup" ? "Join The Crew" : 
     mode === "verify-otp" ? "Verify Email" : 
     mode === "forgot-password" ? "Forgot Password?" : 
-    mode === "forgot-password-otp" ? "Enter OTP" :
+    mode === "forgot-password-otp" ? "Reset Password" :
     "Set New Password";
 
   const description = 
     mode === "verify-otp" ? `We sent a 6-digit code to ${resolvedEmail || "your email"}` : 
     mode === "forgot-password" ? "Enter your email and we will send you a 6-digit OTP." : 
-    mode === "forgot-password-otp" ? `Enter the OTP sent to ${resolvedEmail || "your email"}` : 
+    mode === "forgot-password-otp" ? `Enter the OTP sent to ${resolvedEmail || "your email"} and set your new password.` : 
     mode === "set-new-password" ? "Create a new password for your account." :
     null;
 
@@ -110,7 +110,7 @@ export function GuestAuthModal({
     mode === "signup" ? "Start My Journey!" : 
     mode === "verify-otp" ? "Verify" : 
     mode === "forgot-password" ? "Send OTP" : 
-    mode === "forgot-password-otp" ? "Continue" :
+    mode === "forgot-password-otp" ? "Update Password" :
     "Update Password";
 
   const switchLabel = 
@@ -236,15 +236,6 @@ export function GuestAuthModal({
         setLocalError("Please enter a 6-digit code.");
         return;
       }
-      switchMode("set-new-password");
-      return;
-    }
-
-    if (mode === "set-new-password") {
-      if (otp.length !== 6) {
-        setLocalError("Please enter a 6-digit code.");
-        return;
-      }
       if (!PASSWORD_REGEX.test(password)) {
         setLocalError("Password must be at least 8 characters and include letters and numbers.");
         return;
@@ -357,7 +348,7 @@ export function GuestAuthModal({
             </div>
           ) : null}
 
-          {(mode === "signup" || mode === "set-new-password") ? (
+          {(mode === "signup" || mode === "forgot-password-otp" || mode === "set-new-password") ? (
             <div className="grid gap-3 sm:grid-cols-2">
               <LabelledInput
                 autoComplete="new-password"
