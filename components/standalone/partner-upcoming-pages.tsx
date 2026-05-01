@@ -217,11 +217,6 @@ export function UpcomingPage() {
       <StandaloneHeader links={upcomingNavLinks} />
       <main>
         <section className={styles.upcomingHero}>
-          <aside className={styles.dispatchPanel}>
-            <p className={styles.fileStamp}>{"{ Dispatch \u00A92026 }"}</p>
-            <Facts items={upcomingFacts} />
-            <p className={styles.dispatchCopy}>A new generation of social stays built for creators, travelers, and doers. Bold. Social. Unforgettable.</p>
-          </aside>
           <div className={styles.upcomingTitleBlock}>
             <p className={styles.fileStamp}>ED.&mdash;&mdash;459366627 / VOL.07</p>
             <HeroHeading
@@ -229,6 +224,11 @@ export function UpcomingPage() {
               lines={["Upcoming", "Hubs.", "A Movement.", "An Adventure."]}
             />
           </div>
+          <aside className={styles.dispatchPanel}>
+            <p className={styles.fileStamp}>{"{ Dispatch \u00A92026 }"}</p>
+            <Facts items={upcomingFacts} />
+            <p className={styles.dispatchCopy}>A new generation of social stays built for creators, travelers, and doers. Bold. Social. Unforgettable.</p>
+          </aside>
         </section>
 
         <section className={styles.upcomingSites}>

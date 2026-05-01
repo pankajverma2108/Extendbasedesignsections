@@ -155,8 +155,8 @@
 }
 
 .upcomingHero {
-  grid-template-columns: 300px minmax(0, 1fr);
-  gap: 46px;
+  position: relative;
+  display: block;
   min-height: 1026px;
 }
 
@@ -168,25 +168,33 @@
   text-transform: uppercase;
 }
 
-.upcomingHeroHeading span,
 .partnerHeroHeading span {
   display: block;
   white-space: nowrap;
 }
 
+.upcomingHeroHeading span {
+  display: block;
+}
+
+.upcomingTitleBlock {
+  width: 100%;
+  text-align: left;
+}
+
 .upcomingHeroHeading {
-  max-width: 1040px;
-  margin-top: 6px;
-  margin-left: auto;
-  font-size: clamp(118px, 10.8vw, 188px);
+  max-width: 100%;
+  margin: -12px 0 0;
+  font-size: clamp(72px, 14vw, 203px);
   line-height: 0.82;
-  text-align: right;
+  text-align: left;
 }
 
 .dispatchPanel {
-  align-self: start;
-  width: 300px;
-  margin-top: 146px;
+  position: absolute;
+  top: clamp(130px, 16.5vw, 240px);
+  right: 0;
+  width: 334px;
 }
 
 .dispatchCopy {
@@ -274,8 +282,8 @@
   min-height: 178px;
   margin-top: 64px;
   border: 2px solid var(--pu-red);
-  background: var(--pu-red);
-  color: var(--pu-black);
+  background: transparent;
+  color: var(--pu-red);
   font-size: clamp(46px, 5.1vw, 72px);
   font-weight: 900;
   line-height: 0.96;
@@ -293,14 +301,14 @@
 .bigCta:focus-visible,
 .formButton:hover,
 .formButton:focus-visible {
-  background: var(--pu-black);
-  color: var(--pu-red);
+  background: var(--pu-red);
+  color: var(--pu-black);
 }
 
 .bigCta:active,
 .formButton:active {
-  background: var(--pu-black);
-  color: var(--pu-red);
+  background: var(--pu-red);
+  color: var(--pu-black);
   transform: scale(0.99);
 }
 
@@ -519,8 +527,8 @@
   min-height: 155px;
   margin-top: 0;
   border: 2px solid var(--pu-red);
-  background: var(--pu-red);
-  color: var(--pu-black);
+  background: transparent;
+  color: var(--pu-red);
   font-family: "Geologica", sans-serif;
   font-size: clamp(46px, 4.65vw, 72px);
   font-weight: 900;
@@ -587,7 +595,13 @@
     gap: 36px;
   }
 
-  .upcomingHeroHeading,
+  .upcomingHeroHeading {
+    font-size: 56px;
+    line-height: 46px;
+    text-align: left;
+    margin-top: 0;
+  }
+
   .partnerHeroHeading {
     font-size: 56px;
     line-height: 45.92px;
@@ -619,7 +633,8 @@
   }
 
   .dispatchPanel {
-    max-width: 300px;
+    position: static;
+    max-width: 334px;
   }
 
   .dispatchCopy {
