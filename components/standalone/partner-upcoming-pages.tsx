@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import styles from "./partner-upcoming-pages.module.css";
+import { StandaloneMobileMenu } from "./standalone-mobile-menu";
 
 type StandaloneNavLink = {
   href: string;
@@ -133,9 +134,7 @@ function StandaloneHeader({ links }: { links: StandaloneNavLink[] }) {
         ))}
         <Link href={bookNowHref}>Book Now</Link>
       </nav>
-      <button className={styles.mobileMenu} type="button">
-        <span aria-hidden="true">&#9776;</span> Menu
-      </button>
+      <StandaloneMobileMenu />
     </header>
   );
 }
