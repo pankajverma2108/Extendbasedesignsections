@@ -263,13 +263,14 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const response = await loginGuest({ email: payload.email, password: payload.password });
-      if ("requires_2fa" in response && response.requires_2fa) {
+      if ("requires_2fa" in response) {
         setMode("verify-2fa");
         toast.success("OTP sent", {
           description: "Enter the 6-digit code sent to your email to complete sign in.",
         });
         return;
       }
+
       setStoredGuestToken(response.access_token, payload.rememberMe);
       const me = await getGuestMe(response.access_token).catch(() => response.guest);
       const nextGuest = mergeWithOverrides(me);
@@ -295,6 +296,10 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const response = await signupGuest(payload);
+      if ("requires_2fa" in response) {
+        setMode("verify-2fa");
+        return;
+      }
       setStoredGuestToken(response.access_token);
       const me = await getGuestMe(response.access_token).catch(() => response.guest);
       const nextGuest = mergeWithOverrides(me);
@@ -328,6 +333,10 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const response = await verifyOtp(payload);
+      if ("requires_2fa" in response) {
+        setMode("verify-2fa");
+        return;
+      }
       setStoredGuestToken(response.access_token);
       const me = await getGuestMe(response.access_token).catch(() => response.guest);
       const nextGuest = mergeWithOverrides(me);
@@ -387,6 +396,12 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const response = await resetPassword(payload);
+
+      if ("requires_2fa" in response) {
+        setMode("verify-2fa");
+        return;
+      }
+
       setStoredGuestToken(response.access_token);
       const me = await getGuestMe(response.access_token).catch(() => response.guest);
       const nextGuest = mergeWithOverrides(me);
