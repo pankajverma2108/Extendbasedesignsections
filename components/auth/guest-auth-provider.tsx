@@ -17,6 +17,7 @@ import {
   signupGuest,
   sendOtp,
   verifyOtp,
+  verifyTwoFa,
   forgotPassword,
   resetPassword,
 } from "@/lib/guest-auth-api";
@@ -25,6 +26,7 @@ export type AuthMode =
   | "signin"
   | "signup"
   | "verify-otp"
+  | "verify-2fa"
   | "forgot-password"
   | "forgot-password-otp"
   | "set-new-password";
@@ -261,6 +263,13 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const response = await loginGuest({ email: payload.email, password: payload.password });
+      if ("requires_2fa" in response && response.requires_2fa) {
+        setMode("verify-2fa");
+        toast.success("OTP sent", {
+          description: "Enter the 6-digit code sent to your email to complete sign in.",
+        });
+        return;
+      }
       setStoredGuestToken(response.access_token, payload.rememberMe);
       const me = await getGuestMe(response.access_token).catch(() => response.guest);
       const nextGuest = mergeWithOverrides(me);
@@ -399,6 +408,30 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [closeAuthModal]);
 
+  const onVerifyTwoFa = useCallback(async (payload: { email: string; otp: string }) => {
+    setIsPending(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await verifyTwoFa(payload);
+      setStoredGuestToken(response.access_token);
+      const me = await getGuestMe(response.access_token).catch(() => response.guest);
+      const nextGuest = mergeWithOverrides(me);
+      setGuest(nextGuest);
+      writeCachedGuestProfile(nextGuest);
+      setIsRestoringSession(false);
+      toast.success("Signed in successfully", {
+        description: `Welcome back, ${me.name.split(" ")[0] ?? "Guest"}.`,
+      });
+      closeAuthModal();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to verify code.";
+      setErrorMessage(message);
+    } finally {
+      setIsPending(false);
+    }
+  }, [closeAuthModal]);
+
   const onGoogleAuth = useCallback(() => {
     rememberPostAuthRedirect();
     const returnPath = getPostAuthRedirect() || undefined;
@@ -478,6 +511,7 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
         onSignIn={onSignIn}
         onSignUp={onSignUp}
         onVerifyOtp={onVerifyOtp}
+        onVerifyTwoFa={onVerifyTwoFa}
         onSendOtp={onSendOtp}
         onForgotPassword={onForgotPassword}
         onResetPassword={onResetPassword}

@@ -7,6 +7,7 @@ export type GuestProfile = {
   phone: string | null;
   email_verified: boolean;
   phone_verified: boolean;
+  two_fa_enabled?: boolean;
   profile_photo_url: string | null;
   created_at: string;
   birthDate?: string | null;
@@ -33,11 +34,17 @@ export type GuestBookingSummary = {
   lock_status?: string | null;
 };
 
-export type GuestAuthResponse = {
+export type GuestAuthSuccessResponse = {
   access_token: string;
   guest: GuestProfile;
   otp_sent?: boolean;
 };
+
+export type GuestLoginRequiresTwoFaResponse = {
+  requires_2fa: true;
+};
+
+export type GuestAuthResponse = GuestAuthSuccessResponse | GuestLoginRequiresTwoFaResponse;
 
 export type GuestSignupPayload = {
   name: string;
@@ -74,6 +81,13 @@ export async function forgotPassword(payload: { email: string }): Promise<{ mess
 
 export async function resetPassword(payload: { email: string; otp: string; newPassword: string }): Promise<GuestAuthResponse> {
   return requestJson<GuestAuthResponse>("/guest/auth/reset-password", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export async function verifyTwoFa(payload: { email: string; otp: string }): Promise<GuestAuthSuccessResponse> {
+  return requestJson<GuestAuthSuccessResponse>("/guest/auth/verify-2fa", {
     method: "POST",
     body: payload,
   });

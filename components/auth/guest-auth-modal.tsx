@@ -37,6 +37,7 @@ type GuestAuthModalProps = {
   onSignIn: (payload: SignInPayload) => Promise<void>;
   onSignUp: (payload: SignUpPayload) => Promise<void>;
   onVerifyOtp?: (payload: { email: string; otp: string }) => Promise<void>;
+  onVerifyTwoFa?: (payload: { email: string; otp: string }) => Promise<void>;
   onSendOtp?: (email: string) => Promise<void>;
   onForgotPassword?: (payload: { email: string }) => Promise<void>;
   onResetPassword?: (payload: { email: string; otp: string; newPassword: string }) => Promise<void>;
@@ -54,6 +55,7 @@ export function GuestAuthModal({
   onSignIn,
   onSignUp,
   onVerifyOtp,
+  onVerifyTwoFa,
   onSendOtp,
   onForgotPassword,
   onResetPassword,
@@ -94,12 +96,14 @@ export function GuestAuthModal({
     mode === "signin" ? "Welcome Back" : 
     mode === "signup" ? "Join The Crew" : 
     mode === "verify-otp" ? "Verify Email" : 
+    mode === "verify-2fa" ? "Two-Factor Code" :
     mode === "forgot-password" ? "Forgot Password?" : 
     mode === "forgot-password-otp" ? "Reset Password" :
     "Set New Password";
 
   const description = 
     mode === "verify-otp" ? `We sent a 6-digit code to ${resolvedEmail || "your email"}` : 
+    mode === "verify-2fa" ? `Enter the 6-digit login code sent to ${resolvedEmail || "your email"}` :
     mode === "forgot-password" ? "Enter your email and we will send you a 6-digit OTP." : 
     mode === "forgot-password-otp" ? `Enter the OTP sent to ${resolvedEmail || "your email"} and set your new password.` : 
     mode === "set-new-password" ? "Create a new password for your account." :
@@ -109,6 +113,7 @@ export function GuestAuthModal({
     mode === "signin" ? "Let's Go!" : 
     mode === "signup" ? "Start My Journey!" : 
     mode === "verify-otp" ? "Verify" : 
+    mode === "verify-2fa" ? "Verify & Sign In" :
     mode === "forgot-password" ? "Send OTP" : 
     mode === "forgot-password-otp" ? "Update Password" :
     "Update Password";
@@ -127,7 +132,8 @@ export function GuestAuthModal({
     mode === "signin" ? "signup" : 
     "signin";
 
-  const showOtpSection = mode === "verify-otp" || mode === "forgot-password-otp";
+  const showOtpSection = mode === "verify-otp" || mode === "verify-2fa" || mode === "forgot-password-otp";
+  const showResendButton = mode === "verify-otp" || mode === "forgot-password-otp";
 
   const onResendOtp = async () => {
     const normalizedEmail = normalizeEmail(resolvedEmail);
@@ -138,6 +144,9 @@ export function GuestAuthModal({
 
     if (mode === "forgot-password-otp") {
       await onForgotPassword?.({ email: normalizedEmail });
+    } else if (mode === "verify-2fa") {
+      setLocalError("Please sign in again to request a new 2FA code.");
+      return;
     } else {
       await onSendOtp?.(normalizedEmail);
     }
@@ -222,6 +231,15 @@ export function GuestAuthModal({
         return;
       }
       await onVerifyOtp?.({ email: normalizedEmail, otp });
+      return;
+    }
+
+    if (mode === "verify-2fa") {
+      if (otp.length !== 6) {
+        setLocalError("Please enter a 6-digit code.");
+        return;
+      }
+      await onVerifyTwoFa?.({ email: normalizedEmail, otp });
       return;
     }
 
@@ -335,16 +353,18 @@ export function GuestAuthModal({
                 <span className="mb-1.5 block text-xs font-bold uppercase tracking-[1.2px] text-[#F1F5F9]">6-Digit Code</span>
                 <OtpField value={otp} onChange={setOtp} />
               </div>
-              <div className="flex justify-end">
-                <button 
-                  type="button" 
-                  onClick={onResendOtp}
-                  disabled={countdown > 0 || pending}
-                  className="text-sm font-semibold text-[var(--vh-cyan)] disabled:opacity-50"
-                >
-                  {countdown > 0 ? `Resend in 00:${countdown.toString().padStart(2, '0')}` : "Didn't receive it? Resend"}
-                </button>
-              </div>
+              {showResendButton ? (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={onResendOtp}
+                    disabled={countdown > 0 || pending}
+                    className="text-sm font-semibold text-[var(--vh-cyan)] disabled:opacity-50"
+                  >
+                    {countdown > 0 ? `Resend in 00:${countdown.toString().padStart(2, "0")}` : "Didn't receive it? Resend"}
+                  </button>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
