@@ -26,7 +26,11 @@ export type GuestBookingSummary = {
   checkin_date: string;
   checkout_date: string;
   room_type_name: string;
+  room_number?: string | null;
+  property_name?: string | null;
   property_id: string;
+  door_passcode?: string | null;
+  lock_status?: string | null;
 };
 
 export type GuestAuthResponse = {
