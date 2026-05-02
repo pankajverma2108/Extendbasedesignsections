@@ -65,8 +65,8 @@ export async function sendOtp(payload: { email: string }): Promise<{ message: st
   });
 }
 
-export async function verifyOtp(payload: { email: string; otp: string }): Promise<GuestAuthResponse> {
-  return requestJson<GuestAuthResponse>("/guest/auth/verify-otp", {
+export async function verifyOtp(payload: { email: string; otp: string }): Promise<GuestAuthSuccessResponse> {
+  return requestJson<GuestAuthSuccessResponse>("/guest/auth/verify-otp", {
     method: "POST",
     body: payload,
   });
@@ -79,8 +79,8 @@ export async function forgotPassword(payload: { email: string }): Promise<{ mess
   });
 }
 
-export async function resetPassword(payload: { email: string; otp: string; newPassword: string }): Promise<GuestAuthResponse> {
-  return requestJson<GuestAuthResponse>("/guest/auth/reset-password", {
+export async function resetPassword(payload: { email: string; otp: string; newPassword: string }): Promise<GuestAuthSuccessResponse> {
+  return requestJson<GuestAuthSuccessResponse>("/guest/auth/reset-password", {
     method: "POST",
     body: payload,
   });
@@ -123,8 +123,8 @@ function resolveGoogleAuthBaseUrl(): string {
   }
 }
 
-export async function signupGuest(payload: GuestSignupPayload): Promise<GuestAuthResponse> {
-  return requestJson<GuestAuthResponse>("/guest/auth/signup", {
+export async function signupGuest(payload: GuestSignupPayload): Promise<GuestAuthSuccessResponse> {
+  return requestJson<GuestAuthSuccessResponse>("/guest/auth/signup", {
     method: "POST",
     body: payload,
   });
