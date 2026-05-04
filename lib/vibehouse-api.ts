@@ -1,5 +1,21 @@
 const DEFAULT_API_BASE_URL = "https://api.thedailysocial.co.in";
 
+export class ApiRequestError extends Error {
+  status: number;
+  data: unknown;
+  path: string;
+  method: string;
+
+  constructor(message: string, options: { status: number; data: unknown; path: string; method: string }) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.status = options.status;
+    this.data = options.data;
+    this.path = options.path;
+    this.method = options.method;
+  }
+}
+
 function normalizeApiBaseUrl(value: string | undefined): string {
   const trimmed = value?.trim();
 
@@ -63,7 +79,12 @@ export async function requestJson<T>(
   }
 
   if (!response.ok) {
-    throw new Error(parseApiError(data, "Request failed. Please try again."));
+    throw new ApiRequestError(parseApiError(data, "Request failed. Please try again."), {
+      status: response.status,
+      data,
+      path,
+      method: options?.method ?? "GET",
+    });
   }
 
   return data as T;

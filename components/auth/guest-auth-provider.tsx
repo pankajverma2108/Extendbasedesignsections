@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { ApiRequestError } from "@/lib/vibehouse-api";
 
 import { GuestAuthModal } from "@/components/auth/guest-auth-modal";
 import {
@@ -61,6 +62,86 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 const PROFILE_OVERRIDES_KEY = "vh_guest_profile_overrides";
 const GUEST_PROFILE_CACHE_KEY = "vh_guest_profile_cache";
+
+type AuthAction =
+  | "signin"
+  | "signup"
+  | "verify-email-otp"
+  | "send-email-otp"
+  | "forgot-password-request"
+  | "reset-password"
+  | "verify-2fa";
+
+function mapAuthErrorMessage(action: AuthAction, error: unknown): string {
+  if (!(error instanceof ApiRequestError)) {
+    return "Something went wrong. Please try again.";
+  }
+
+  const backendMessage = error.message;
+
+  if (action === "forgot-password-request") {
+    if (error.status === 503) {
+      return "We couldn't send the email right now. Please try again.";
+    }
+    if (error.status === 404) {
+      return "No account found with this email address.";
+    }
+    if (error.status === 400 && backendMessage.toLowerCase().includes("google")) {
+      return "This account uses Google login. Please sign in with Google.";
+    }
+    if (error.status === 400 && backendMessage.toLowerCase().includes("60 seconds")) {
+      return "Please wait 60 seconds before requesting another OTP.";
+    }
+  }
+
+  if (action === "signin" && error.status === 503) {
+    return "Login verification email could not be sent. Please try again.";
+  }
+
+  if (action === "verify-2fa") {
+    if (error.status === 401) {
+      return "Incorrect code. Please try again.";
+    }
+    if (error.status === 400) {
+      return "Code expired. Please sign in again to get a new code.";
+    }
+  }
+
+  if (action === "reset-password") {
+    if (error.status === 401) {
+      return "Incorrect OTP. Please try again.";
+    }
+    if (error.status === 400 && backendMessage.toLowerCase().includes("password")) {
+      return "Password must be at least 8 characters.";
+    }
+    if (error.status === 400) {
+      return "OTP expired or invalid. Request a new code and try again.";
+    }
+  }
+
+  return backendMessage || "Request failed. Please try again.";
+}
+
+function logAuthApiError(action: AuthAction, error: unknown, context?: Record<string, unknown>): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (error instanceof ApiRequestError) {
+    console.error("[Auth API Error]", {
+      action,
+      status: error.status,
+      method: error.method,
+      path: error.path,
+      message: error.message,
+      response: error.data,
+      context: context ?? null,
+    });
+    return;
+  }
+
+  console.error("[Auth Error]", { action, error, context: context ?? null });
+}
 
 type ProfileOverrides = {
   name: string;
@@ -282,7 +363,8 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
       });
       closeAuthModal();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to sign in right now.";
+      logAuthApiError("signin", error, { email: payload.email });
+      const message = mapAuthErrorMessage("signin", error);
       setErrorMessage(message);
       toast.error("Sign in failed", { description: message });
     } finally {
@@ -315,7 +397,8 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
         closeAuthModal();
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to sign up right now.";
+      logAuthApiError("signup", error, { email: payload.email });
+      const message = mapAuthErrorMessage("signup", error);
       setErrorMessage(message);
       toast.error("Sign up failed", { description: message });
     } finally {
@@ -340,7 +423,8 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
       });
       closeAuthModal();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to verify code.";
+      logAuthApiError("verify-email-otp", error, { email: payload.email });
+      const message = mapAuthErrorMessage("verify-email-otp", error);
       setErrorMessage(message);
     } finally {
       setIsPending(false);
@@ -357,7 +441,8 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
         description: `We've sent a new code to ${email}.`,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to send code.";
+      logAuthApiError("send-email-otp", error, { email });
+      const message = mapAuthErrorMessage("send-email-otp", error);
       setErrorMessage(message);
     } finally {
       setIsPending(false);
@@ -375,7 +460,8 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
         description: `We've sent a 6-digit password reset code to ${payload.email}.`,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to send reset email.";
+      logAuthApiError("forgot-password-request", error, { email: payload.email });
+      const message = mapAuthErrorMessage("forgot-password-request", error);
       setErrorMessage(message);
     } finally {
       setIsPending(false);
@@ -402,7 +488,8 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
         window.location.href = "/";
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to reset password.";
+      logAuthApiError("reset-password", error, { email: payload.email });
+      const message = mapAuthErrorMessage("reset-password", error);
       setErrorMessage(message);
     } finally {
       setIsPending(false);
@@ -426,7 +513,8 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
       });
       closeAuthModal();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to verify code.";
+      logAuthApiError("verify-2fa", error, { email: payload.email });
+      const message = mapAuthErrorMessage("verify-2fa", error);
       setErrorMessage(message);
     } finally {
       setIsPending(false);
@@ -534,3 +622,4 @@ export function useGuestAuth() {
 
   return context;
 }
+

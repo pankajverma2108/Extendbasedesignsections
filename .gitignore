@@ -7,6 +7,7 @@ dist/
 .env.production
 .env.example
 .env.*
+.local/
 
 # Internal planning and workflow docs (not for remote repo)
 guidelines/finalised_workflows/
