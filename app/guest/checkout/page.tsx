@@ -1,5 +1,5 @@
-import { GuestCheckout } from "@/modules/guest/checkout";
+import { GuestLegacyRouteRedirect } from "@/components/guest/guest-route-gate";
 
 export default function GuestCheckoutPage() {
-  return <GuestCheckout />;
+  return <GuestLegacyRouteRedirect subpath="checkout" />;
 }

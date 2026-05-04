@@ -12,6 +12,7 @@ import { hostelNavItems } from "@/content/nav-menu";
 import { siteMeta } from "@/content/site";
 import { navFontStyles } from "@/content/typography";
 import { getDefaultPropertyDestinationHref } from "@/lib/cx-api";
+import { getActiveGuestHubBooking } from "@/lib/guest-hub";
 import { cn } from "@/lib/utils";
 
 type DesktopNavLink = {
@@ -72,8 +73,8 @@ const desktopNavCards: DesktopNavCard[] = [
     textColor: "#0f172a",
     links: [
       { label: "Experience Calendar", href: "/events", description: "Weekly highlights" },
-      { label: "RSVP", href: "/events?tab=rsvp", description: "Save your seat" },
       { label: "About Us", href: "/about", description: "The Daily Social story" },
+      { label: "Invest & Partner", href: "/partner-with-us", description: "Build with us" },
       { label: "Contact Us", href: siteMeta.contact.emailHref, description: "Say hello", external: true },
     ],
   },
@@ -82,11 +83,9 @@ const desktopNavCards: DesktopNavCard[] = [
     bgColor: "var(--vh-lime)",
     textColor: "#0f172a",
     links: [
-      { label: "My Stay - Current", href: "/bookings?status=current", requiresAuth: true },
-      { label: "My Stay - Past", href: "/bookings?status=past", requiresAuth: true },
-      { label: "My Stay - Cancelled", href: "/bookings?status=cancelled", requiresAuth: true },
+      { label: "My Bookings", href: "/bookings", requiresAuth: true },
+      { label: "My Hub", href: "/guest", requiresAuth: true },
       { label: "Profile", href: "/profile", requiresAuth: true },
-      { label: "Invest & Partner", href: "/partner-with-us" },
     ],
   },
 ];
@@ -102,6 +101,7 @@ export function Navigation() {
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const desktopMenuRef = useRef<HTMLDivElement | null>(null);
   const shouldShowSignedInState = isAuthenticated || isRestoringSession;
+  const activeGuestHubBooking = useMemo(() => getActiveGuestHubBooking(guest?.bookings ?? []), [guest?.bookings]);
   const guestFirstName = useMemo(() => {
     const firstToken = guest?.name?.trim().split(/\s+/)[0];
     return firstToken || "Profile";
@@ -405,7 +405,7 @@ export function Navigation() {
               >
                 Book Now
               </Link>
-              <MobileStaggeredMenu isAuthenticated={shouldShowSignedInState} onOpenSignIn={() => openAuthModal("signin")} />
+              <MobileStaggeredMenu activeGuestHubBookingId={activeGuestHubBooking?.ezee_reservation_id ?? null} isAuthenticated={shouldShowSignedInState} onOpenSignIn={() => openAuthModal("signin")} />
             </div>
           </div>
         </div>

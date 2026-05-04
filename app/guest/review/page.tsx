@@ -1,5 +1,5 @@
-import { GuestReview } from "@/modules/guest/review";
+import { GuestLegacyRouteRedirect } from "@/components/guest/guest-route-gate";
 
 export default function GuestReviewPage() {
-  return <GuestReview />;
+  return <GuestLegacyRouteRedirect subpath="review" />;
 }

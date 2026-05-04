@@ -9,7 +9,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { siteMeta } from "@/content/site";
 
 import "./globals.css";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://thedailysocial.co.in"),

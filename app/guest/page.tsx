@@ -1,5 +1,5 @@
-import { GuestDashboard } from "@/modules/guest/dashboard";
+import { GuestHubEntryGate } from "@/components/guest/guest-route-gate";
 
 export default function GuestPage() {
-  return <GuestDashboard />;
+  return <GuestHubEntryGate />;
 }

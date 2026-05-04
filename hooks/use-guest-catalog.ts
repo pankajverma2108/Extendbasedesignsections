@@ -38,6 +38,26 @@ const bundleCache = new Map<string, CachedBundle>();
 const bundleInflight = new Map<string, Promise<GuestCatalogBundle>>();
 const STALE_MS = 5 * 60 * 1000;
 
+function toArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) {
+    return value as T[];
+  }
+
+  if (value && typeof value === "object") {
+    const candidate =
+      "items" in value ? (value as { items?: unknown }).items
+      : "data" in value ? (value as { data?: unknown }).data
+      : "results" in value ? (value as { results?: unknown }).results
+      : null;
+
+    if (Array.isArray(candidate)) {
+      return candidate as T[];
+    }
+  }
+
+  return [];
+}
+
 async function fetchCatalogBundle(propertyId: string): Promise<GuestCatalogBundle> {
   const key = propertyId.trim();
   const cached = bundleCache.get(key);
@@ -52,7 +72,11 @@ async function fetchCatalogBundle(propertyId: string): Promise<GuestCatalogBundl
 
   const promise = Promise.all([getCatalog(key), getServices(key), getBorrowables(key)])
     .then(([addons, services, borrowables]) => {
-      const bundle: GuestCatalogBundle = { addons, services, borrowables };
+      const bundle: GuestCatalogBundle = {
+        addons: toArray<GuestCatalogItem>(addons),
+        services: toArray<GuestServiceItem>(services),
+        borrowables: toArray<GuestBorrowableItem>(borrowables),
+      };
       bundleCache.set(key, { data: bundle, fetchedAt: Date.now() });
       return bundle;
     })
@@ -64,16 +88,21 @@ async function fetchCatalogBundle(propertyId: string): Promise<GuestCatalogBundl
   return promise;
 }
 
-export function useGuestCatalog(propertyId: string) {
+export function useGuestCatalog(propertyId: string, enabled = true) {
   const normalizedPropertyId = propertyId.trim();
   const cached = bundleCache.get(normalizedPropertyId);
   const [state, setState] = useState<GuestCatalogState>(() => ({
     data: cached?.data ?? EMPTY_DATA,
-    loading: !cached,
+    loading: enabled && !cached,
     error: null,
   }));
 
   const loadCatalog = useCallback(async (force = false) => {
+    if (!enabled) {
+      setState({ data: EMPTY_DATA, loading: false, error: null });
+      return;
+    }
+
     if (!normalizedPropertyId) {
       setState({ data: EMPTY_DATA, loading: false, error: "Property is missing." });
       return;
@@ -106,10 +135,12 @@ export function useGuestCatalog(propertyId: string) {
       const message = error instanceof Error ? error.message : "Unable to load guest catalog.";
       setState({ data: EMPTY_DATA, loading: false, error: message });
     }
-  }, [normalizedPropertyId]);
+  }, [enabled, normalizedPropertyId]);
 
   useEffect(() => {
-    void loadCatalog();
+    queueMicrotask(() => {
+      void loadCatalog();
+    });
   }, [loadCatalog]);
 
   const reload = useCallback(async () => {

@@ -81,21 +81,27 @@ export function GuestCheckout() {
   const [isPaying, setIsPaying] = useState(false);
   const [checkoutStatus, setCheckoutStatus] = useState<string>("Ready");
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const visibleCart = selectedBookingId && isAuthenticated ? cart : null;
+  const visibleMine = useMemo(() => (selectedBookingId && isAuthenticated ? mine : []), [isAuthenticated, mine, selectedBookingId]);
 
   const activeBorrowCount = useMemo(
-    () => mine.filter((item) => item.status === "CHECKED_OUT" || item.status === "OVERDUE").length,
-    [mine],
+    () => visibleMine.filter((item) => item.status === "CHECKED_OUT" || item.status === "OVERDUE").length,
+    [visibleMine],
   );
 
+  const fetchCheckoutState = async (bookingId: string, token: string) => {
+    return Promise.all([getCart(bookingId, token), getBorrowMine(bookingId, token)]);
+  };
+
   const refreshState = async (bookingId: string, token: string) => {
-    const [nextCart, nextMine] = await Promise.all([getCart(bookingId, token), getBorrowMine(bookingId, token)]);
+    const [nextCart, nextMine] = await fetchCheckoutState(bookingId, token);
     setCart(nextCart);
     setMine(Array.isArray(nextMine) ? nextMine : []);
   };
 
   useEffect(() => {
-    setCartCount((cart?.items ?? []).length);
-  }, [cart?.items, setCartCount]);
+    setCartCount((visibleCart?.items ?? []).length);
+  }, [setCartCount, visibleCart?.items]);
 
   useEffect(() => {
     setBorrowCount(activeBorrowCount);
@@ -103,22 +109,28 @@ export function GuestCheckout() {
 
   useEffect(() => {
     if (!selectedBookingId || !isAuthenticated) {
-      setCart(null);
-      setMine([]);
       return;
     }
     const token = getStoredGuestToken();
     if (!token) {
-      setCart(null);
-      setMine([]);
       return;
     }
 
     let cancelled = false;
-    setLoading(true);
-    setLoadError(null);
+    queueMicrotask(() => {
+      if (!cancelled) {
+        setLoading(true);
+        setLoadError(null);
+      }
+    });
 
-    void refreshState(selectedBookingId, token)
+    void fetchCheckoutState(selectedBookingId, token)
+      .then(([nextCart, nextMine]) => {
+        if (!cancelled) {
+          setCart(nextCart);
+          setMine(Array.isArray(nextMine) ? nextMine : []);
+        }
+      })
       .catch((error) => {
         if (!cancelled) {
           const message = error instanceof Error ? error.message : "Unable to load checkout state.";
@@ -255,7 +267,7 @@ export function GuestCheckout() {
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <SectionBlock
-        description="Checkout runs cart summary, payment order creation, Razorpay UI, and verify/fail callbacks."
+        description="Review paid extras, settle the total, and finish the stay when you are ready."
         sticker={guestStickerTags.checkout}
         title="Checkout summary"
       >
@@ -264,7 +276,7 @@ export function GuestCheckout() {
         {paymentError ? <p className="text-sm text-rose-300">{paymentError}</p> : null}
         {!selectedBookingId ? <p className="text-sm text-white/70">No active booking selected yet.</p> : null}
         <div className="grid gap-4 md:grid-cols-2">
-          <BentoCard description="Runs summary → create-order → Razorpay → verify/fail." icon={ClipboardCheck} title="Actions">
+          <BentoCard description="Move from review to payment in one smooth flow." icon={ClipboardCheck} title="Actions">
             <div className="space-y-3">
               <p className="text-sm text-white/75">{checkoutStatus}</p>
               <Button className="h-10 rounded-[12px]" disabled={isPaying || loading || !selectedBookingId} onClick={() => void openPaymentFlow()} type="button">
@@ -272,11 +284,11 @@ export function GuestCheckout() {
               </Button>
             </div>
           </BentoCard>
-          <BentoCard description="Totals are synced from backend cart state." icon={ReceiptText} title="Totals">
+          <BentoCard description="A clean read of what is currently sitting in your checkout total." icon={ReceiptText} title="Totals">
             <div className="space-y-2 text-sm text-white/75">
-              <p>Cart lines: {(cart?.items ?? []).length}</p>
+              <p>Cart lines: {(visibleCart?.items ?? []).length}</p>
               <p>Borrow active: {activeBorrowCount}</p>
-              <p className="text-white">Cart total: {formatCurrency(cart?.total ?? 0)}</p>
+              <p className="text-white">Cart total: {formatCurrency(visibleCart?.total ?? 0)}</p>
             </div>
           </BentoCard>
         </div>
@@ -284,9 +296,9 @@ export function GuestCheckout() {
       <StickySummary
         ctaLabel={isPaying ? "Processing..." : "Pay now"}
         items={[
-          { label: "Add-ons", value: `${(cart?.items ?? []).reduce((sum, item) => sum + item.quantity, 0)} selected` },
+          { label: "Add-ons", value: `${(visibleCart?.items ?? []).reduce((sum, item) => sum + item.quantity, 0)} selected` },
           { label: "Borrow", value: `${activeBorrowCount} active` },
-          { label: "Total", value: formatCurrency(cart?.total ?? 0) },
+          { label: "Total", value: formatCurrency(visibleCart?.total ?? 0) },
         ]}
         title="Checkout preview"
       />

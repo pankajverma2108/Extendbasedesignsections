@@ -1,5 +1,5 @@
-import { GuestServices } from "@/modules/guest/services";
+import { GuestLegacyRouteRedirect } from "@/components/guest/guest-route-gate";
 
 export default function GuestServicesPage() {
-  return <GuestServices />;
+  return <GuestLegacyRouteRedirect subpath="services" />;
 }

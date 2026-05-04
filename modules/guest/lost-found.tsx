@@ -14,31 +14,35 @@ import { requestService } from "@/lib/guest-experience-api";
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { useGuestExperience } from "@/state/guest-experience-provider";
 
-const PROPERTY_ID = "60765";
-
 export function GuestLostFound() {
-  const { data, loading, error, reload } = useGuestCatalog(PROPERTY_ID);
+  const { guest, isAuthenticated, openAuthModal } = useGuestAuth();
   const { selectedBookingId } = useGuestExperience();
-  const { isAuthenticated, openAuthModal } = useGuestAuth();
+  const activeBooking = useMemo(
+    () => guest?.bookings?.find((booking) => booking.ezee_reservation_id === selectedBookingId) ?? null,
+    [guest?.bookings, selectedBookingId],
+  );
+  const propertyId = activeBooking?.property_id ?? "";
+  const { data, loading, error, reload } = useGuestCatalog(propertyId, Boolean(propertyId && selectedBookingId && isAuthenticated));
   const [submitting, setSubmitting] = useState(false);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const lostFoundService = useMemo(
     () => {
-      const byCode = data.services.find((service) => service.code === "LOST_FOUND");
+      const services = Array.isArray(data.services) ? data.services : [];
+      const byCode = services.find((service) => service.code === "LOST_FOUND");
       if (byCode) {
         return byCode;
       }
 
-      return data.services.find((service) => service.name.toLowerCase().includes("lost") || service.id.toLowerCase().includes("lost")) ?? null;
+      return services.find((service) => service.name.toLowerCase().includes("lost") || service.id.toLowerCase().includes("lost")) ?? null;
     },
     [data.services],
   );
 
   const onSubmit = async () => {
     if (!lostFoundService) {
-      toast.message("Lost & Found service is not available in catalog.");
+      toast.message("Lost & Found is not available right now.");
       return;
     }
     if (!selectedBookingId) {
@@ -74,11 +78,11 @@ export function GuestLostFound() {
 
   return (
     <SectionBlock
-      description="Lost & Found is submitted through the shared service-request API."
+      description="Missing something? Raise it here and keep the ticket handy."
       sticker={guestStickerTags.lostFound}
       title="Lost & Found"
     >
-      {loading ? <p className="text-sm text-white/70">Loading service catalog...</p> : null}
+      {loading ? <p className="text-sm text-white/70">Loading Lost & Found...</p> : null}
       {error ? (
         <div className="flex items-center gap-3">
           <p className="text-sm text-rose-300">{error}</p>
@@ -89,15 +93,15 @@ export function GuestLostFound() {
       ) : null}
       {resultMessage ? <p className="text-sm text-emerald-300">{resultMessage}</p> : null}
       {actionError ? <p className="text-sm text-rose-300">{actionError}</p> : null}
-      {!loading && !lostFoundService ? <p className="text-sm text-white/70">Lost & Found service is not configured.</p> : null}
+      {!loading && !lostFoundService ? <p className="text-sm text-white/70">Lost & Found is not open right now.</p> : null}
       <div className="grid gap-4 md:grid-cols-2">
         <BentoCard description="Submit a Lost & Found ticket for this booking." icon={Search} title="Report lost item">
           <Button className="h-9 rounded-[12px]" disabled={submitting || !lostFoundService} onClick={() => void onSubmit()} type="button">
             Submit request
           </Button>
         </BentoCard>
-        <BentoCard description="Track ticket updates from the backend response." icon={ShieldQuestion} title="Found item status">
-          <p className="text-sm text-white/70">{resultMessage ?? "Submit a request to receive ticket details."}</p>
+        <BentoCard description="Your latest request appears here once the desk shares a ticket." icon={ShieldQuestion} title="Found item status">
+          <p className="text-sm text-white/70">{resultMessage ?? "Submit a request to receive your ticket number."}</p>
         </BentoCard>
       </div>
     </SectionBlock>

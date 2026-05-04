@@ -126,9 +126,10 @@ function logAuthApiError(action: AuthAction, error: unknown, context?: Record<st
   if (typeof window === "undefined") {
     return;
   }
+  const log = console.warn;
 
   if (error instanceof ApiRequestError) {
-    console.error("[Auth API Error]", {
+    const details = {
       action,
       status: error.status,
       method: error.method,
@@ -136,11 +137,29 @@ function logAuthApiError(action: AuthAction, error: unknown, context?: Record<st
       message: error.message,
       response: error.data,
       context: context ?? null,
+    };
+
+    log("[Auth API Error]", details);
+    return;
+  }
+
+  if (error instanceof Error) {
+    log("[Auth Error]", {
+      action,
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      context: context ?? null,
     });
     return;
   }
 
-  console.error("[Auth Error]", { action, error, context: context ?? null });
+  log("[Auth Error]", {
+    action,
+    message: "Non-error value thrown",
+    thrown: error,
+    context: context ?? null,
+  });
 }
 
 type ProfileOverrides = {
@@ -262,19 +281,27 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
   const [isRestoringSession, setIsRestoringSession] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     const token = getStoredGuestToken();
     if (!token) {
       clearCachedGuestProfile();
-      setIsRestoringSession(false);
+      queueMicrotask(() => {
+        if (!cancelled) {
+          setGuest(null);
+          setIsRestoringSession(false);
+        }
+      });
       return;
     }
 
     const cachedGuest = readCachedGuestProfile();
     if (cachedGuest) {
-      setGuest(cachedGuest);
+      queueMicrotask(() => {
+        if (!cancelled) {
+          setGuest(cachedGuest);
+        }
+      });
     }
-
-    let cancelled = false;
 
     const restoreSession = async () => {
       try {
@@ -302,12 +329,6 @@ export function GuestAuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  useEffect(() => {
-    if (!getStoredGuestToken()) {
-      setIsRestoringSession(false);
-    }
   }, []);
 
   const closeAuthModal = useCallback(() => {

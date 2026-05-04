@@ -12,6 +12,7 @@ import { StickerTag } from "@/components/shared/sticker-tag";
 import { hostelNavItems } from "@/content/nav-menu";
 import { navFontStyles } from "@/content/typography";
 import { getDefaultPropertyDestinationHref } from "@/lib/cx-api";
+import { getScopedGuestHubHref } from "@/lib/guest-hub";
 import { cn } from "@/lib/utils";
 
 type MobileNavTile = {
@@ -50,7 +51,7 @@ const navIcons = {
   profile: "/nav_design/icon-profile.svg",
 } as const;
 
-const buildNavTiles = (propertyHref: string): MobileNavTile[] => [
+const buildNavTiles = (propertyHref: string, activeGuestHubHref: string | null): MobileNavTile[] => [
   {
     id: "hostels",
       href: propertyHref,
@@ -129,31 +130,44 @@ const buildNavTiles = (propertyHref: string): MobileNavTile[] => [
     // stickerText: "#0f172a",
     // stickerRotate: "rotate-[0deg]",
   },
-  {
-    id: "contact",
-    href: "mailto:thedailysocial01@gmail.com",
-    title: "CONTACT",
-    subtitle: "get in touch",
-    icon: navIcons.contact,
-    colSpan: 1,
-    bgClass: "bg-[#ff2e62]",
-    overlayClass: "bg-[rgba(35,15,20,0.1)]",
-    borderClass: "border-2 border-dashed border-[rgba(255,255,255,0.3)]",
-    titleClass: "text-white",
-    subtitleClass: "text-[rgba(255,255,255,0.8)]",
-    iconBgClass: "bg-[rgba(255,255,255,0.2)]",
-    rotationClass: "-rotate-2",
-    external: true,
-    // stickerLabel: "Say Hi",
-    // stickerBg: "#BFDBFE",
-    // stickerText: "#0f172a",
-    // stickerRotate: "rotate-[0deg]",
-  },
+  ...(activeGuestHubHref
+    ? [{
+        id: "guest-hub",
+        href: activeGuestHubHref,
+        title: "GUEST HUB",
+        subtitle: "during-stay access",
+        icon: navIcons.myStay,
+        colSpan: 1,
+        bgClass: "bg-[#ff2e62]",
+        overlayClass: "bg-[rgba(35,15,20,0.1)]",
+        borderClass: "border-2 border-dashed border-[rgba(255,255,255,0.3)]",
+        titleClass: "text-white",
+        subtitleClass: "text-[rgba(255,255,255,0.8)]",
+        iconBgClass: "bg-[rgba(255,255,255,0.2)]",
+        rotationClass: "-rotate-2",
+        requiresAuth: true,
+      } satisfies MobileNavTile]
+    : [{
+        id: "contact",
+        href: "mailto:thedailysocial01@gmail.com",
+        title: "CONTACT",
+        subtitle: "get in touch",
+        icon: navIcons.contact,
+        colSpan: 1,
+        bgClass: "bg-[#ff2e62]",
+        overlayClass: "bg-[rgba(35,15,20,0.1)]",
+        borderClass: "border-2 border-dashed border-[rgba(255,255,255,0.3)]",
+        titleClass: "text-white",
+        subtitleClass: "text-[rgba(255,255,255,0.8)]",
+        iconBgClass: "bg-[rgba(255,255,255,0.2)]",
+        rotationClass: "-rotate-2",
+        external: true,
+      } satisfies MobileNavTile]),
   {
     id: "my-stay",
-    href: "/bookings?status=current",
-    title: "MY STAY",
-    subtitle: "your experience",
+    href: "/bookings",
+    title: "MY BOOKINGS",
+    subtitle: "all your stays",
     icon: navIcons.myStay,
     colSpan: 1,
     bgClass: "bg-[#1e293b]",
@@ -271,11 +285,12 @@ function MenuToggleButton({
 }
 
 type MobileStaggeredMenuProps = {
+  activeGuestHubBookingId?: null | string;
   isAuthenticated: boolean;
   onOpenSignIn: () => void;
 };
 
-export function MobileStaggeredMenu({ isAuthenticated, onOpenSignIn }: MobileStaggeredMenuProps) {
+export function MobileStaggeredMenu({ activeGuestHubBookingId = null, isAuthenticated, onOpenSignIn }: MobileStaggeredMenuProps) {
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [hostelsExpanded, setHostelsExpanded] = useState(false);
@@ -297,7 +312,8 @@ export function MobileStaggeredMenu({ isAuthenticated, onOpenSignIn }: MobileSta
     searchParams.get("checkin"),
     searchParams.get("checkout"),
   );
-  const navTiles = buildNavTiles(propertyHref);
+  const activeGuestHubHref = activeGuestHubBookingId ? getScopedGuestHubHref(activeGuestHubBookingId) : null;
+  const navTiles = buildNavTiles(propertyHref, activeGuestHubHref);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;

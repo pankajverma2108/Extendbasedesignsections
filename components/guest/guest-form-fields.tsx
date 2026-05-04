@@ -17,9 +17,9 @@ type FieldChromeProps = {
 function FieldChrome({ label, helper, error, children, className }: FieldChromeProps) {
   return (
     <label className={cn("block space-y-2", className)}>
-      <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/62">{label}</span>
+      <span className="text-[11px] font-black uppercase tracking-[0.12em] text-[#94a3b8]">{label}</span>
       {children}
-      {error ? <span className="block text-xs leading-5 text-red-200">{error}</span> : helper ? <span className="block text-xs leading-5 text-white/46">{helper}</span> : null}
+      {error ? <span className="block text-xs leading-5 text-rose-300">{error}</span> : helper ? <span className="block text-xs leading-5 text-[#94a3b8]">{helper}</span> : null}
     </label>
   );
 }
@@ -38,7 +38,7 @@ export function GuestTextField({
   return (
     <FieldChrome className={className} error={error} helper={helper} label={label}>
       <input
-        className="h-12 w-full rounded-[14px] border border-white/12 bg-white/[0.05] px-4 text-sm text-white outline-none transition duration-300 placeholder:text-white/32 focus:border-[#c92420] focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(201,36,32,0.22)]"
+        className="h-12 w-full rounded-[8px] border-2 border-[#334155] bg-[#10131a] px-4 text-sm text-white outline-none transition duration-300 placeholder:text-[#94a3b8]/55 focus:border-[var(--vh-pink)] focus:bg-[#16070c] focus:shadow-[0_0_0_3px_rgba(198,40,40,0.22)]"
         {...props}
       />
     </FieldChrome>
@@ -59,7 +59,7 @@ export function GuestTextArea({
   return (
     <FieldChrome className={className} error={error} helper={helper} label={label}>
       <textarea
-        className="min-h-32 w-full resize-y rounded-[14px] border border-white/12 bg-white/[0.05] px-4 py-3 text-sm leading-6 text-white outline-none transition duration-300 placeholder:text-white/32 focus:border-[#c92420] focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(201,36,32,0.22)]"
+        className="min-h-32 w-full resize-y rounded-[8px] border-2 border-[#334155] bg-[#10131a] px-4 py-3 text-sm leading-6 text-white outline-none transition duration-300 placeholder:text-[#94a3b8]/55 focus:border-[var(--vh-pink)] focus:bg-[#16070c] focus:shadow-[0_0_0_3px_rgba(198,40,40,0.22)]"
         {...props}
       />
     </FieldChrome>
@@ -83,13 +83,13 @@ export function GuestQuantityField({
 }) {
   return (
     <FieldChrome className={className} helper={helper} label={label}>
-      <div className="flex h-12 items-center justify-between rounded-[14px] border border-white/12 bg-white/[0.05] px-2">
-        <Button className="h-8 w-8 rounded-full border border-white/10 bg-white/5 p-0 text-white hover:bg-white/10" onClick={onDecrease} type="button">
+      <div className="flex h-12 items-center justify-between rounded-[8px] border-2 border-[#334155] bg-[#10131a] px-2">
+        <Button className="h-8 w-8 rounded-full border border-[var(--vh-pink)]/30 bg-[#16070c] p-0 text-[var(--vh-pink)] hover:bg-[var(--vh-pink)] hover:text-white" onClick={onDecrease} type="button">
           <Minus className="h-4 w-4" />
           <span className="sr-only">Decrease quantity</span>
         </Button>
         <span className="min-w-10 text-center text-sm font-bold text-white">{value}</span>
-        <Button className="h-8 w-8 rounded-full border border-white/10 bg-white/5 p-0 text-white hover:bg-white/10" onClick={onIncrease} type="button">
+        <Button className="h-8 w-8 rounded-full border border-[var(--vh-pink)]/30 bg-[#16070c] p-0 text-[var(--vh-pink)] hover:bg-[var(--vh-pink)] hover:text-white" onClick={onIncrease} type="button">
           <Plus className="h-4 w-4" />
           <span className="sr-only">Increase quantity</span>
         </Button>

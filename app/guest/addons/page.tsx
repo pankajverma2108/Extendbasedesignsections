@@ -1,5 +1,5 @@
-import { GuestAddons } from "@/modules/guest/addons";
+import { GuestLegacyRouteRedirect } from "@/components/guest/guest-route-gate";
 
 export default function GuestAddonsPage() {
-  return <GuestAddons />;
+  return <GuestLegacyRouteRedirect subpath="addons" />;
 }

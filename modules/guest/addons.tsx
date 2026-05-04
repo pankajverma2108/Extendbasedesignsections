@@ -15,7 +15,6 @@ import { addToCart, getCart, removeCartItem, updateCartItem, type GuestCart } fr
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { useGuestExperience } from "@/state/guest-experience-provider";
 
-const PROPERTY_ID = "60765";
 const DEFAULT_UNIT_CODE = "AUTO-UNIT";
 
 function formatCurrency(value: number): string {
@@ -23,23 +22,29 @@ function formatCurrency(value: number): string {
 }
 
 export function GuestAddons() {
-  const { data, loading: catalogLoading, error: catalogError, reload } = useGuestCatalog(PROPERTY_ID);
+  const { guest, isAuthenticated, openAuthModal } = useGuestAuth();
   const { selectedBookingId, setCartCount } = useGuestExperience();
-  const { isAuthenticated, openAuthModal } = useGuestAuth();
+  const activeBooking = useMemo(
+    () => guest?.bookings?.find((booking) => booking.ezee_reservation_id === selectedBookingId) ?? null,
+    [guest?.bookings, selectedBookingId],
+  );
+  const propertyId = activeBooking?.property_id ?? "";
+  const { data, loading: catalogLoading, error: catalogError, reload } = useGuestCatalog(propertyId, Boolean(propertyId && selectedBookingId && isAuthenticated));
   const [cart, setCart] = useState<GuestCart | null>(null);
   const [cartLoading, setCartLoading] = useState(false);
   const [cartError, setCartError] = useState<string | null>(null);
   const [mutatingId, setMutatingId] = useState<string | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
+  const visibleCart = selectedBookingId && isAuthenticated ? cart : null;
 
   const addonItems = useMemo(
-    () => data.addons.filter((item) => item.category === "COMMODITY" || item.category === "RETURNABLE"),
+    () => (Array.isArray(data.addons) ? data.addons : []).filter((item) => item.category === "COMMODITY" || item.category === "RETURNABLE"),
     [data.addons],
   );
 
   const cartByProductId = useMemo(() => {
     const next = new Map<string, { itemId: string; quantity: number }>();
-    for (const item of cart?.items ?? []) {
+    for (const item of visibleCart?.items ?? []) {
       const current = next.get(item.product_id);
       if (current) {
         next.set(item.product_id, { itemId: current.itemId, quantity: current.quantity + item.quantity });
@@ -48,28 +53,29 @@ export function GuestAddons() {
       }
     }
     return next;
-  }, [cart?.items]);
+  }, [visibleCart?.items]);
 
   useEffect(() => {
-    setCartCount((cart?.items ?? []).length);
-  }, [cart?.items, setCartCount]);
+    setCartCount((visibleCart?.items ?? []).length);
+  }, [setCartCount, visibleCart?.items]);
 
   useEffect(() => {
     if (!selectedBookingId || !isAuthenticated) {
-      setCart(null);
-      setCartError(null);
       return;
     }
 
     const token = getStoredGuestToken();
     if (!token) {
-      setCart(null);
       return;
     }
 
     let cancelled = false;
-    setCartLoading(true);
-    setCartError(null);
+    queueMicrotask(() => {
+      if (!cancelled) {
+        setCartLoading(true);
+        setCartError(null);
+      }
+    });
 
     void getCart(selectedBookingId, token)
       .then((nextCart) => {
@@ -96,7 +102,7 @@ export function GuestAddons() {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, selectedBookingId]);
+  }, [isAuthenticated, selectedBookingId, setCartCount]);
 
   const requireBookingAndToken = () => {
     if (!selectedBookingId) {
@@ -192,7 +198,7 @@ export function GuestAddons() {
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <SectionBlock
-        description="Add-ons are loaded from the shared guest catalog and synced directly to your booking cart."
+        description="Pick the extras you want now and keep everything together in one cart."
         sticker={guestStickerTags.addons}
         title="Add-ons"
       >
@@ -217,7 +223,7 @@ export function GuestAddons() {
             return (
               <BentoCard
                 key={item.id}
-                description={`${formatCurrency(item.base_price)}${item.available_stock !== null ? ` • Stock ${item.available_stock}` : ""}`}
+                description={`${formatCurrency(item.base_price)}${item.available_stock !== null ? ` / Stock ${item.available_stock}` : ""}`}
                 icon={ShoppingBag}
                 title={item.name}
               >
@@ -239,9 +245,9 @@ export function GuestAddons() {
       </SectionBlock>
       <StickySummary
         items={[
-          { label: "Add-ons", value: `${(cart?.items ?? []).length} lines` },
+          { label: "Add-ons", value: `${(visibleCart?.items ?? []).length} lines` },
           { label: "Borrow", value: "Check borrow tab" },
-          { label: "Total", value: formatCurrency(cart?.total ?? 0) },
+          { label: "Total", value: formatCurrency(visibleCart?.total ?? 0) },
         ]}
       />
     </div>

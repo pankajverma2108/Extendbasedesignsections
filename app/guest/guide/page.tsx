@@ -1,5 +1,5 @@
-import { GuestGuide } from "@/modules/guest/guide";
+import { GuestLegacyRouteRedirect } from "@/components/guest/guest-route-gate";
 
 export default function GuestGuidePage() {
-  return <GuestGuide />;
+  return <GuestLegacyRouteRedirect subpath="guide" />;
 }

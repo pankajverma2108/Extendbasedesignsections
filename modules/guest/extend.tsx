@@ -14,7 +14,6 @@ import { addToCart, getCart, type GuestCart, type GuestCatalogItem } from "@/lib
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { useGuestExperience } from "@/state/guest-experience-provider";
 
-const PROPERTY_ID = "60765";
 const DEFAULT_UNIT_CODE = "AUTO-UNIT";
 
 function formatCurrency(value: number): string {
@@ -43,28 +42,32 @@ function isRelevantExtendService(item: GuestCatalogItem): boolean {
 }
 
 export function GuestExtend() {
-  const { data, loading, error, reload } = useGuestCatalog(PROPERTY_ID);
+  const { guest, isAuthenticated, openAuthModal } = useGuestAuth();
   const { selectedBookingId, setCartCount } = useGuestExperience();
-  const { isAuthenticated, openAuthModal } = useGuestAuth();
+  const activeBooking = useMemo(
+    () => guest?.bookings?.find((booking) => booking.ezee_reservation_id === selectedBookingId) ?? null,
+    [guest?.bookings, selectedBookingId],
+  );
+  const propertyId = activeBooking?.property_id ?? "";
+  const { data, loading, error, reload } = useGuestCatalog(propertyId, Boolean(propertyId && selectedBookingId && isAuthenticated));
   const [cart, setCart] = useState<GuestCart | null>(null);
   const [mutatingKey, setMutatingKey] = useState<string | null>(null);
   const [cartError, setCartError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const visibleCart = selectedBookingId && isAuthenticated ? cart : null;
 
-  const paidServices = useMemo(() => data.addons.filter(isRelevantExtendService), [data.addons]);
+  const paidServices = useMemo(() => (Array.isArray(data.addons) ? data.addons : []).filter(isRelevantExtendService), [data.addons]);
   const extendService = useMemo(() => findServiceByKeyword(paidServices, "extend"), [paidServices]);
   const lateCheckoutService = useMemo(() => findServiceByKeyword(paidServices, "late"), [paidServices]);
   const earlyCheckinService = useMemo(() => findServiceByKeyword(paidServices, "early"), [paidServices]);
 
   useEffect(() => {
     if (!selectedBookingId || !isAuthenticated) {
-      setCart(null);
       return;
     }
 
     const token = getStoredGuestToken();
     if (!token) {
-      setCart(null);
       return;
     }
 
@@ -90,15 +93,15 @@ export function GuestExtend() {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, selectedBookingId]);
+  }, [isAuthenticated, selectedBookingId, setCartCount]);
 
   useEffect(() => {
-    setCartCount((cart?.items ?? []).length);
-  }, [cart?.items, setCartCount]);
+    setCartCount((visibleCart?.items ?? []).length);
+  }, [setCartCount, visibleCart?.items]);
 
   const onAddService = async (service: GuestCatalogItem | null, key: string) => {
     if (!service) {
-      toast.message("No mapped paid service found for this action.");
+      toast.message("This option is not open right now.");
       return;
     }
     if (!selectedBookingId) {
@@ -138,7 +141,7 @@ export function GuestExtend() {
 
   return (
     <SectionBlock
-      description="Stay extension options are treated as paid services and added to the same booking cart."
+      description="Need a little more time? Choose the stay extension that fits the day."
       sticker={guestStickerTags.extend}
       title="Extend stay"
     >
@@ -153,10 +156,10 @@ export function GuestExtend() {
       ) : null}
       {cartError ? <p className="text-sm text-rose-300">{cartError}</p> : null}
       {actionError ? <p className="text-sm text-rose-300">{actionError}</p> : null}
-      {!loading && paidServices.length === 0 ? <p className="text-sm text-white/70">No paid extension services found in catalog.</p> : null}
+      {!loading && paidServices.length === 0 ? <p className="text-sm text-white/70">More time options are not open right now.</p> : null}
       <div className="grid gap-4 md:grid-cols-3">
         <BentoCard
-          description={extendService ? `From ${formatCurrency(extendService.base_price)}` : "Mapped from paid SERVICE items in catalog."}
+          description={extendService ? `From ${formatCurrency(extendService.base_price)}` : "Ask the desk if this can be opened for your stay."}
           icon={CalendarPlus}
           title="Extend stay"
         >
@@ -165,7 +168,7 @@ export function GuestExtend() {
           </Button>
         </BentoCard>
         <BentoCard
-          description={lateCheckoutService ? `From ${formatCurrency(lateCheckoutService.base_price)}` : "Mapped from paid SERVICE items in catalog."}
+          description={lateCheckoutService ? `From ${formatCurrency(lateCheckoutService.base_price)}` : "A later checkout may still be possible today."}
           icon={Moon}
           title="Late checkout"
         >
@@ -174,7 +177,7 @@ export function GuestExtend() {
           </Button>
         </BentoCard>
         <BentoCard
-          description={earlyCheckinService ? `From ${formatCurrency(earlyCheckinService.base_price)}` : "Mapped from paid SERVICE items in catalog."}
+          description={earlyCheckinService ? `From ${formatCurrency(earlyCheckinService.base_price)}` : "Perfect for the next visit when you plan an early arrival."}
           icon={CalendarClock}
           title="Early check-in"
         >

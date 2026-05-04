@@ -9,13 +9,13 @@ import { SectionBlock } from "@/components/guest/section-block";
 export function GuestGuide() {
   return (
     <SectionBlock
-      description="Property rules, directions, access notes, and local recommendations will be organized here."
+      description="Everything you need to settle in, step out, and get back smoothly."
       sticker={guestStickerTags.guide}
       title="Property guide"
     >
       <div className="grid gap-4 md:grid-cols-2">
-        <BentoCard description="Placeholder for house rules, access, timings, and property basics." icon={BookOpen} title="Guide basics" />
-        <BentoCard description="Placeholder for nearby places, directions, and property contact notes." icon={MapPin} title="Around here" />
+        <BentoCard description="Quick house rules, timings, access notes, and the practical stuff guests ask first." icon={BookOpen} title="Guide basics" />
+        <BentoCard description="Helpful neighborhood directions, nearby picks, and easy arrival references." icon={MapPin} title="Around here" />
       </div>
     </SectionBlock>
   );

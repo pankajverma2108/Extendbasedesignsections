@@ -15,22 +15,26 @@ import { getBorrowMine, requestBorrow, type BorrowMineItem } from "@/lib/guest-e
 import { getStoredGuestToken } from "@/lib/guest-auth-api";
 import { useGuestExperience } from "@/state/guest-experience-provider";
 
-const PROPERTY_ID = "60765";
-
 export function GuestBorrow() {
-  const { data, loading: catalogLoading, error: catalogError, reload } = useGuestCatalog(PROPERTY_ID);
+  const { guest, isAuthenticated, openAuthModal } = useGuestAuth();
   const { selectedBookingId, setBorrowCount, paymentSyncTick } = useGuestExperience();
-  const { isAuthenticated, openAuthModal } = useGuestAuth();
+  const activeBooking = useMemo(
+    () => guest?.bookings?.find((booking) => booking.ezee_reservation_id === selectedBookingId) ?? null,
+    [guest?.bookings, selectedBookingId],
+  );
+  const propertyId = activeBooking?.property_id ?? "";
+  const { data, loading: catalogLoading, error: catalogError, reload } = useGuestCatalog(propertyId, Boolean(propertyId && selectedBookingId && isAuthenticated));
   const [mine, setMine] = useState<BorrowMineItem[]>([]);
   const [loadingMine, setLoadingMine] = useState(false);
   const [mineError, setMineError] = useState<string | null>(null);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [returnDraftIds, setReturnDraftIds] = useState<Record<string, boolean>>({});
   const [actionError, setActionError] = useState<string | null>(null);
+  const visibleMine = useMemo(() => (selectedBookingId && isAuthenticated ? mine : []), [isAuthenticated, mine, selectedBookingId]);
 
   const activeMineCount = useMemo(
-    () => mine.filter((item) => item.status === "CHECKED_OUT" || item.status === "OVERDUE").length,
-    [mine],
+    () => visibleMine.filter((item) => item.status === "CHECKED_OUT" || item.status === "OVERDUE").length,
+    [visibleMine],
   );
 
   useEffect(() => {
@@ -39,19 +43,21 @@ export function GuestBorrow() {
 
   useEffect(() => {
     if (!selectedBookingId || !isAuthenticated) {
-      setMine([]);
       return;
     }
 
     const token = getStoredGuestToken();
     if (!token) {
-      setMine([]);
       return;
     }
 
     let cancelled = false;
-    setLoadingMine(true);
-    setMineError(null);
+    queueMicrotask(() => {
+      if (!cancelled) {
+        setLoadingMine(true);
+        setMineError(null);
+      }
+    });
 
     void getBorrowMine(selectedBookingId, token)
       .then((rows) => {
@@ -124,7 +130,7 @@ export function GuestBorrow() {
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <SectionBlock
-        description="Request borrowable items and track active checkouts. Return remains UI-only until a backend endpoint is available."
+        description="Borrow the practical essentials and keep track of what is still with you."
         sticker={guestStickerTags.borrow}
         title="Borrow"
       >
@@ -140,10 +146,10 @@ export function GuestBorrow() {
         {mineError ? <p className="text-sm text-rose-300">{mineError}</p> : null}
         {actionError ? <p className="text-sm text-rose-300">{actionError}</p> : null}
         <div className="grid gap-4 md:grid-cols-2">
-          <BentoCard description="Live availability from borrowables catalog." icon={PackagePlus} title="Borrow items">
+          <BentoCard description="See what is ready to borrow for the stay right now." icon={PackagePlus} title="Borrow items">
             <div className="space-y-2">
-              {data.borrowables.length === 0 ? <p className="text-sm text-white/70">No borrowables available.</p> : null}
-              {data.borrowables.map((item) => (
+              {(Array.isArray(data.borrowables) ? data.borrowables : []).length === 0 ? <p className="text-sm text-white/70">No borrowables available.</p> : null}
+              {(Array.isArray(data.borrowables) ? data.borrowables : []).map((item) => (
                 <div key={item.id} className="flex items-center justify-between gap-3 rounded-[12px] border border-white/10 bg-white/[0.03] px-3 py-2">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-white">{item.name}</p>
@@ -161,10 +167,10 @@ export function GuestBorrow() {
               ))}
             </div>
           </BentoCard>
-          <BentoCard description="Active borrowed items and return-request marker." icon={PackageCheck} title="Return flow">
+          <BentoCard description="Keep an eye on active borrowings and mark what you are ready to return." icon={PackageCheck} title="Return flow">
             <div className="space-y-2">
-              {mine.length === 0 ? <p className="text-sm text-white/70">No borrowed items yet.</p> : null}
-              {mine.map((item) => (
+              {visibleMine.length === 0 ? <p className="text-sm text-white/70">No borrowed items yet.</p> : null}
+              {visibleMine.map((item) => (
                 <div key={item.id} className="flex items-center justify-between gap-3 rounded-[12px] border border-white/10 bg-white/[0.03] px-3 py-2">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-white">{item.product_name}</p>
@@ -189,8 +195,8 @@ export function GuestBorrow() {
         title="Borrow summary"
         items={[
           { label: "Active", value: `${activeMineCount} items` },
-          { label: "Returned", value: `${mine.filter((item) => item.status === "RETURNED").length}` },
-          { label: "Requests", value: "UI + API mixed" },
+          { label: "Returned", value: `${visibleMine.filter((item) => item.status === "RETURNED").length}` },
+          { label: "Requests", value: "Desk confirmed" },
         ]}
       />
     </div>

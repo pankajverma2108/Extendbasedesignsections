@@ -1,5 +1,5 @@
-import { GuestExtend } from "@/modules/guest/extend";
+import { GuestLegacyRouteRedirect } from "@/components/guest/guest-route-gate";
 
 export default function GuestExtendPage() {
-  return <GuestExtend />;
+  return <GuestLegacyRouteRedirect subpath="extend" />;
 }

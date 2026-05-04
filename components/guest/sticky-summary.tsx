@@ -28,20 +28,20 @@ export function StickySummary({
   return (
     <aside
       className={cn(
-        "fixed bottom-[92px] left-4 right-4 z-30 rounded-[22px] border border-dashed border-white/22 bg-[#07070a] p-4 shadow-[0_22px_56px_rgba(0,0,0,0.38)] lg:sticky lg:top-28 lg:left-auto lg:right-auto lg:z-auto lg:self-start",
+        "fixed bottom-[92px] left-4 right-4 z-30 rounded-[8px] border-2 border-dashed border-[var(--vh-pink)]/65 bg-[#16070c] p-4 shadow-[0_22px_56px_rgba(0,0,0,0.44)] lg:sticky lg:top-28 lg:left-auto lg:right-auto lg:z-auto lg:self-start",
         className,
       )}
     >
-      <h3 className="font-suez text-[24px] uppercase leading-none tracking-[-0.03em] text-white">{title}</h3>
+      <h3 className="font-['Geologica'] text-[22px] font-black uppercase leading-7 tracking-[-0.04em] text-[#f1f5f9]">{title}</h3>
       <div className="mt-4 space-y-3">
         {items.map((item) => (
-          <div key={item.label} className="flex items-center justify-between gap-4 rounded-[14px] border border-white/10 bg-white/[0.04] px-3 py-2">
-            <span className="text-xs font-bold uppercase tracking-[0.1em] text-white/54">{item.label}</span>
-            <span className="text-sm font-semibold text-white">{item.value}</span>
+          <div key={item.label} className="flex items-center justify-between gap-4 border-b border-[var(--vh-pink)]/25 px-1 py-2">
+            <span className="text-xs font-bold uppercase tracking-[0.1em] text-[#94a3b8]">{item.label}</span>
+            <span className="text-sm font-black text-white">{item.value}</span>
           </div>
         ))}
       </div>
-      <Button className="mt-4 h-10 w-full rounded-[14px] bg-[#c92420] text-white hover:bg-[#a91d1a]" type="button">
+      <Button className="mt-4 h-10 w-full rounded-[4px] bg-[var(--vh-pink)] font-black uppercase text-white hover:bg-[var(--vh-pink-soft)]" type="button">
         {ctaLabel}
       </Button>
     </aside>

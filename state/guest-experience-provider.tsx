@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
 
 import { useGuestAuth } from "@/components/auth/guest-auth-provider";
+import { getActiveGuestHubBooking, getScopedGuestHubHref } from "@/lib/guest-hub";
 
 export type GuestModalState =
   | { type: "SERVICE_REQUEST"; payload?: { serviceId?: string; title?: string } }
@@ -15,6 +16,7 @@ export type GuestModalState =
 type GuestExperienceContextValue = {
   selectedBookingId: string | null;
   setSelectedBookingId: (bookingId: string | null) => void;
+  getGuestRouteHref: (subpath?: string) => string;
   activeModal: GuestModalState | null;
   badgeCounts: {
     cart: number;
@@ -28,76 +30,35 @@ type GuestExperienceContextValue = {
 
 const GuestExperienceContext = createContext<GuestExperienceContextValue | null>(null);
 
-const CONFIRMED_BOOKING_PREFIX = "vh_confirmed_booking:";
-
-function getLatestStoredBookingId(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  let latestId: string | null = null;
-  let latestCreatedAt = 0;
-
-  for (let index = 0; index < window.localStorage.length; index += 1) {
-    const key = window.localStorage.key(index);
-    if (!key || !key.startsWith(CONFIRMED_BOOKING_PREFIX)) {
-      continue;
-    }
-
-    const raw = window.localStorage.getItem(key);
-    if (!raw) {
-      continue;
-    }
-
-    try {
-      const parsed = JSON.parse(raw) as { ezeeReservationId?: unknown; createdAt?: unknown };
-      const bookingId = typeof parsed.ezeeReservationId === "string" ? parsed.ezeeReservationId : key.slice(CONFIRMED_BOOKING_PREFIX.length);
-      const createdAt = typeof parsed.createdAt === "number" ? parsed.createdAt : 0;
-
-      if (bookingId && createdAt >= latestCreatedAt) {
-        latestId = bookingId;
-        latestCreatedAt = createdAt;
-      }
-    } catch {
-      // Ignore malformed snapshots from legacy sessions.
-    }
-  }
-
-  return latestId;
-}
-
-export function GuestExperienceProvider({ children }: { children: ReactNode }) {
+export function GuestExperienceProvider({ children, initialBookingId = null }: { children: ReactNode; initialBookingId?: string | null }) {
   const { guest } = useGuestAuth();
-  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+  const [selectedBookingIdOverride, setSelectedBookingIdOverride] = useState<string | null>(null);
   const [cartCount, setCartCountState] = useState(0);
   const [borrowCount, setBorrowCountState] = useState(0);
   const [paymentSyncTick, setPaymentSyncTick] = useState(0);
+  const guestBookings = useMemo(() => guest?.bookings ?? [], [guest?.bookings]);
 
-  useEffect(() => {
-    if (selectedBookingId) {
-      return;
+  const selectedBookingId = useMemo(() => {
+    if (initialBookingId) {
+      return initialBookingId;
     }
 
-    const approvedBookingId =
-      guest?.bookings?.find((booking) => booking.status === "APPROVED")?.ezee_reservation_id
-      ?? guest?.bookings?.[0]?.ezee_reservation_id
-      ?? null;
-
-    if (approvedBookingId) {
-      setSelectedBookingId(approvedBookingId);
-      return;
+    if (selectedBookingIdOverride && guestBookings.some((booking) => booking.ezee_reservation_id === selectedBookingIdOverride)) {
+      return selectedBookingIdOverride;
     }
 
-    const storedBookingId = getLatestStoredBookingId();
-    if (storedBookingId) {
-      setSelectedBookingId(storedBookingId);
-    }
-  }, [guest?.bookings, selectedBookingId]);
+    return getActiveGuestHubBooking(guestBookings)?.ezee_reservation_id ?? null;
+  }, [guestBookings, initialBookingId, selectedBookingIdOverride]);
+
+  const setSelectedBookingId = useCallback((bookingId: string | null) => {
+    setSelectedBookingIdOverride(bookingId);
+  }, []);
 
   const contextValue = useMemo<GuestExperienceContextValue>(
     () => ({
       selectedBookingId,
       setSelectedBookingId,
+      getGuestRouteHref: (subpath = "") => (selectedBookingId ? getScopedGuestHubHref(selectedBookingId, subpath) : "/guest"),
       activeModal: null,
       badgeCounts: {
         cart: cartCount,
@@ -108,7 +69,7 @@ export function GuestExperienceProvider({ children }: { children: ReactNode }) {
       paymentSyncTick,
       markPaymentCompleted: () => setPaymentSyncTick((current) => current + 1),
     }),
-    [borrowCount, cartCount, paymentSyncTick, selectedBookingId],
+    [borrowCount, cartCount, paymentSyncTick, selectedBookingId, setSelectedBookingId],
   );
 
   return <GuestExperienceContext.Provider value={contextValue}>{children}</GuestExperienceContext.Provider>;

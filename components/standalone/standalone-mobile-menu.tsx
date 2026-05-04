@@ -7,7 +7,7 @@ import { MobileStaggeredMenu } from "@/components/marketing/mobile-staggered-men
 export function StandaloneMobileMenu() {
   return (
     <Suspense fallback={null}>
-      <MobileStaggeredMenu isAuthenticated={false} onOpenSignIn={() => {}} />
+      <MobileStaggeredMenu activeGuestHubBookingId={null} isAuthenticated={false} onOpenSignIn={() => {}} />
     </Suspense>
   );
 }

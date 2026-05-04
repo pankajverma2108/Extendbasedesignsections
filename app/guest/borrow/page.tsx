@@ -1,5 +1,5 @@
-import { GuestBorrow } from "@/modules/guest/borrow";
+import { GuestLegacyRouteRedirect } from "@/components/guest/guest-route-gate";
 
 export default function GuestBorrowPage() {
-  return <GuestBorrow />;
+  return <GuestLegacyRouteRedirect subpath="borrow" />;
 }

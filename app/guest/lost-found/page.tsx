@@ -1,5 +1,5 @@
-import { GuestLostFound } from "@/modules/guest/lost-found";
+import { GuestLegacyRouteRedirect } from "@/components/guest/guest-route-gate";
 
 export default function GuestLostFoundPage() {
-  return <GuestLostFound />;
+  return <GuestLegacyRouteRedirect subpath="lost-found" />;
 }

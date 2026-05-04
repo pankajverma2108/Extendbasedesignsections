@@ -28,16 +28,16 @@ export function SectionBlock({
           {sticker ? (
             <StickerTag
               bg={sticker.bg}
-              className="px-3 py-1.5 text-[11px] font-bold not-italic uppercase tracking-[0.12em]"
+              className="px-3 py-1.5 text-[11px] font-black not-italic uppercase tracking-[0.12em]"
               label={sticker.label}
               rotate={sticker.rotate}
               text={sticker.text}
             />
           ) : null}
-          <h2 className="mt-3 font-suez text-[28px] uppercase leading-[1] tracking-[-0.03em] text-white md:text-[36px]">
+          <h2 className="vh-title mt-3 text-[22px] leading-[1.08] text-[#f1f5f9] md:text-[30px]">
             {title}
           </h2>
-          {description ? <p className="mt-3 text-sm leading-7 text-white/68 md:text-base">{description}</p> : null}
+          {description ? <p className="mt-2 text-sm leading-6 text-[#94a3b8] md:text-base md:leading-7">{description}</p> : null}
         </div>
         {action ? <div className="flex shrink-0 flex-wrap items-center gap-3">{action}</div> : null}
       </div>

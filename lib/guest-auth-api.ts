@@ -23,7 +23,7 @@ export type GuestProfile = {
 export type GuestBookingSummary = {
   ezee_reservation_id: string;
   role: "PRIMARY" | "SECONDARY";
-  status: "APPROVED" | "PENDING_APPROVAL" | "REJECTED";
+  status: string;
   checkin_date: string;
   checkout_date: string;
   room_type_name: string;
