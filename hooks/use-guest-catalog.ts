@@ -72,10 +72,33 @@ async function fetchCatalogBundle(propertyId: string): Promise<GuestCatalogBundl
 
   const promise = Promise.all([getCatalog(key), getServices(key), getBorrowables(key)])
     .then(([addons, services, borrowables]) => {
+      let addonsArr = toArray<GuestCatalogItem>(addons);
+      let servicesArr = toArray<GuestServiceItem>(services);
+      const borrowablesArr = toArray<GuestBorrowableItem>(borrowables);
+
+      // If the services endpoint is empty, derive SERVICE items from the catalog
+      if ((servicesArr.length === 0 || servicesArr.every((s) => !s || Object.keys(s).length === 0)) && addonsArr.length > 0) {
+        const derived = addonsArr.filter((a) => a.category === "SERVICE").map((a) => ({
+          id: a.id,
+          name: a.name,
+          code: undefined,
+          category: a.category,
+          base_price: a.base_price,
+          in_stock: a.in_stock,
+          available_stock: a.available_stock,
+        } as GuestServiceItem));
+
+        if (derived.length > 0) {
+          servicesArr = derived;
+          // Remove service items from addons to avoid duplication in callers
+          addonsArr = addonsArr.filter((a) => a.category !== "SERVICE");
+        }
+      }
+
       const bundle: GuestCatalogBundle = {
-        addons: toArray<GuestCatalogItem>(addons),
-        services: toArray<GuestServiceItem>(services),
-        borrowables: toArray<GuestBorrowableItem>(borrowables),
+        addons: addonsArr,
+        services: servicesArr,
+        borrowables: borrowablesArr,
       };
       bundleCache.set(key, { data: bundle, fetchedAt: Date.now() });
       return bundle;
